@@ -21,6 +21,9 @@ func InitCommonDB() {
 func RegisterTables(db *gorm.DB) {
 	err := db.AutoMigrate(
 		model.Users{},
+		model.ClaimBadgeTweet{},
+		model.Quest{},
+		model.UserChallenges{},
 	)
 	if err != nil {
 		global.LOG.Error("register table failed", zap.Error(err))

@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"backend-go/internal/app/global"
+	"backend-go/internal/app/router"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +28,7 @@ func Routers() *gin.Engine {
 	}
 	v1Group := Router.Group("v1")
 	{
-		_ = v1Group
+		router.InitQuestRouter(v1Group)
 		//router.InitAccountRouter(v1Group)
 	}
 
