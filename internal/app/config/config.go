@@ -4,5 +4,6 @@ type Server struct {
 	Zap    Zap    `mapstructure:"zap" json:"zap" yaml:"zap"`
 	System System `mapstructure:"system" json:"system" yaml:"system"`
 	// gorm
-	Pgsql Pgsql `mapstructure:"pgsql" json:"pgsql" yaml:"pgsql"`
+	Pgsql      Pgsql      `mapstructure:"pgsql" json:"pgsql" yaml:"pgsql"`
+	BlockChain BlockChain `mapstructure:"blockchain" json:"blockchain" yaml:"blockchain"`
 }

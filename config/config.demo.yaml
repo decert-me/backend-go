@@ -30,3 +30,8 @@ zap:
 # local configuration
 local:
   path: 'uploads/file'
+
+# blockchain configuration
+blockchain:
+  private-key: ""
+  provider: "https://rpc.ankr.com/eth_goerli"
