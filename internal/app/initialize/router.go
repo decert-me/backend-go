@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"backend-go/internal/app/global"
+	"backend-go/internal/app/middleware"
 	"backend-go/internal/app/router"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,7 @@ func Routers() *gin.Engine {
 		Router = gin.New()
 		Router.Use(gin.Recovery())
 	}
+	Router.Use(middleware.Cors()) // 放行跨域请求
 	PublicGroup := Router.Group("")
 	{
 		// 健康监测
@@ -29,7 +31,9 @@ func Routers() *gin.Engine {
 	v1Group := Router.Group("v1")
 	{
 		router.InitQuestRouter(v1Group)
-		//router.InitAccountRouter(v1Group)
+		router.InitUserRouter(v1Group)
+		router.InitBadgeRouter(v1Group)
+		router.InitTransactionRouter(v1Group)
 	}
 
 	global.LOG.Info("router register success")

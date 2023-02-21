@@ -14,6 +14,8 @@ func InitCommonDB() {
 	if db != nil {
 		global.DB = db
 		RegisterTables(db) // 初始化表
+	} else {
+		panic("database init failed")
 	}
 }
 
@@ -24,6 +26,7 @@ func RegisterTables(db *gorm.DB) {
 		model.ClaimBadgeTweet{},
 		model.Quest{},
 		model.UserChallenges{},
+		model.Transaction{},
 	)
 	if err != nil {
 		global.LOG.Error("register table failed", zap.Error(err))

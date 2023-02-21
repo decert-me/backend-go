@@ -16,5 +16,7 @@ func main() {
 	zap.ReplaceGlobals(global.LOG)
 	// 初始化数据库
 	initialize.InitCommonDB()
+	// 初始化合约信息
+	initialize.InitContract()
 	core.RunWindowsServer()
 }

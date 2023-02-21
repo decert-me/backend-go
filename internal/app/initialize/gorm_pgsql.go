@@ -11,7 +11,7 @@ import (
 func GormPgSql(Prefix string) *gorm.DB {
 	p := global.CONFIG.Pgsql
 	if p.Dbname == "" {
-		return nil
+		panic("Postgres database name is required")
 	}
 	pgsqlConfig := postgres.Config{
 		DSN:                  p.Dsn(), // DSN data source name
