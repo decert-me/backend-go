@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// @function: PathExists
+// PathExists
 // @description: 文件目录是否存在
 // @param: path string
 // @return: bool, error
