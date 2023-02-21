@@ -73,12 +73,12 @@ func SubmitClaimTweet(address string, req request.SubmitClaimTweetReq) (err erro
 	}
 	// 保存到数据库
 	claimBadgeTweet := model.ClaimBadgeTweet{
-		Address:   address,
-		TokenId:   req.TokenId,
-		Url:       req.TweetUrl,
-		TweetId:   tweetId,
-		AddTs:     time.Now().Unix(),
-		AirDroped: true,
+		Address:    address,
+		TokenId:    req.TokenId,
+		Url:        req.TweetUrl,
+		TweetId:    tweetId,
+		AddTs:      time.Now().Unix(),
+		Airdropped: false,
 	}
 	err = global.DB.Create(&claimBadgeTweet).Error
 	return
