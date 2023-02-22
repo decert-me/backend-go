@@ -7,40 +7,39 @@ import (
 	"backend-go/internal/app/service"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 func GetQuestList(c *gin.Context) {
 	var searchInfo request.GetQuestListRequest
 	_ = c.ShouldBindQuery(&searchInfo)
-	if list, err := service.GetQuestList(searchInfo); err != nil {
+	if list, total, err := service.GetQuestList(searchInfo); err != nil {
 		global.LOG.Error("获取失败!", zap.Error(err))
-		c.JSON(http.StatusOK,
-			nil,
-		)
+		response.FailWithMessage("Error", c)
 	} else {
-		c.JSON(http.StatusOK,
-			list,
-		)
+		response.OkWithDetailed(response.PageResult{
+			List:     list,
+			Total:    total,
+			Page:     searchInfo.Page,
+			PageSize: searchInfo.PageSize,
+		}, "Success", c)
 	}
 }
 
 func GetQuest(c *gin.Context) {
 	if list, err := service.GetQuest(c.Param("id")); err != nil {
 		global.LOG.Error("获取失败!", zap.Error(err))
-		c.JSON(http.StatusOK,
-			nil,
-		)
+		response.FailWithMessage("Error", c)
 	} else {
-		c.JSON(http.StatusOK,
-			list,
-		)
+		response.OkWithData(list, c)
 	}
 }
 
 func AddQuest(c *gin.Context) {
 	var add request.AddQuestRequest
-	_ = c.ShouldBindJSON(&add)
+	if err := c.ShouldBindJSON(&add); err != nil {
+		response.FailWithMessage("param not valid", c)
+		return
+	}
 	address := c.GetString("address")
 	if list, err := service.AddQuest(address, add); err != nil {
 		global.LOG.Error("添加失败!", zap.Error(err))

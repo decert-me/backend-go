@@ -13,12 +13,19 @@ import (
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
 )
 
-func GetQuestList(searchInfo request.GetQuestListRequest) (questList []response.GetQuestListRes, err error) {
+func GetQuestList(searchInfo request.GetQuestListRequest) (questList []response.GetQuestListRes, total int64, err error) {
+	limit := searchInfo.PageSize
+	offset := searchInfo.PageSize * (searchInfo.Page - 1)
+
 	var quest []model.Quest
 	db := global.DB.Model(&model.Quest{}).Where(&searchInfo.Quest)
-	err = db.Order("id desc").Find(&quest).Error
+	err = db.Count(&total).Error
 	if err != nil {
-		return questList, err
+		return questList, total, err
+	}
+	err = db.Limit(limit).Offset(offset).Order("id desc").Find(&quest).Error
+	if err != nil {
+		return questList, total, err
 	}
 	for _, v := range quest {
 		questList = append(questList, response.GetQuestListRes{Quest: v})

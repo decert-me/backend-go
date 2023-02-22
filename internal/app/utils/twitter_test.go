@@ -36,7 +36,7 @@ func Test_getTweetIdFromURL(t *testing.T) {
 
 func Test_checkIfMatchClaimTweet(t *testing.T) {
 	type args struct {
-		tokenId uint64
+		tokenId int64
 		tweet   string
 	}
 	tests := []struct {
@@ -49,7 +49,7 @@ func Test_checkIfMatchClaimTweet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotPass := checkIfMatchClaimTweet(tt.args.tokenId, tt.args.tweet); gotPass != tt.wantPass {
+			if gotPass := CheckIfMatchClaimTweet(tt.args.tokenId, tt.args.tweet); gotPass != tt.wantPass {
 				t.Errorf("checkIfMatchClaimTweet() = %v, want %v", gotPass, tt.wantPass)
 			}
 		})

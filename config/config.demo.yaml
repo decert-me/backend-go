@@ -16,6 +16,13 @@ pgsql:
   log-mode: "info"
   log-zap: false
 
+# redis configuration
+redis:
+  db: 0
+  addr: 127.0.0.1:6379
+  password: ""
+  prefix: "decert:"
+
 # zap configuration
 zap:
   level: info

@@ -27,7 +27,7 @@ func GetDiscordInfo(c *gin.Context) {
 // @Router /sign/getLoginMessage [post]
 func GetLoginMessage(c *gin.Context) {
 	var request request.GetLoginMessageRequest
-	_ = c.ShouldBindJSON(&request)
+	_ = c.ShouldBindQuery(&request)
 	if !utils.IsValidAddress(request.Address) {
 		response.FailWithMessage("address error", c)
 		return

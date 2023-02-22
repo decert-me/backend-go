@@ -5,12 +5,14 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/utils"
+	"context"
 	"errors"
 	"fmt"
 	uuid "github.com/satori/go.uuid"
 	"github.com/tidwall/gjson"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 func GetDiscordInfo(address string) (res interface{}, err error) {
@@ -30,9 +32,9 @@ func GetLoginMessage(address string) (err error, loginMessage string) {
 	UUID := uuid.NewV4() // 生成UUID
 	fmt.Println(UUID.String())
 	// 存到Local Cache里
-	//if err = global.TokenCache.Set(UUID.String(), []byte{}); err != nil {
-	//	return err, loginMessage
-	//}
+	if err = global.REDIS.Set(context.Background(), global.CONFIG.Redis.Prefix+UUID.String(), "", time.Hour*24).Err(); err != nil {
+		return err, loginMessage
+	}
 	loginMessage = fmt.Sprintf(loginMessage+"Nonce:\n%s", UUID)
 	return err, loginMessage
 }
@@ -51,12 +53,12 @@ func AuthLoginSignRequest(req request.AuthLoginSignRequest) (token string, err e
 		return token, errors.New("nonce获取失败")
 	}
 	// 校验Nonce
-	//_, cacheErr := global.TokenCache.Get(req.Message[index+7:])
-	//if cacheErr == bigcache.ErrEntryNotFound {
-	//	return token, errors.New("签名已失效")
-	//}
+	cacheErr := global.REDIS.Get(context.Background(), global.CONFIG.Redis.Prefix+req.Message[index+7:]).Err()
+	if cacheErr != nil {
+		return token, errors.New("签名已失效")
+	}
 	// 删除Nonce
-	//_ = global.TokenCache.Delete(req.Message[index+7:])
+	_ = global.REDIS.Del(context.Background(), global.CONFIG.Redis.Prefix+req.Message[index+7:])
 	// 获取用户名--不存在则新增
 	var user model.Users
 	if errUser := global.DB.Model(&model.Users{}).Where("address = ?", req.Address).First(&user).Error; errUser != nil {

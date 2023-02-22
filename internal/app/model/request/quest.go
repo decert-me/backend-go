@@ -8,8 +8,8 @@ type GetQuestListRequest struct {
 }
 
 type AddQuestRequest struct {
-	Signature   string `json:"signature"`
-	Uri         string `json:"uri"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	Signature   string `json:"signature" binding:"required"`
+	Uri         string `json:"uri" binding:"required"`
+	Title       string `json:"title" binding:"required"`
+	Description string `json:"description" binding:"required"`
 }

@@ -8,4 +8,5 @@ type Server struct {
 	Contract   Contract   `mapstructure:"contract" json:"contract" yaml:"contract"`
 	Twitter    Twitter    `mapstructure:"twitter" json:"twitter" yaml:"twitter"`
 	JWT        JWT        `mapstructure:"jwt" json:"jwt" yaml:"jwt"`
+	Redis      Redis      `mapstructure:"redis" json:"redis" yaml:"redis"`
 }
