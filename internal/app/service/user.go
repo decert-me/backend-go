@@ -4,6 +4,8 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/utils"
+	"backend-go/pkg/auth"
+	"backend-go/pkg/log"
 	"context"
 	"errors"
 	"fmt"
@@ -30,7 +32,7 @@ func (s *Service) GetLoginMessage(address string) (loginMessage string, err erro
 	UUID := uuid.NewV4() // 生成UUID
 	// 存到Local Cache里
 	if err = s.dao.SetNonce(context.Background(), UUID.String()); err != nil {
-		s.log.Error("set nonce error: ", zap.Error(err))
+		log.Errorv("set nonce error: ", zap.Error(err))
 		return loginMessage, err
 	}
 	return fmt.Sprintf(loginMessage+"Nonce:\n%s", UUID), nil
@@ -41,6 +43,7 @@ func (s *Service) GetLoginMessage(address string) (loginMessage string, err erro
 // @param: c *gin.Context, req request.AuthLoginSignRequest
 // @return: token string, err error
 func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token string, err error) {
+	midAuth := auth.New(s.c.Auth)
 	if !utils.VerifySignature(req.Address, req.Signature, []byte(req.Message)) {
 		return token, errors.New("签名校验失败")
 	}
@@ -49,31 +52,32 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	if index == -1 {
 		return token, errors.New("nonce获取失败")
 	}
+	nonce := req.Message[index+7:]
 	// 校验Nonce
-	hasNonce, err := s.dao.HasNonce(context.Background(), req.Message[index+7:])
+	hasNonce, err := s.dao.HasNonce(context.Background(), nonce)
 	if err != nil {
-		s.log.Error("HasNonce error", zap.Error(err))
+		log.Errorv("HasNonce error", zap.String("nonce", nonce))
 	}
 	if !hasNonce {
 		return token, errors.New("签名已失效")
 	}
 	// 删除Nonce
-	if err = s.dao.DelNonce(context.Background(), req.Message[index+7:]); err != nil {
-		s.log.Error("DelNonce error", zap.Error(err))
+	if err = s.dao.DelNonce(context.Background(), nonce); err != nil {
+		log.Errorv("DelNonce error", zap.String("nonce", nonce)) // not important and continue
 	}
 	// 保存用户信息
 	user := model.Users{Address: req.Address}
 	if err = s.dao.SaveUser(&user); err != nil {
-		s.log.Error("SaveUser error", zap.Error(err))
+		log.Errorv("SaveUser error", zap.Any("user", user))
 	}
 	// 验证成功返回JWT
-	j := utils.NewJWT(s.c)
-	claims := j.CreateClaims(utils.BaseClaims{
+	claims := midAuth.CreateClaims(auth.BaseClaims{
 		UserID:  user.ID,
 		Address: req.Address,
 	})
-	token, err = j.CreateToken(claims)
+	token, err = midAuth.CreateToken(claims)
 	if err != nil {
+		log.Error("CreateToken error (%v)", err)
 		return token, errors.New("获取token失败")
 	}
 	return token, nil

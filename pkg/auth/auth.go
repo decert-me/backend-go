@@ -1,16 +1,22 @@
-package utils
+package auth
 
 import (
-	"backend-go/internal/app/config"
 	"errors"
-	"time"
-
 	"github.com/golang-jwt/jwt/v4"
+	"time"
 )
 
-type JWT struct {
-	c          *config.Config
-	SigningKey []byte
+// Config auth config.
+type Config struct {
+	SigningKey  string `mapstructure:"signing-key" json:"signing-key" yaml:"signing-key"`    // jwt签名
+	ExpiresTime int64  `mapstructure:"expires-time" json:"expires-time" yaml:"expires-time"` // 过期时间
+	Issuer      string `mapstructure:"issuer" json:"issuer" yaml:"issuer"`                   // 签发者
+}
+
+// Auth is the authorization middleware
+type Auth struct {
+	c   *Config
+	key []byte
 }
 
 var (
@@ -20,10 +26,10 @@ var (
 	TokenInvalid     = errors.New("couldn't handle this token")
 )
 
-func NewJWT(c *config.Config) *JWT {
-	return &JWT{
-		c:          c,
-		SigningKey: []byte(c.JWT.SigningKey),
+func New(c *Config) *Auth {
+	return &Auth{
+		c:   c,
+		key: []byte(c.SigningKey),
 	}
 }
 
@@ -37,28 +43,28 @@ type BaseClaims struct {
 	Address string `json:"address,omitempty"`
 }
 
-func (j *JWT) CreateClaims(baseClaims BaseClaims) CustomClaims {
+func (a *Auth) CreateClaims(baseClaims BaseClaims) CustomClaims {
 	claims := CustomClaims{
 		BaseClaims: baseClaims,
 		RegisteredClaims: jwt.RegisteredClaims{
-			NotBefore: jwt.NewNumericDate(time.Now().Add(-1)),                                               // 签名生效时间
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(j.c.JWT.ExpiresTime) * time.Second)), // 过期时间
-			Issuer:    j.c.JWT.Issuer,                                                                       // 签名的发行者
+			NotBefore: jwt.NewNumericDate(time.Now().Add(-1)),                                           // 签名生效时间
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(a.c.ExpiresTime) * time.Second)), // 过期时间
+			Issuer:    a.c.Issuer,                                                                       // 签名的发行者
 		},
 	}
 	return claims
 }
 
 // CreateToken 创建一个token
-func (j *JWT) CreateToken(claims CustomClaims) (string, error) {
+func (a *Auth) CreateToken(claims CustomClaims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(j.SigningKey)
+	return token.SignedString(a.key)
 }
 
 // ParseToken 解析 token
-func (j *JWT) ParseToken(tokenString string) (*CustomClaims, error) {
+func (a *Auth) ParseToken(tokenString string) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
-		return j.SigningKey, nil
+		return a.key, nil
 	})
 	if err != nil {
 		if ve, ok := err.(*jwt.ValidationError); ok {

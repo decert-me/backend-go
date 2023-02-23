@@ -25,19 +25,19 @@ redis:
   password: ""
   prefix: "decert:"
 
-# zap configuration
-zap:
+# log configuration
+log:
   level: info
+  save: true
   format: console
   prefix: '[backend-go]'
   director: log
   show-line: true
   encode-level: LowercaseColorLevelEncoder
   stacktrace-key: stacktrace
-  log-in-console: true
 
-# jwt configuration
-jwt:
+# auth configuration
+auth:
   signing-key: "Decert"
   expires-time: 86400
   issuer: "Decert"

@@ -12,6 +12,7 @@ import (
 )
 
 func New(c *config.Config) {
+	middleware.Init(c)
 	Router := Routers(c)
 	Host := "0.0.0.0"
 	if c.System.Env == "public" {
@@ -34,6 +35,7 @@ func New(c *config.Config) {
 	欢迎使用 backend-go
 	当前版本:V0.0.1
 	默认地址:http://127.0.0.1:%d/`, c.System.Addr)
+	fmt.Println()
 	s.ListenAndServe()
 }
 

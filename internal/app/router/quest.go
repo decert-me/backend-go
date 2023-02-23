@@ -7,11 +7,13 @@ import (
 )
 
 func InitQuestRouter(Router *gin.RouterGroup) {
-	questRouter := Router.Group("quests").Use(middleware.Auth())
+	questRouter := Router.Group("quests")
+	questRouterAuth := Router.Group("quests").Use(middleware.Auth())
 	{
 		questRouter.GET("", v1.GetQuestList)
 		questRouter.GET("/:id", v1.GetQuest)
-		questRouter.POST("", v1.AddQuest)
-
+	}
+	{
+		questRouterAuth.POST("", v1.AddQuest)
 	}
 }
