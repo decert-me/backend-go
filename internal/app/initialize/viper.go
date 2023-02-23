@@ -1,7 +1,7 @@
-package core
+package initialize
 
 import (
-	"backend-go/internal/app/global"
+	"backend-go/internal/app/config"
 	"flag"
 	"fmt"
 
@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Viper(path ...string) *viper.Viper {
+func Viper(path ...string) (c *config.Config) {
 	var config string
 	if len(path) == 0 {
 		flag.StringVar(&config, "c", "", "choose config file.")
@@ -36,15 +36,15 @@ func Viper(path ...string) *viper.Viper {
 
 	v.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Println("config file changed:", e.Name)
-		if err := v.Unmarshal(&global.CONFIG); err != nil {
+		if err := v.Unmarshal(&c); err != nil {
 			fmt.Println(err)
 		} else {
 			// 配置更改重启
 			// utils.Reload()
 		}
 	})
-	if err := v.Unmarshal(&global.CONFIG); err != nil {
+	if err := v.Unmarshal(&c); err != nil {
 		fmt.Println(err)
 	}
-	return v
+	return c
 }

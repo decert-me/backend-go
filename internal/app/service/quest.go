@@ -1,7 +1,6 @@
 package service
 
 import (
-	"backend-go/internal/app/global"
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
@@ -11,42 +10,37 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
+	"strconv"
 )
 
-func GetQuestList(searchInfo request.GetQuestListRequest) (questList []response.GetQuestListRes, total int64, err error) {
-	limit := searchInfo.PageSize
-	offset := searchInfo.PageSize * (searchInfo.Page - 1)
-
-	var quest []model.Quest
-	db := global.DB.Model(&model.Quest{}).Where(&searchInfo.Quest)
-	err = db.Count(&total).Error
-	if err != nil {
-		return questList, total, err
+func (s *Service) GetQuestList(searchInfo request.GetQuestListRequest) (res []response.GetQuestListRes, total int64, err error) {
+	var questList []model.Quest
+	if questList, total, err = s.dao.GetQuestList(&searchInfo); err != nil {
+		return
 	}
-	err = db.Limit(limit).Offset(offset).Order("id desc").Find(&quest).Error
-	if err != nil {
-		return questList, total, err
-	}
-	for _, v := range quest {
-		questList = append(questList, response.GetQuestListRes{Quest: v})
+	for _, v := range questList {
+		res = append(res, response.GetQuestListRes{Quest: v})
 	}
 	return
 }
 
-func GetQuest(id string) (questList response.GetQuestListRes, err error) {
-	db := global.DB.Model(&model.Quest{}).Where("tokenId", id)
-	err = db.Order("id desc").First(&questList.Quest).Error
+func (s *Service) GetQuest(id string) (quest model.Quest, err error) {
+	tokenId, err := strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		return
+	}
+	quest, err = s.dao.GetQuest(&model.Quest{TokenId: tokenId})
 	return
 }
 
-func AddQuest(address string, add request.AddQuestRequest) (res string, err error) {
+func (s *Service) AddQuest(address string, add request.AddQuestRequest) (res string, err error) {
 	verify := model.Signature{MessageId: "questSubmit", Address: address, Uri: add.Uri}
 	verifyByte, err := json.Marshal(verify)
 	if err != nil || !utils.VerifySignature(address, add.Signature, verifyByte) {
 		fmt.Println("Error signing request")
 		return
 	}
-	privateKey, err := crypto.HexToECDSA(global.CONFIG.BlockChain.PrivateKey)
+	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.PrivateKey)
 	if err != nil {
 		return
 	}
@@ -55,7 +49,7 @@ func AddQuest(address string, add request.AddQuestRequest) (res string, err erro
 		[]string{"uint32", "uint32", "uint192", "string", "string", "address", "address"},
 		// values
 		[]interface{}{
-			0, 0, 0, add.Title, add.Uri, global.CONFIG.Contract.QuestMinter, address,
+			0, 0, 0, add.Title, add.Uri, s.c.Contract.QuestMinter, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)

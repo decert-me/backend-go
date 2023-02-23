@@ -1,12 +1,14 @@
 package utils
 
 import (
-	"backend-go/internal/app/global"
+	"backend-go/internal/app/config"
 	"testing"
 )
 
+var c config.Config
+
 func TestMain(m *testing.M) {
-	global.CONFIG.Twitter.ClaimContent = "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://decert.me/quests/\n#Decert.me"
+	c = config.Config{Twitter: &config.Twitter{ClaimContent: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://decert.me/quests/\n#Decert.me"}}
 	m.Run()
 }
 
@@ -45,11 +47,11 @@ func Test_checkIfMatchClaimTweet(t *testing.T) {
 		wantPass bool
 	}{
 		{name: "#1", args: args{tokenId: 10006, tweet: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://t.co/gMf1CuE8pS\n#Decert.me"}, wantPass: true},
-		{name: "#1", args: args{tokenId: 10001, tweet: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://t.co/gMf1CuE8pS\n#Decert.me"}, wantPass: false},
+		{name: "#2", args: args{tokenId: 10001, tweet: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://t.co/gMf1CuE8pS\n#Decert.me"}, wantPass: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotPass := CheckIfMatchClaimTweet(tt.args.tokenId, tt.args.tweet); gotPass != tt.wantPass {
+			if gotPass := CheckIfMatchClaimTweet(&c, tt.args.tokenId, tt.args.tweet); gotPass != tt.wantPass {
 				t.Errorf("checkIfMatchClaimTweet() = %v, want %v", gotPass, tt.wantPass)
 			}
 		})

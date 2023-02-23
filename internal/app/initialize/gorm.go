@@ -1,22 +1,16 @@
 package initialize
 
 import (
-	"backend-go/internal/app/global"
+	"backend-go/internal/app/config"
 	"backend-go/internal/app/model"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"os"
 )
 
-// InitCommonDB 通用数据库
-func InitCommonDB() {
-	db := GormPgSql("")
-	if db != nil {
-		global.DB = db
-		RegisterTables(db) // 初始化表
-	} else {
-		panic("database init failed")
-	}
+// NewPgSQL new pgsql db
+func NewPgSQL(c *config.Pgsql) *gorm.DB {
+	db := GormPgSql(c)
+	RegisterTables(db) // 初始化表
+	return db
 }
 
 // RegisterTables 注册数据库表专用
@@ -29,8 +23,6 @@ func RegisterTables(db *gorm.DB) {
 		model.Transaction{},
 	)
 	if err != nil {
-		global.LOG.Error("register table failed", zap.Error(err))
-		os.Exit(0)
+		panic("register table failed")
 	}
-	global.LOG.Info("register table success")
 }

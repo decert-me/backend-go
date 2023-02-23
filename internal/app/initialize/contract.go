@@ -2,8 +2,6 @@ package initialize
 
 import (
 	ABI "backend-go/abi"
-	"backend-go/internal/app/blockchain"
-	"backend-go/internal/app/global"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"strings"
@@ -11,13 +9,12 @@ import (
 
 // InitContract 加载合约信息
 func InitContract() {
-	initContractEvent()
-	go blockchain.StartTransaction()
+	//go blockchain.StartTransaction()
 }
 
 // initContractEvent 加载合约Event信息
-func initContractEvent() {
-	global.ContractEvent = make(map[common.Hash]string)
+func NewContractEvent() (contract map[common.Hash]string) {
+	contract = make(map[common.Hash]string)
 	ABIList := []string{ABI.BadgeMetaData.ABI, ABI.QuestMetaData.ABI, ABI.QuestMinterMetaData.ABI}
 	for _, abiStr := range ABIList {
 		contractAbi, err := abi.JSON(strings.NewReader(abiStr))
@@ -25,7 +22,8 @@ func initContractEvent() {
 			panic(err)
 		}
 		for _, v := range contractAbi.Events {
-			global.ContractEvent[v.ID] = v.Name
+			contract[v.ID] = v.Name
 		}
 	}
+	return
 }

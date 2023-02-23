@@ -1,18 +1,14 @@
 package v1
 
 import (
-	"backend-go/internal/app/global"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
-	"backend-go/internal/app/service"
 	"backend-go/internal/app/utils"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 func GetDiscordInfo(c *gin.Context) {
-	if list, err := service.GetDiscordInfo(c.GetString("address")); err != nil {
-		global.LOG.Error("获取失败!", zap.Error(err))
+	if list, err := srv.GetDiscordInfo(c.GetString("address")); err != nil {
 		response.OkWithData(nil, c)
 	} else {
 		response.OkWithData(list, c)
@@ -32,8 +28,7 @@ func GetLoginMessage(c *gin.Context) {
 		response.FailWithMessage("address error", c)
 		return
 	}
-	if err, loginMessage := service.GetLoginMessage(request.Address); err != nil {
-		global.LOG.Error("获取失败!", zap.Error(err))
+	if loginMessage, err := srv.GetLoginMessage(request.Address); err != nil {
 		response.FailWithMessage("获取失败", c)
 	} else {
 		response.OkWithDetailed(map[string]string{"loginMessage": loginMessage}, "获取成功", c)
@@ -49,8 +44,7 @@ func GetLoginMessage(c *gin.Context) {
 func AuthLoginSign(c *gin.Context) {
 	var request request.AuthLoginSignRequest
 	_ = c.ShouldBindJSON(&request)
-	if token, err := service.AuthLoginSignRequest(request); err != nil {
-		global.LOG.Error("获取失败!", zap.Error(err))
+	if token, err := srv.AuthLoginSignRequest(request); err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {
 		response.OkWithDetailed(map[string]string{"token": token}, "获取成功", c)

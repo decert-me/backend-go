@@ -1,7 +1,6 @@
 package service
 
 import (
-	"backend-go/internal/app/global"
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/utils"
@@ -10,40 +9,38 @@ import (
 	"fmt"
 	uuid "github.com/satori/go.uuid"
 	"github.com/tidwall/gjson"
-	"gorm.io/gorm"
+	"go.uber.org/zap"
 	"strings"
-	"time"
 )
 
-func GetDiscordInfo(address string) (res interface{}, err error) {
+func (s *Service) GetDiscordInfo(address string) (res interface{}, err error) {
 	var socials string
-	err = global.DB.Model(&model.Users{}).Select("socials").
-		Where("address = ?", address).
-		First(&socials).Error
+	if socials, err = s.dao.GetSocialsInfo(&model.Users{Address: address}); err != nil {
+		return
+	}
 	return gjson.Get(socials, "discord").Value(), err
 }
 
 // GetLoginMessage
 // @description: 获取登录签名消息
 // @param: address string
-// @return: err error, loginMessage string
-func GetLoginMessage(address string) (err error, loginMessage string) {
-	loginMessage = fmt.Sprintf(global.CONFIG.Contract.Signature+"Wallet address:\n%s\n\n", address)
+// @return: loginMessage string, err error
+func (s *Service) GetLoginMessage(address string) (loginMessage string, err error) {
+	loginMessage = fmt.Sprintf(s.c.BlockChain.Signature+"Wallet address:\n%s\n\n", address)
 	UUID := uuid.NewV4() // 生成UUID
-	fmt.Println(UUID.String())
 	// 存到Local Cache里
-	if err = global.REDIS.Set(context.Background(), global.CONFIG.Redis.Prefix+UUID.String(), "", time.Hour*24).Err(); err != nil {
-		return err, loginMessage
+	if err = s.dao.SetNonce(context.Background(), UUID.String()); err != nil {
+		s.log.Error("set nonce error: ", zap.Error(err))
+		return loginMessage, err
 	}
-	loginMessage = fmt.Sprintf(loginMessage+"Nonce:\n%s", UUID)
-	return err, loginMessage
+	return fmt.Sprintf(loginMessage+"Nonce:\n%s", UUID), nil
 }
 
 // AuthLoginSignRequest
 // @description: 校验签名并返回Token
 // @param: c *gin.Context, req request.AuthLoginSignRequest
 // @return: token string, err error
-func AuthLoginSignRequest(req request.AuthLoginSignRequest) (token string, err error) {
+func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token string, err error) {
 	if !utils.VerifySignature(req.Address, req.Signature, []byte(req.Message)) {
 		return token, errors.New("签名校验失败")
 	}
@@ -53,26 +50,24 @@ func AuthLoginSignRequest(req request.AuthLoginSignRequest) (token string, err e
 		return token, errors.New("nonce获取失败")
 	}
 	// 校验Nonce
-	cacheErr := global.REDIS.Get(context.Background(), global.CONFIG.Redis.Prefix+req.Message[index+7:]).Err()
-	if cacheErr != nil {
+	hasNonce, err := s.dao.HasNonce(context.Background(), req.Message[index+7:])
+	if err != nil {
+		s.log.Error("HasNonce error", zap.Error(err))
+	}
+	if !hasNonce {
 		return token, errors.New("签名已失效")
 	}
 	// 删除Nonce
-	_ = global.REDIS.Del(context.Background(), global.CONFIG.Redis.Prefix+req.Message[index+7:])
-	// 获取用户名--不存在则新增
-	var user model.Users
-	if errUser := global.DB.Model(&model.Users{}).Where("address = ?", req.Address).First(&user).Error; errUser != nil {
-		if errUser == gorm.ErrRecordNotFound {
-			user.Address = req.Address
-			if err = global.DB.Model(&model.Users{}).Save(&user).Error; err != nil {
-				return token, err
-			}
-		} else {
-			return token, err
-		}
+	if err = s.dao.DelNonce(context.Background(), req.Message[index+7:]); err != nil {
+		s.log.Error("DelNonce error", zap.Error(err))
+	}
+	// 保存用户信息
+	user := model.Users{Address: req.Address}
+	if err = s.dao.SaveUser(&user); err != nil {
+		s.log.Error("SaveUser error", zap.Error(err))
 	}
 	// 验证成功返回JWT
-	j := utils.NewJWT()
+	j := utils.NewJWT(s.c)
 	claims := j.CreateClaims(utils.BaseClaims{
 		UserID:  user.ID,
 		Address: req.Address,
@@ -81,9 +76,5 @@ func AuthLoginSignRequest(req request.AuthLoginSignRequest) (token string, err e
 	if err != nil {
 		return token, errors.New("获取token失败")
 	}
-	//  存入local cache
-	//if err = global.TokenCache.Set(req.Address, []byte(token)); err != nil {
-	//	return token, errors.New("保存token失败")
-	//}
 	return token, nil
 }

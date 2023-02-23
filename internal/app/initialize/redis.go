@@ -1,25 +1,25 @@
 package initialize
 
 import (
-	"backend-go/internal/app/global"
+	"backend-go/internal/app/config"
 	"context"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
+	"log"
 
 	"go.uber.org/zap"
 )
 
-func Redis() {
-	redisCfg := global.CONFIG.Redis
-	client := redis.NewClient(&redis.Options{
-		Addr:     redisCfg.Addr,
-		Password: redisCfg.Password, // no password set
-		DB:       redisCfg.DB,       // use default DB
+func NewRedis(c *config.Redis) (client *redis.Client) {
+	client = redis.NewClient(&redis.Options{
+		Addr:     c.Addr,
+		Password: c.Password, // no password set
+		DB:       c.DB,       // use default DB
 	})
 	pong, err := client.Ping(context.Background()).Result()
 	if err != nil {
-		global.LOG.Error("redis connect ping failed, err:", zap.Error(err))
+		log.Fatal("redis connect ping failed, err:", zap.Error(err))
 	} else {
-		global.LOG.Info("redis connect ping response:", zap.String("pong", pong))
-		global.REDIS = client
+		log.Println("redis connect ping response:", zap.String("pong", pong))
 	}
+	return client
 }

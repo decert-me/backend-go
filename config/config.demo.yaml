@@ -11,6 +11,8 @@ pgsql:
   db-name: ""
   username: "postgres"
   password: "123456"
+  prefix: ""
+  slow-threshold: 200
   max-idle-conns: 10
   max-open-conns: 100
   log-mode: "info"
@@ -59,4 +61,8 @@ contract:
 # twitter configuration
 twitter:
   bear-token: ""
-  claim-content: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://decert.me/quests/{{.tokenId}}\n#Decert.me"
+  claim-content: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://decert.me/quests/\n#Decert.me"
+
+scheduler:
+  active: true
+  airdrop-badge: "15 * * * *"

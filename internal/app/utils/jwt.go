@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"backend-go/internal/app/global"
+	"backend-go/internal/app/config"
 	"errors"
 	"time"
 
@@ -9,6 +9,7 @@ import (
 )
 
 type JWT struct {
+	c          *config.Config
 	SigningKey []byte
 }
 
@@ -19,9 +20,10 @@ var (
 	TokenInvalid     = errors.New("couldn't handle this token")
 )
 
-func NewJWT() *JWT {
+func NewJWT(c *config.Config) *JWT {
 	return &JWT{
-		[]byte(global.CONFIG.JWT.SigningKey),
+		c:          c,
+		SigningKey: []byte(c.JWT.SigningKey),
 	}
 }
 
@@ -39,9 +41,9 @@ func (j *JWT) CreateClaims(baseClaims BaseClaims) CustomClaims {
 	claims := CustomClaims{
 		BaseClaims: baseClaims,
 		RegisteredClaims: jwt.RegisteredClaims{
-			NotBefore: jwt.NewNumericDate(time.Now().Add(-1)),                                                         // 签名生效时间
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(global.CONFIG.JWT.ExpiresTime) * time.Second)), // 过期时间
-			Issuer:    global.CONFIG.JWT.Issuer,                                                                       // 签名的发行者
+			NotBefore: jwt.NewNumericDate(time.Now().Add(-1)),                                               // 签名生效时间
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(j.c.JWT.ExpiresTime) * time.Second)), // 过期时间
+			Issuer:    j.c.JWT.Issuer,                                                                       // 签名的发行者
 		},
 	}
 	return claims

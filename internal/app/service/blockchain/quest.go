@@ -2,7 +2,6 @@ package blockchain
 
 import (
 	ABI "backend-go/abi"
-	"backend-go/internal/app/global"
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/utils"
 	"encoding/json"
@@ -20,12 +19,11 @@ var questAbi abi.ABI
 func init() {
 	contractAbi, err := abi.JSON(strings.NewReader(ABI.QuestMetaData.ABI))
 	if err != nil {
-		global.LOG.Error("Failed to Load Abi", zap.Error(err))
 		panic(err)
 	}
 	questAbi = contractAbi
 }
-func handleQuestCreated(hash string, vLog *types.Log) (err error) {
+func (b *BlockChain) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	var created ABI.QuestQuestCreated
 	if err = questAbi.UnpackIntoInterface(&created, "QuestCreated", vLog.Data); err != nil {
 		return
@@ -48,11 +46,11 @@ func handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		ExtraData:   extraData,
 		IsDraft:     false, // 当前发布不审核
 	}
-	err = global.DB.Model(&model.Quest{}).Create(&quest).Error
-	if err != nil {
+	if err = b.dao.CreateQuest(&quest); err != nil {
+		b.log.Error("CreateQuest error", zap.Error(err))
 		return
 	}
-	HandleTraverseStatus(hash, 1, "")
+	b.handleTraverseStatus(hash, 1, "")
 
 	return
 }
