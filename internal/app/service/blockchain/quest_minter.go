@@ -4,6 +4,7 @@ import (
 	ABI "backend-go/abi"
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/utils"
+	"backend-go/pkg/log"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -56,7 +57,7 @@ func (b *BlockChain) handleClaimed(hash string, vLog *types.Log) (err error) {
 }
 
 func (b *BlockChain) AirdropBadge() error {
-	b.log.Warn("AirdropBadge Run")
+	log.Warn("AirdropBadge Run")
 	client, err := ethclient.Dial(b.c.BlockChain.Provider)
 	if err != nil {
 		return errors.New("ethclient dial error")
@@ -69,11 +70,11 @@ func (b *BlockChain) AirdropBadge() error {
 		receivers := b.receiverNotClaimList(client, tokenId, list)
 		hash, err := b._airdropBadge(client, tokenId, receivers)
 		if err != nil {
-			b.log.Error("_airdropBadge", zap.Any("error", err))
+			log.Error("_airdropBadge", zap.Any("error", err))
 			continue
 		}
 		if err := b.dao.UpdateAirdroppedList(tokenId, receivers, hash.String()); err != nil {
-			b.log.Error("updateAirdropStatus", zap.Any("error", err))
+			log.Error("updateAirdropStatus", zap.Any("error", err))
 		}
 	}
 	return nil
@@ -124,7 +125,7 @@ func (b *BlockChain) _airdropBadge(client *ethclient.Client, tokenID int64, rece
 	if err != nil {
 		return
 	}
-	b.log.Info("Airdrop tx sent :", zap.String("hash: ", tx.Hash().Hex()))
+	log.Info("Airdrop tx sent :", zap.String("hash: ", tx.Hash().Hex()))
 	return tx.Hash(), nil
 }
 
@@ -141,7 +142,7 @@ func (b *BlockChain) receiverNotClaimList(client *ethclient.Client, tokenId int6
 		if res.Cmp(big.NewInt(0)) != 0 {
 			// already claimed update status
 			if err = b.dao.UpdateAirdropped(&model.ClaimBadgeTweet{Address: receiver, TokenId: tokenId}); err != nil {
-				b.log.Error("UpdateAirdropped error", zap.Error(err))
+				log.Error("UpdateAirdropped error", zap.Error(err))
 			}
 			continue
 		}

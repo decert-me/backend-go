@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"backend-go/internal/app/model"
+	"backend-go/pkg/log"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -16,7 +17,7 @@ func (b *BlockChain) StartTransaction() {
 	var transHashList []model.Transaction
 	transHashList, err := b.dao.QueryWaitTransaction()
 	if err != nil {
-		b.log.Error("Error querying transaction", zap.Error(err))
+		log.Error("Error querying transaction", zap.Error(err))
 	}
 	for _, transHash := range transHashList {
 		b.TaskChain <- transHash
@@ -32,7 +33,7 @@ func (b *BlockChain) handleTransaction() {
 	defer func() {
 		if err := recover(); err != nil {
 			b.traversed.Store(false)
-			b.log.Error("HandleTransaction", zap.Any("err:", err))
+			log.Error("HandleTransaction", zap.Any("err:", err))
 			time.Sleep(time.Second * 3)
 			go b.StartTransaction()
 		}
@@ -47,7 +48,7 @@ func (b *BlockChain) handleTransactionReceipt(client *ethclient.Client, transHas
 	// 错误处理
 	defer func() {
 		if err := recover(); err != nil {
-			b.log.Error("HandleTransactionReceipt", zap.Any("err ", err))
+			log.Error("HandleTransactionReceipt", zap.Any("err ", err))
 		}
 	}()
 	for i := 0; i < 100; i++ {
@@ -69,7 +70,7 @@ func (b *BlockChain) handleTransactionReceipt(client *ethclient.Client, transHas
 		if res.Status == 1 {
 			fmt.Println("success for transaction")
 			if err = b.eventsParser(transHash.Hash, res.Logs); err != nil {
-				b.log.Error("EventsParser", zap.Any("err", err))
+				log.Error("EventsParser", zap.Any("err", err))
 				return
 			} else {
 				return
@@ -108,6 +109,6 @@ func (b *BlockChain) eventsParser(hash string, Logs []*types.Log) (err error) {
 func (b *BlockChain) handleTraverseStatus(hash string, status uint8, msg string) {
 	err := b.dao.UpdateTransactionStatus(&model.Transaction{Hash: hash, Status: status, Msg: msg})
 	if err != nil {
-		b.log.Error("UpdateTransactionStatus error", zap.Error(err))
+		log.Error("UpdateTransactionStatus error", zap.Error(err))
 	}
 }

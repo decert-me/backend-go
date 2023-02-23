@@ -9,7 +9,7 @@ import (
 func (d *Dao) HasTweet(tweetId string) (bool, error) {
 	var total int64
 	err := d.db.Model(&model.ClaimBadgeTweet{}).
-		Where("tweetId", tweetId).
+		Where("tweet_id", tweetId).
 		Count(&total).Error
 	return total != 0, err
 }

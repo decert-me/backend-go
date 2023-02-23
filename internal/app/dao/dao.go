@@ -5,7 +5,6 @@ import (
 	"backend-go/internal/app/initialize"
 	"context"
 	"github.com/redis/go-redis/v9"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -14,16 +13,14 @@ type Dao struct {
 	c     *config.Config
 	db    *gorm.DB
 	redis *redis.Client
-	log   *zap.Logger
 }
 
 // New init mysql db.
-func New(c *config.Config, log *zap.Logger) *Dao {
+func New(c *config.Config) *Dao {
 	return &Dao{
 		c:     c,
 		db:    initialize.NewPgSQL(c.Pgsql),
 		redis: initialize.NewRedis(c.Redis),
-		log:   log,
 	}
 }
 

@@ -28,6 +28,11 @@ func PrivateKeyToAddress(privateKey *ecdsa.PrivateKey) (common.Address, error) {
 // @param: from, sigHex string, msg []byte
 // @return: bool
 func VerifySignature(from, sigHex string, msg []byte) bool {
+	defer func() {
+		if err := recover(); err != nil {
+			return
+		}
+	}()
 	sig := hexutil.MustDecode(sigHex)
 
 	msg = accounts.TextHash(msg)

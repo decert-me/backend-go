@@ -4,6 +4,7 @@ import (
 	ABI "backend-go/abi"
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/utils"
+	"backend-go/pkg/log"
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -47,7 +48,7 @@ func (b *BlockChain) handleQuestCreated(hash string, vLog *types.Log) (err error
 		IsDraft:     false, // 当前发布不审核
 	}
 	if err = b.dao.CreateQuest(&quest); err != nil {
-		b.log.Error("CreateQuest error", zap.Error(err))
+		log.Errorv("CreateQuest error", zap.Error(err), zap.Any("quest", quest))
 		return
 	}
 	b.handleTraverseStatus(hash, 1, "")

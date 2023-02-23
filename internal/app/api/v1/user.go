@@ -43,7 +43,10 @@ func GetLoginMessage(c *gin.Context) {
 // @Router /sign/authLoginSign [post]
 func AuthLoginSign(c *gin.Context) {
 	var request request.AuthLoginSignRequest
-	_ = c.ShouldBindJSON(&request)
+	if err := c.ShouldBindJSON(&request); err != nil {
+		response.FailWithMessage("param not valid", c)
+		return
+	}
 	if token, err := srv.AuthLoginSignRequest(request); err != nil {
 		response.FailWithMessage(err.Error(), c)
 	} else {

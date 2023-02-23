@@ -5,6 +5,7 @@ import (
 	"backend-go/internal/app/initialize"
 	"backend-go/internal/app/router"
 	"backend-go/internal/app/service"
+	"backend-go/pkg/log"
 	"go.uber.org/zap"
 	"os"
 	"os/signal"
@@ -16,9 +17,9 @@ func main() {
 	// 初始化Viper
 	config := initialize.Viper()
 	// 初始化日志框架
-	log := initialize.NewLog(config)
+	log.Init(config.Log)
 	// 初始化service
-	s := service.New(config, log)
+	s := service.New(config)
 	// 初始化api
 	v1.Init(s)
 	// 初始化router

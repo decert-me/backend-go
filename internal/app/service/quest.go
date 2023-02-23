@@ -4,9 +4,6 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
-	"backend-go/internal/app/utils"
-	"encoding/json"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -34,12 +31,6 @@ func (s *Service) GetQuest(id string) (quest model.Quest, err error) {
 }
 
 func (s *Service) AddQuest(address string, add request.AddQuestRequest) (res string, err error) {
-	verify := model.Signature{MessageId: "questSubmit", Address: address, Uri: add.Uri}
-	verifyByte, err := json.Marshal(verify)
-	if err != nil || !utils.VerifySignature(address, add.Signature, verifyByte) {
-		fmt.Println("Error signing request")
-		return
-	}
 	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.PrivateKey)
 	if err != nil {
 		return

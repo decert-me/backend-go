@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/utils"
+	"backend-go/pkg/log"
 	"errors"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -34,7 +35,8 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	// 检查tokenId是否存在以及可用
 	valid, err := s.dao.ValidTokenId(req.TokenId)
 	if err != nil {
-		s.log.Error("ValidTokenId error", zap.Error(err))
+		log.Errorv("ValidTokenId error", zap.Int64("TokenId", req.TokenId), zap.Error(err))
+		return errors.New("ValidTokenId error")
 	}
 	if !valid {
 		return errors.New("invalid quest")
@@ -49,7 +51,8 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	// 检查是否重复使用
 	used, err := s.dao.HasTweet(tweetId)
 	if err != nil {
-		s.log.Error("HasTweet error", zap.Error(err))
+		log.Errorv("HasTweet error", zap.Int64("TokenId", req.TokenId), zap.Error(err))
+		return
 	}
 	if used {
 		return errors.New("repeated tweet")
@@ -72,5 +75,8 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 		AddTs:      time.Now().Unix(),
 		Airdropped: false,
 	})
+	if err != nil {
+		log.Errorv("CreateClaimBadgeTweet error", zap.Error(err))
+	}
 	return
 }
