@@ -63,6 +63,10 @@ twitter:
   bear-token: ""
   claim-content: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://decert.me/quests/\n#Decert.me"
 
+# scheduler configuration
 scheduler:
   active: true
   airdrop-badge: "15 * * * *"
+
+quest:
+  encrypt-key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca"

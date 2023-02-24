@@ -39,7 +39,7 @@ func (b *BlockChain) handleQuestCreated(hash string, vLog *types.Log) (err error
 	quest := model.Quest{
 		Title:       questData.Title,
 		Description: gjson.Get(metadata, "description").String(),
-		TokenId:     vLog.Topics[2].Big().Uint64(),
+		TokenId:     vLog.Topics[2].Big().Int64(),
 		Uri:         questData.Uri,
 		Type:        0, // TODO
 		Creator:     common.HexToAddress(vLog.Topics[1].Hex()).String(),

@@ -10,8 +10,8 @@ type Quest struct {
 	Description  string         `gorm:"column:description;type:varchar" json:"description" form:"description"`
 	Dependencies datatypes.JSON `gorm:"dependencies" json:"-"`
 	IsDraft      bool           `gorm:"column:isDraft" json:"-"`
-	AddTs        int64          `gorm:"column:addTs;autoCreateTime:milli" json:"addTs"`
-	TokenId      uint64         `gorm:"column:tokenId" json:"tokenId"`
+	AddTs        int64          `gorm:"column:add_ts;autoCreateTime:milli" json:"addTs"`
+	TokenId      int64          `gorm:"column:tokenId" json:"tokenId"`
 	Type         uint8          `gorm:"column:type" json:"type" form:"type"`        // 0:问答;1:编程
 	Difficulty   uint8          `gorm:"column:difficulty" json:"-"`                 // 0:easy;1:moderate;2:difficult
 	EstimateTime uint8          `gorm:"column:estimateTime" json:"-"`               // 预估时间/min

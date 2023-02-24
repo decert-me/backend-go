@@ -22,7 +22,7 @@ func (s *Service) GetQuestList(searchInfo request.GetQuestListRequest) (res []re
 }
 
 func (s *Service) GetQuest(id string) (quest model.Quest, err error) {
-	tokenId, err := strconv.ParseUint(id, 10, 64)
+	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return
 	}

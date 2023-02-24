@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"strings"
+)
+
 // GetDataFromCid
 // @description: 获取IPFS内容
 // @param: cid string
@@ -10,4 +14,8 @@ func GetDataFromCid(cid string) (string, error) {
 	client := GetReqClient()
 	req, err := client.R().Get(url)
 	return req.String(), err
+}
+
+func GetDataFromUri(uri string) (string, error) {
+	return GetDataFromCid(strings.Replace(uri, "ipfs://", "", 1))
 }

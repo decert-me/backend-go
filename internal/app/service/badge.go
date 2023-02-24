@@ -15,6 +15,19 @@ import (
 )
 
 func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeReq) (res string, err error) {
+	// 校验分数正确性
+	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenId})
+	if err != nil {
+		return res, errors.New("tokenID invalid")
+	}
+	score, pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri)
+	if err != nil {
+		log.Errorv("AnswerCheck error", zap.Error(err))
+		return res, errors.New("something error")
+	}
+	if !pass || score < req.Score {
+		return res, errors.New("answer error")
+	}
 	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.PrivateKey)
 	if err != nil {
 		return
@@ -42,7 +55,19 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 		return errors.New("invalid quest")
 	}
 	// TODO: 检查用户是否已通过挑战，或已领取SBT
-
+	// 校验分数正确性
+	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenId})
+	if err != nil {
+		return errors.New("tokenID invalid")
+	}
+	score, pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri)
+	if err != nil {
+		log.Errorv("AnswerCheck error", zap.Error(err))
+		return errors.New("something error")
+	}
+	if !pass || score < req.Score {
+		return errors.New("answer error")
+	}
 	// 获取推文ID
 	tweetId := utils.GetTweetIdFromURL(req.TweetUrl)
 	if tweetId == "" {
