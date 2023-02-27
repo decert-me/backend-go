@@ -29,7 +29,7 @@ func main() {
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		si := <-c
-		log.Info("backend-go get a signal", zap.String("signal", si.String()))
+		log.Infov("backend-go get a signal", zap.String("signal", si.String()))
 		switch si {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
 			log.Info("backend-go exit")

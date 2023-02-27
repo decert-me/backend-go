@@ -11,6 +11,7 @@ pgsql:
   db-name: ""
   username: "postgres"
   password: "123456"
+  auto-migrate: true
   prefix: ""
   slow-threshold: 200
   max-idle-conns: 10
