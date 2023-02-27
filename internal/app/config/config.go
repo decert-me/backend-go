@@ -15,4 +15,5 @@ type Config struct {
 	Auth       *auth.Config `mapstructure:"auth" json:"auth" yaml:"auth"`
 	Redis      *Redis       `mapstructure:"redis" json:"redis" yaml:"redis"`
 	Scheduler  *Scheduler   `mapstructure:"scheduler" json:"scheduler" yaml:"scheduler"`
+	Quest      *Quest       `mapstructure:"quest" json:"quest" yaml:"quest"`
 }
