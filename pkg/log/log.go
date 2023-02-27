@@ -33,7 +33,7 @@ var (
 // Init create logger with context.
 func Init(conf *Config) {
 	c = conf
-	if ok, _ := PathExists(conf.Director); !ok { // 判断是否有Director文件夹
+	if ok, _ := PathExists(conf.Director); !ok && c.Save == true { // 判断是否有Director文件夹
 		fmt.Printf("create %v directory\n", conf.Director)
 		_ = os.Mkdir(conf.Director, os.ModePerm)
 	}
