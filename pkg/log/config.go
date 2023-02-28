@@ -67,8 +67,12 @@ func GetWriteSyncer(c *Config, file string) zapcore.WriteSyncer {
 		MaxAge:     30,   // 保留旧文件的最大天数
 		Compress:   true, // 是否压缩/归档旧文件
 	}
+	var syncer []zapcore.WriteSyncer
 	if c.Save {
-		return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(lumberJackLogger))
+		syncer = append(syncer, zapcore.AddSync(lumberJackLogger))
 	}
-	return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout))
+	if c.LogInConsole {
+		syncer = append(syncer, zapcore.AddSync(os.Stdout))
+	}
+	return zapcore.NewMultiWriteSyncer(syncer...)
 }

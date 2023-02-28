@@ -13,6 +13,7 @@ type Config struct {
 	Level         string `mapstructure:"level" json:"level" yaml:"level"`                            // 级别
 	Save          bool   `mapstructure:"save" json:"save" yaml:"save"`                               // 是否保存到文件
 	Format        string `mapstructure:"format" json:"format" yaml:"format"`                         // 输出
+	LogInConsole  bool   `mapstructure:"log-in-console" json:"log-in-console" yaml:"log-in-console"` // 输出到控制台
 	Prefix        string `mapstructure:"prefix" json:"prefix" yaml:"prefix"`                         // 日志前缀
 	Director      string `mapstructure:"director" json:"director"  yaml:"director"`                  // 日志文件夹
 	ShowLine      bool   `mapstructure:"show-line" json:"show-line" yaml:"show-line"`                // 显示行
@@ -51,7 +52,11 @@ func Init(conf *Config) {
 	})
 	// 错误级别
 	errorPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
-		return lev >= zap.ErrorLevel
+		return lev == zap.ErrorLevel
+	})
+	// Panic级别
+	panicPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
+		return lev >= zap.DPanicLevel
 	})
 
 	now := time.Now().Format("2006-01-02")
@@ -61,6 +66,7 @@ func Init(conf *Config) {
 		getEncoderCore(c, fmt.Sprintf("./%s/%s/info.log", conf.Director, now), infoPriority),
 		getEncoderCore(c, fmt.Sprintf("./%s/%s/warn.log", conf.Director, now), warnPriority),
 		getEncoderCore(c, fmt.Sprintf("./%s/%s/error.log", conf.Director, now), errorPriority),
+		getEncoderCore(c, fmt.Sprintf("./%s/%s/panic.log", conf.Director, now), panicPriority),
 	}
 	l = zap.New(zapcore.NewTee(cores[:]...), zap.AddCaller(), zap.AddCallerSkip(1))
 	if conf.ShowLine {
