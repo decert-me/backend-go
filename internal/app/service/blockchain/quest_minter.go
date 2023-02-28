@@ -107,7 +107,7 @@ func (b *BlockChain) _airdropBadge(client *ethclient.Client, tokenID int64, rece
 	if err != nil {
 		return
 	}
-	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(5))
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(b.c.BlockChain.ChainID))
 	if err != nil {
 		return
 	}
