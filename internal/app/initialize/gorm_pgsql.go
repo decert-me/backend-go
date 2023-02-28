@@ -34,7 +34,7 @@ func GormPgSql(c *config.Pgsql) *gorm.DB {
 // config gorm 自定义配置
 func _config(c *config.Pgsql) *gorm.Config {
 	slowThreshold := 200
-	if c.SlowThreshold != 0 {
+	if c.SlowThreshold > 200 {
 		slowThreshold = c.SlowThreshold
 	}
 	config := &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, NamingStrategy: schema.NamingStrategy{

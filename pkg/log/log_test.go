@@ -18,14 +18,14 @@ func TestMain(m *testing.M) {
 func TestLog(t *testing.T) {
 	t.Run("Error", func(t *testing.T) {
 		Error("hello %s", "world")
-		Errorv(zap.Any("key", 2222222), zap.Any("test2", "test"))
+		Errorv("log", zap.Any("key", 2222222), zap.Any("test2", "test"))
 	})
 	t.Run("Warn", func(t *testing.T) {
 		Warn("hello %s", "world")
-		Warnv(zap.Any("key", 2222222), zap.Any("test2", "test"))
+		Warnv("log", zap.Any("key", 2222222), zap.Any("test2", "test"))
 	})
 	t.Run("Info", func(t *testing.T) {
 		Info("hello %s", "world")
-		Infov(zap.Any("key", 2222222), zap.Any("test2", "test"))
+		Infov("log", zap.Any("key", 2222222), zap.Any("test2", "test"))
 	})
 }

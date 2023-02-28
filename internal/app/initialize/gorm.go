@@ -9,7 +9,9 @@ import (
 // NewPgSQL new pgsql db
 func NewPgSQL(c *config.Pgsql) *gorm.DB {
 	db := GormPgSql(c)
-	RegisterTables(db) // 初始化表
+	if c.AutoMigrate {
+		RegisterTables(db) // 初始化表
+	}
 	return db
 }
 
