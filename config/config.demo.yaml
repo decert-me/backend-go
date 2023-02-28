@@ -31,11 +31,13 @@ log:
   level: info
   save: true
   format: console
+  log-in-console: true
   prefix: '[backend-go]'
   director: log
   show-line: true
   encode-level: LowercaseColorLevelEncoder
   stacktrace-key: stacktrace
+
 
 # auth configuration
 auth:
