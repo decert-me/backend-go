@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
+	"math"
 	"time"
 )
 
@@ -17,7 +18,7 @@ func (b *BlockChain) StartTransaction() {
 	var transHashList []model.Transaction
 	transHashList, err := b.dao.QueryWaitTransaction()
 	if err != nil {
-		log.Error("Error querying transaction", zap.Error(err))
+		log.Errorv("Error querying transaction", zap.Error(err))
 	}
 	for _, transHash := range transHashList {
 		b.TaskChain <- transHash
@@ -33,7 +34,7 @@ func (b *BlockChain) handleTransaction() {
 	defer func() {
 		if err := recover(); err != nil {
 			b.traversed.Store(false)
-			log.Error("HandleTransaction", zap.Any("err:", err))
+			log.Errorv("HandleTransaction", zap.Any("err:", err))
 			time.Sleep(time.Second * 3)
 			go b.StartTransaction()
 		}
@@ -48,12 +49,14 @@ func (b *BlockChain) handleTransactionReceipt(client *ethclient.Client, transHas
 	// 错误处理
 	defer func() {
 		if err := recover(); err != nil {
-			log.Error("HandleTransactionReceipt", zap.Any("err ", err))
+			log.Errorv("HandleTransactionReceipt", zap.Any("err ", err))
 		}
 	}()
-	for i := 0; i < 100; i++ {
+	var delay time.Duration
+	for i := 0; i < 300; i++ {
+		delay = time.Duration(math.Floor(float64(i)/50)*0.5 + 1)
 		// 解析 Hash
-		fmt.Println(transHash)
+		//fmt.Println(transHash)
 		res, err := client.TransactionReceipt(context.Background(), common.HexToHash(transHash.Hash))
 		// 待交易
 		if err != nil {
@@ -68,15 +71,15 @@ func (b *BlockChain) handleTransactionReceipt(client *ethclient.Client, transHas
 		}
 		// 交易成功
 		if res.Status == 1 {
-			fmt.Println("success for transaction")
+			//fmt.Println("success for transaction")
 			if err = b.eventsParser(transHash.Hash, res.Logs); err != nil {
-				log.Error("EventsParser", zap.Any("err", err))
+				log.Errorv("EventsParser", zap.Any("err", err))
 				return
 			} else {
 				return
 			}
 		}
-		time.Sleep(time.Second)
+		time.Sleep(delay)
 	}
 	// 超出尝试次数
 	transHash.Status = 3
@@ -109,6 +112,6 @@ func (b *BlockChain) eventsParser(hash string, Logs []*types.Log) (err error) {
 func (b *BlockChain) handleTraverseStatus(hash string, status uint8, msg string) {
 	err := b.dao.UpdateTransactionStatus(&model.Transaction{Hash: hash, Status: status, Msg: msg})
 	if err != nil {
-		log.Error("UpdateTransactionStatus error", zap.Error(err))
+		log.Errorv("UpdateTransactionStatus error", zap.Error(err))
 	}
 }
