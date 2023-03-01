@@ -12,6 +12,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"strings"
 )
 
@@ -56,12 +57,12 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	// 获取Address
 	indexAddress := strings.LastIndex(req.Message, "Wallet address:")
 	if indexAddress == -1 {
-		return token, errors.New("nonce获取失败")
+		return token, errors.New("address获取失败")
 	}
 	address := req.Message[indexAddress+16 : indexNonce]
 	// 校验address
-	if address != req.Address {
-		return token, errors.New("签名已失效")
+	if strings.TrimSpace(address) != req.Address {
+		return token, errors.New("签名地址错误")
 	}
 	// 校验Nonce
 	hasNonce, err := s.dao.HasNonce(context.Background(), nonce)

@@ -5,7 +5,6 @@ import (
 	"backend-go/internal/app/model/request"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
 func TestService_PermitClaimBadge(t *testing.T) {
@@ -53,8 +52,7 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 	assert.Nil(t, err)
 	// Start testing
 	s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
-	time.Sleep(time.Second * 3)
-
+	waitForQuestCreated(10003)
 	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
 		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",

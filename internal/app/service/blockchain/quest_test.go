@@ -2,7 +2,6 @@ package blockchain
 
 import (
 	"backend-go/internal/app/model"
-	"fmt"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tidwall/gjson"
@@ -43,10 +42,12 @@ func TestHandleQuestCreated(t *testing.T) {
 		Uri:          "ipfs://Qmd1bCLoEPJ14fuJLgZPGgWh6ravkaV6wQchw71t4y5P2Y",
 	}
 	assert.Equal(t, questAssert, quest)
+
+	// clean
+	deleteQuest()
 }
 
 func TestBlockChain_handleQuestCreated(t *testing.T) {
 	err := b.handleQuestCreated("", &types.Log{})
-	fmt.Println(err)
 	assert.Error(t, err, "should return error when error Log")
 }

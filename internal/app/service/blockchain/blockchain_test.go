@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 	// 初始化日志框架
 	c.Log.Save = false
 	c.Log.Level = "silent"
-	c.Log.LogInConsole = false
+	c.Log.LogInConsole = true
 	log.Init(c.Log)
 	c.Pgsql.LogMode = "silent"
 	c.BlockChain.ChainID = 5
@@ -65,6 +65,13 @@ func deleteChallenges() {
 
 func deleteBadgeTweet() {
 	err := b.dao.DB().Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.ClaimBadgeTweet{}).Error
+	if err != nil {
+		panic(err)
+	}
+}
+
+func deleteTransaction() {
+	err := b.dao.DB().Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Transaction{}).Error
 	if err != nil {
 		panic(err)
 	}

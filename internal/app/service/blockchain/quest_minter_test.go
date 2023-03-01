@@ -14,14 +14,17 @@ func TestHandleClaimed(t *testing.T) {
 	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
 	deleteQuest()
 	deleteChallenges()
+	deleteTransaction()
 	// no such tokenId in quest
 	b.TaskChain <- model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}
 	time.Sleep(time.Second * 3)
 	assert.Error(t, b.dao.DB().Where("token_id", 10003).Where("address", address).First(&model.UserChallenges{}).Error)
 	// normal
+	deleteTransaction()
 	b.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
-	b.TaskChain <- model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}
 	waitForQuestCreated(10003)
+	b.TaskChain <- model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}
+	b.TaskChain <- model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}
 	waitForClaimed(10003, address)
 	var challenge model.UserChallenges
 	err := d.DB().Where("token_id", 10003).Where("address", address).First(&challenge).Error
@@ -76,4 +79,5 @@ func TestBlockChain_AirdropBadge(t *testing.T) {
 	})
 	err = b.AirdropBadge()
 	assert.Nil(t, err)
+	deleteBadgeTweet()
 }
