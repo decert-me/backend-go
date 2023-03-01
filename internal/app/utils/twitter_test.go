@@ -73,7 +73,7 @@ func TestGetTweetById(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{name: "#0 should return right data", args: args{c: c, tweetId: "1625338069879750656"}, want: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://t.co/gMf1CuE8pS\n#Decert.me"},
+		{name: "#0 should return right data", args: args{c: c, tweetId: "1630110919815733248"}, want: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://t.co/YkPclYsZYw\n#Decert.me"},
 		{name: "#1 should return empty data when tweeId no correct", args: args{c: c, tweetId: "123124214"}, want: ""},
 	}
 	for _, tt := range tests {

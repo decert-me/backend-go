@@ -35,9 +35,9 @@ func TestIsValidAddress(t *testing.T) {
 
 func TestPrivateKeyToAddress(t *testing.T) {
 	// init private key
-	key := "fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19" // for testing don't use in production
-	privateKey, _ := crypto.HexToECDSA(key)
-	privateKeyInvalid, _ := crypto.HexToECDSA(key)
+	// privateKey for testing don't use in production
+	privateKey, _ := crypto.HexToECDSA("fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19")
+	privateKeyInvalid, _ := crypto.HexToECDSA("fad9c840a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a29")
 	type args struct {
 		privateKey *ecdsa.PrivateKey
 	}

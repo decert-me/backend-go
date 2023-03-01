@@ -7,7 +7,7 @@ import (
 
 func (d *Dao) CreateChallenges(challenges *model.UserChallenges) (err error) {
 	err = d.db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "address"}, {Name: "questId"}},
+		Columns:   []clause.Column{{Name: "address"}, {Name: "token_id"}},
 		UpdateAll: true,
 	}).Create(&challenges).Error
 	return

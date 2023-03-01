@@ -6,16 +6,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *Dao) HasTokenId(tokenId uint64) (id uint, err error) {
-	var quest model.Quest
-	err = d.db.Select("id").Where("tokenId", tokenId).First(&quest).Error
-	return quest.ID, err
+func (d *Dao) HasTokenId(tokenId int64) (has bool, err error) {
+	var count int64
+	err = d.db.Model(&model.Quest{}).Where("token_id", tokenId).Count(&count).Error
+	if count > 0 {
+		has = true
+	}
+	return
 }
 
 func (d *Dao) ValidTokenId(tokenId int64) (valid bool, err error) {
 	var quest model.Quest
 	err = d.db.
-		Where("tokenId", tokenId).Where("disabled", false).Where("isDraft", false).
+		Where("token_id", tokenId).Where("disabled", false).Where("is_draft", false).
 		First(&quest).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -45,6 +48,6 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []model.
 }
 
 func (d *Dao) GetQuest(req *model.Quest) (quest model.Quest, err error) {
-	err = d.db.Model(&model.Quest{}).Where("tokenId", req.TokenId).First(&quest).Error
+	err = d.db.Model(&model.Quest{}).Where("token_id", req.TokenId).First(&quest).Error
 	return
 }
