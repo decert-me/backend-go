@@ -2,7 +2,6 @@ package utils
 
 import (
 	"backend-go/internal/app/config"
-	"fmt"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
 	"regexp"
@@ -58,7 +57,6 @@ func GetTweetById(c *config.Config, tweetId string) (string, error) {
 	client := GetTwitterClient(c)
 	url := "https://api.twitter.com/2/tweets?ids=" + tweetId
 	req, err := client.clientTwitter.R().Get(url)
-	fmt.Println(req.String())
 	return gjson.Get(req.String(), "data.0.text").String(), err
 }
 
@@ -78,10 +76,7 @@ func CheckIfMatchClaimTweet(c *config.Config, tokenId int64, tweet string) bool 
 	if err != nil {
 		return false
 	}
-	if len(res.Header["Location"]) == 0 {
-		return false
-	}
-	if res.Header["Location"][0] != expectURL {
+	if len(res.Header["Location"]) == 0 || res.Header["Location"][0] != expectURL {
 		return false
 	}
 	return true
