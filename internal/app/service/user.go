@@ -48,15 +48,26 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 		return token, errors.New("签名校验失败")
 	}
 	// 获取Nonce
-	index := strings.LastIndex(req.Message, "Nonce:")
-	if index == -1 {
+	indexNonce := strings.LastIndex(req.Message, "Nonce:")
+	if indexNonce == -1 {
 		return token, errors.New("nonce获取失败")
 	}
-	nonce := req.Message[index+7:]
+	nonce := req.Message[indexNonce+7:]
+	// 获取Address
+	indexAddress := strings.LastIndex(req.Message, "Wallet address:")
+	if indexAddress == -1 {
+		return token, errors.New("nonce获取失败")
+	}
+	address := req.Message[indexAddress+16 : indexNonce]
+	// 校验address
+	if address != req.Address {
+		return token, errors.New("签名已失效")
+	}
 	// 校验Nonce
 	hasNonce, err := s.dao.HasNonce(context.Background(), nonce)
 	if err != nil {
 		log.Errorv("HasNonce error", zap.String("nonce", nonce))
+		return token, errors.New("签名已失效")
 	}
 	if !hasNonce {
 		return token, errors.New("签名已失效")
@@ -64,6 +75,10 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	// 删除Nonce
 	if err = s.dao.DelNonce(context.Background(), nonce); err != nil {
 		log.Errorv("DelNonce error", zap.String("nonce", nonce)) // not important and continue
+	}
+	// 校验签名信息
+	if req.Message[:indexAddress] != s.c.BlockChain.Signature {
+		return token, errors.New("签名已失效")
 	}
 	// 保存用户信息
 	user := model.Users{Address: req.Address}
@@ -77,7 +92,7 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	})
 	token, err = midAuth.CreateToken(claims)
 	if err != nil {
-		log.Error("CreateToken error (%v)", err)
+		log.Error("CreateToken error (%+v)", err)
 		return token, errors.New("获取token失败")
 	}
 	return token, nil

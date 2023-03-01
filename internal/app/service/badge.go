@@ -71,7 +71,7 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	// 获取推文ID
 	tweetId := utils.GetTweetIdFromURL(req.TweetUrl)
 	if tweetId == "" {
-		return errors.New("cannot find tweet id'")
+		return errors.New("cannot find tweet id")
 	}
 	// 检查是否重复使用
 	used, err := s.dao.HasTweet(tweetId)
