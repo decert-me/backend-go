@@ -71,7 +71,7 @@ func (b *BlockChain) handleTransactionReceipt(client *ethclient.Client, transHas
 		}
 		// 交易成功
 		if res.Status == 1 {
-			//fmt.Println("success for transaction")
+			fmt.Println("success for transaction")
 			if err = b.eventsParser(transHash.Hash, res.Logs); err != nil {
 				log.Errorv("EventsParser", zap.Any("err", err))
 				return
