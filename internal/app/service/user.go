@@ -12,6 +12,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"strings"
 )
 
@@ -48,15 +49,26 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 		return token, errors.New("签名校验失败")
 	}
 	// 获取Nonce
-	index := strings.LastIndex(req.Message, "Nonce:")
-	if index == -1 {
+	indexNonce := strings.LastIndex(req.Message, "Nonce:")
+	if indexNonce == -1 {
 		return token, errors.New("nonce获取失败")
 	}
-	nonce := req.Message[index+7:]
+	nonce := req.Message[indexNonce+7:]
+	// 获取Address
+	indexAddress := strings.LastIndex(req.Message, "Wallet address:")
+	if indexAddress == -1 {
+		return token, errors.New("address获取失败")
+	}
+	address := req.Message[indexAddress+16 : indexNonce]
+	// 校验address
+	if strings.TrimSpace(address) != req.Address {
+		return token, errors.New("签名地址错误")
+	}
 	// 校验Nonce
 	hasNonce, err := s.dao.HasNonce(context.Background(), nonce)
 	if err != nil {
 		log.Errorv("HasNonce error", zap.String("nonce", nonce))
+		return token, errors.New("签名已失效")
 	}
 	if !hasNonce {
 		return token, errors.New("签名已失效")
@@ -65,10 +77,15 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	if err = s.dao.DelNonce(context.Background(), nonce); err != nil {
 		log.Errorv("DelNonce error", zap.String("nonce", nonce)) // not important and continue
 	}
+	// 校验签名信息
+	if req.Message[:indexAddress] != s.c.BlockChain.Signature {
+		return token, errors.New("签名信息错误")
+	}
 	// 保存用户信息
-	user := model.Users{Address: req.Address}
-	if err = s.dao.SaveUser(&user); err != nil {
-		log.Errorv("SaveUser error", zap.Any("user", user))
+	user, err := s.createUser(req.Address)
+	if err != nil {
+		log.Errorv("createUser error", zap.Any("address", req.Address), zap.Error(err))
+		return token, errors.New("获取token失败")
 	}
 	// 验证成功返回JWT
 	claims := midAuth.CreateClaims(auth.BaseClaims{
@@ -77,8 +94,24 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	})
 	token, err = midAuth.CreateToken(claims)
 	if err != nil {
-		log.Error("CreateToken error (%v)", err)
+		log.Error("CreateToken error (%+v)", err)
 		return token, errors.New("获取token失败")
 	}
 	return token, nil
+}
+
+// createUser 创建用户
+func (s *Service) createUser(address string) (user model.Users, err error) {
+	user, err = s.dao.GetUser(address)
+	if err == nil {
+		return
+	}
+	// create user
+	if err == gorm.ErrRecordNotFound {
+		user = model.Users{Address: address}
+		if err = s.dao.CreateUser(&user); err != nil {
+			return
+		}
+	}
+	return
 }

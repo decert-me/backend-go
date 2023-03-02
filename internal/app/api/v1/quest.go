@@ -9,6 +9,7 @@ import (
 func GetQuestList(c *gin.Context) {
 	var searchInfo request.GetQuestListRequest
 	_ = c.ShouldBindQuery(&searchInfo)
+	searchInfo.Address = c.GetString("address")
 	if list, total, err := srv.GetQuestList(searchInfo); err != nil {
 		response.FailWithMessage("Error", c)
 	} else {

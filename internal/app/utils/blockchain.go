@@ -14,7 +14,13 @@ import (
 // @description: 私钥转地址
 // @param: privateKey *ecdsa.PrivateKey
 // @return: common.Address, error
-func PrivateKeyToAddress(privateKey *ecdsa.PrivateKey) (common.Address, error) {
+func PrivateKeyToAddress(privateKey *ecdsa.PrivateKey) (address common.Address, err error) {
+	defer func() {
+		if errRv := recover(); errRv != nil {
+			err = errors.New("error")
+			return
+		}
+	}()
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
@@ -50,9 +56,9 @@ func VerifySignature(from, sigHex string, msg []byte) bool {
 }
 
 // IsValidAddress validate hex address
-func IsValidAddress(iaddress interface{}) bool {
+func IsValidAddress(address interface{}) bool {
 	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
-	switch v := iaddress.(type) {
+	switch v := address.(type) {
 	case string:
 		return re.MatchString(v)
 	case common.Address:

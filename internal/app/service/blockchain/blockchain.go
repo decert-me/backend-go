@@ -32,7 +32,8 @@ func New(c *config.Config, dao *dao.Dao) (b *BlockChain) {
 	var err error
 	b.client, err = ethclient.Dial(c.BlockChain.Provider)
 	if err != nil {
-		log.Error("ethclient Dial error", zap.Error(err))
+		log.Errorv("ethclient Dial error", zap.Error(err))
+		panic("ethclient Dial error")
 	}
 	b.StartTransaction()
 	return

@@ -39,3 +39,8 @@ func (d *Dao) Ping(ctx context.Context) (err error) {
 	}
 	return d.redis.Ping(ctx).Err()
 }
+
+// DB returns the database
+func (d *Dao) DB() *gorm.DB {
+	return d.db
+}

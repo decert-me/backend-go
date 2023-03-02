@@ -30,3 +30,19 @@ func Auth() gin.HandlerFunc {
 		c.Set("address", claims.Address)
 	}
 }
+
+func Addr() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 鉴权头部信息： x-token
+		token := c.Request.Header.Get("x-token")
+		if token != "" {
+			// 解析token包含的信息
+			claims, err := midAuth.ParseToken(token)
+			if err != nil {
+				return
+			}
+			c.Set("address", claims.Address)
+		}
+
+	}
+}

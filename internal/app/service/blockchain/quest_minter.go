@@ -32,24 +32,31 @@ func init() {
 
 func (b *BlockChain) handleClaimed(hash string, vLog *types.Log) (err error) {
 	var claimed ABI.QuestMinterClaimed
-	if err = questMinterAbi.UnpackIntoInterface(&claimed, "Claimed", vLog.Data); err != nil {
+	if err = questMinterAbi.UnpackIntoInterface(&claimed, "Claimed", vLog.Data); err != nil || len(vLog.Topics) == 0 {
+		return errors.New("unpack error")
+	}
+	tokenId := vLog.Topics[1].Big().Int64()
+	// no such tokenId in quest
+	exist, err := b.dao.HasTokenId(tokenId)
+	if err != nil {
+		log.Errorv("HasTokenId error", zap.Int64("tokenId", tokenId), zap.Error(err))
 		return
 	}
-	// no such tokenId in quest
-	id, err := b.dao.HasTokenId(vLog.Topics[0].Big().Uint64())
-	if err != nil {
-		return errors.New("no such tokenId in quest")
+	if !exist {
+		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", tokenId))
+		return
 	}
 	//
 	challenges := model.UserChallenges{
-		Address: claimed.Sender.String(),
-		QuestID: id,
+		Address: common.HexToAddress(vLog.Topics[2].Hex()).String(),
+		TokenId: tokenId,
 		Status:  2,
 		Claimed: true,
 		ClaimTs: time.Now().Unix(),
 	}
 	err = b.dao.CreateChallenges(&challenges)
 	if err != nil {
+		log.Errorv("CreateChallenges error", zap.Any("challenges", challenges), zap.Error(err))
 		return err
 	}
 	b.handleTraverseStatus(hash, 1, "")
@@ -70,11 +77,11 @@ func (b *BlockChain) AirdropBadge() error {
 		receivers := b.receiverNotClaimList(client, tokenId, list)
 		hash, err := b._airdropBadge(client, tokenId, receivers)
 		if err != nil {
-			log.Error("_airdropBadge", zap.Any("error", err))
+			log.Errorv("_airdropBadge", zap.Any("error", err))
 			continue
 		}
 		if err := b.dao.UpdateAirdroppedList(tokenId, receivers, hash.String()); err != nil {
-			log.Error("updateAirdropStatus", zap.Any("error", err))
+			log.Errorv("updateAirdropStatus", zap.Any("error", err))
 		}
 	}
 	return nil
@@ -125,14 +132,17 @@ func (b *BlockChain) _airdropBadge(client *ethclient.Client, tokenID int64, rece
 	if err != nil {
 		return
 	}
-	log.Info("Airdrop tx sent :", zap.String("hash: ", tx.Hash().Hex()))
+	log.Infov("Airdrop tx sent :", zap.String("hash: ", tx.Hash().Hex()))
 	return tx.Hash(), nil
 }
 
 func (b *BlockChain) receiverNotClaimList(client *ethclient.Client, tokenId int64, receivers []string) (receiversNotClaim []common.Address) {
+	badge, err := ABI.NewBadge(common.HexToAddress(b.c.Contract.Badge), client)
+	if err != nil {
+		return
+	}
 	for _, receiver := range receivers {
-		badge, err := ABI.NewBadge(common.HexToAddress(b.c.Contract.Badge), client)
-		if err != nil {
+		if !utils.IsValidAddress(receiver) {
 			continue
 		}
 		res, err := badge.BalanceOf(nil, common.HexToAddress(receiver), big.NewInt(tokenId))
@@ -142,7 +152,7 @@ func (b *BlockChain) receiverNotClaimList(client *ethclient.Client, tokenId int6
 		if res.Cmp(big.NewInt(0)) != 0 {
 			// already claimed update status
 			if err = b.dao.UpdateAirdropped(&model.ClaimBadgeTweet{Address: receiver, TokenId: tokenId}); err != nil {
-				log.Error("UpdateAirdropped error", zap.Error(err))
+				log.Errorv("UpdateAirdropped error", zap.Error(err))
 			}
 			continue
 		}

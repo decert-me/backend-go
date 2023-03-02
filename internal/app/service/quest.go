@@ -11,13 +11,7 @@ import (
 )
 
 func (s *Service) GetQuestList(searchInfo request.GetQuestListRequest) (res []response.GetQuestListRes, total int64, err error) {
-	var questList []model.Quest
-	if questList, total, err = s.dao.GetQuestList(&searchInfo); err != nil {
-		return
-	}
-	for _, v := range questList {
-		res = append(res, response.GetQuestListRes{Quest: v})
-	}
+	res, total, err = s.dao.GetQuestList(&searchInfo)
 	return
 }
 

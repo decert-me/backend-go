@@ -60,30 +60,28 @@ func (b *BlockChain) handleTransactionReceipt(client *ethclient.Client, transHas
 		res, err := client.TransactionReceipt(context.Background(), common.HexToHash(transHash.Hash))
 		// 待交易
 		if err != nil {
-			fmt.Println("wait for transaction")
+			fmt.Println("wait for transaction", transHash.Hash)
 			time.Sleep(time.Second)
 			continue
 		}
 		// 交易失败
 		if res.Status == 0 {
-			fmt.Println("fail for transaction")
+			fmt.Println("fail for transaction", transHash.Hash)
 			b.handleTraverseStatus(transHash.Hash, 2, "")
+			return
 		}
 		// 交易成功
 		if res.Status == 1 {
-			//fmt.Println("success for transaction")
+			fmt.Println("success for transaction", transHash.Hash)
 			if err = b.eventsParser(transHash.Hash, res.Logs); err != nil {
 				log.Errorv("EventsParser", zap.Any("err", err))
-				return
-			} else {
-				return
 			}
+			return
 		}
-		time.Sleep(delay)
+		time.Sleep(delay * time.Second)
 	}
 	// 超出尝试次数
 	transHash.Status = 3
-
 }
 
 func (b *BlockChain) eventsParser(hash string, Logs []*types.Log) (err error) {
@@ -98,11 +96,13 @@ func (b *BlockChain) eventsParser(hash string, Logs []*types.Log) (err error) {
 				b.handleTraverseStatus(hash, 5, err.Error())
 				return err
 			}
+			return nil
 		case "Claimed":
 			if err = b.handleClaimed(hash, vLog); err != nil {
 				b.handleTraverseStatus(hash, 5, err.Error())
 				return err
 			}
+			return nil
 		}
 	}
 	b.handleTraverseStatus(hash, 4, "")

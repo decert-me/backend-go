@@ -6,6 +6,7 @@ import (
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/miguelmota/go-solidity-sha3"
@@ -47,6 +48,8 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetReq) (err error) {
 	// 检查tokenId是否存在以及可用
 	valid, err := s.dao.ValidTokenId(req.TokenId)
+	fmt.Println(valid)
+	fmt.Println(err)
 	if err != nil {
 		log.Errorv("ValidTokenId error", zap.Int64("TokenId", req.TokenId), zap.Error(err))
 		return errors.New("ValidTokenId error")
@@ -71,7 +74,7 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	// 获取推文ID
 	tweetId := utils.GetTweetIdFromURL(req.TweetUrl)
 	if tweetId == "" {
-		return errors.New("cannot find tweet id'")
+		return errors.New("cannot find tweet id")
 	}
 	// 检查是否重复使用
 	used, err := s.dao.HasTweet(tweetId)

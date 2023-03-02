@@ -5,6 +5,7 @@ import "backend-go/internal/app/model"
 type GetQuestListRequest struct {
 	model.Quest
 	PageInfo
+	Address string
 }
 
 type AddQuestRequest struct {
