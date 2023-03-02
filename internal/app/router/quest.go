@@ -7,7 +7,7 @@ import (
 )
 
 func InitQuestRouter(Router *gin.RouterGroup) {
-	questRouter := Router.Group("quests")
+	questRouter := Router.Group("quests").Use(middleware.Addr())
 	questRouterAuth := Router.Group("quests").Use(middleware.Auth())
 	{
 		questRouter.GET("", v1.GetQuestList)

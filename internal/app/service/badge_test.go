@@ -1,19 +1,23 @@
 package service
 
 import (
+	"backend-go/internal/app/dao"
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestService_PermitClaimBadge(t *testing.T) {
 	// delete exist
 	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
-	err := s.dao.DB().Where("token_id", 10003).Delete(&model.Quest{}).Error
-	assert.Nil(t, err)
+	deleteQuest()
+	deleteTransaction()
+	deleteChallenges()
 	// Start testing
-	s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
+	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
+	//s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
 	waitForQuestCreated(10003)
 	res, err := s.PermitClaimBadge("0x7d32D1DE76acd73d58fc76542212e86ea63817d8", request.PermitClaimBadgeReq{
 		TokenId: 10003,
@@ -29,8 +33,20 @@ func TestService_PermitClaimBadge(t *testing.T) {
 		Answer:  "[0,[0,1],\"true\"]",
 	})
 	assert.EqualErrorf(t, err, "tokenID invalid", "")
+	// clear
+	deleteQuest()
+	deleteTransaction()
+	deleteChallenges()
+}
+func TestService_PermitClaimBadge2(t *testing.T) {
+	// delete exist
+	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
+	deleteQuest()
+	deleteTransaction()
+	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
+	waitForQuestCreated(10003)
 	// answer error
-	_, err = s.PermitClaimBadge(address, request.PermitClaimBadgeReq{
+	_, err := s.PermitClaimBadge(address, request.PermitClaimBadgeReq{
 		TokenId: 10003,
 		Score:   100,
 		Answer:  "[1,[0,1],\"trued\"]",
@@ -43,17 +59,24 @@ func TestService_PermitClaimBadge(t *testing.T) {
 		Answer:  "[[0,1],\"true\"]",
 	})
 	assert.EqualErrorf(t, err, "something error", "")
+
+	// clear
+	deleteQuest()
+	deleteTransaction()
 }
 
 func TestService_SubmitClaimTweet(t *testing.T) {
 	// delete exist
 	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
-	err := s.dao.DB().Where("token_id", 10003).Where("address", address).Delete(&model.ClaimBadgeTweet{}).Error
-	assert.Nil(t, err)
 	// Start testing
-	s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
+	deleteTransaction()
+	deleteQuest()
+	deleteBadgeTweet()
+	time.Sleep(time.Second)
+	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
+	//s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
 	waitForQuestCreated(10003)
-	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
+	err := s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
 		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
 		Score:    100,
@@ -74,7 +97,16 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 		Airdropped: false,
 	}
 	assert.Equal(t, claimTweetExcept, claimTweet)
+	// repeated tweet
+	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
+		TokenId:  10003,
+		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
+		Score:    100,
+		Answer:   "[0,[0,1],\"true\"]",
+	})
+	assert.EqualErrorf(t, err, "repeated tweet", "")
 
+	deleteBadgeTweet()
 	// invalid quest
 	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10,
@@ -91,8 +123,27 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 		Answer:   "[1,[0,1],\"false\"]",
 	})
 	assert.EqualErrorf(t, err, "answer error", "")
+
+	// clear
+	deleteQuest()
+	deleteTransaction()
+	deleteBadgeTweet()
+
+}
+
+func TestService_SubmitClaimTweet2(t *testing.T) {
+	// delete exist
+	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
+	// Start testing
+	deleteTransaction()
+	deleteQuest()
+	deleteBadgeTweet()
+	time.Sleep(time.Second)
+	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
+	//s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
+	waitForQuestCreated(10003)
 	// answer length error
-	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
+	err := s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
 		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
 		Score:    100,
@@ -107,14 +158,6 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 		Answer:   "[0,[0,1],\"true\"]",
 	})
 	assert.EqualErrorf(t, err, "cannot find tweet id", "")
-	// repeated tweet
-	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
-		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
-		Score:    100,
-		Answer:   "[0,[0,1],\"true\"]",
-	})
-	assert.EqualErrorf(t, err, "repeated tweet", "")
 	// tweet cannot match
 	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
@@ -123,4 +166,25 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 		Answer:   "[0,[0,1],\"true\"]",
 	})
 	assert.EqualErrorf(t, err, "tweet cannot match", "")
+
+	// clear
+	deleteQuest()
+	deleteTransaction()
+	deleteBadgeTweet()
+}
+
+func TestBadgeServiceCrash(t *testing.T) {
+	s.dao.Close() // Service Crash
+	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
+	// Start testing
+	err := s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
+		TokenId:  10003,
+		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
+		Score:    100,
+		Answer:   "[0,[0,1],\"true\"]",
+	})
+	assert.EqualErrorf(t, err, "ValidTokenId error", "")
+	// restart
+	d = dao.New(c)
+	s = New(c)
 }

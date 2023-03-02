@@ -6,6 +6,7 @@ import (
 	"backend-go/internal/app/initialize"
 	"backend-go/internal/app/model"
 	"backend-go/pkg/log"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 	"os"
@@ -24,7 +25,7 @@ func TestMain(m *testing.M) {
 	c.Log.Level = "silent"
 	c.Log.LogInConsole = true
 	log.Init(c.Log)
-	c.Pgsql.LogMode = "silent"
+	//c.Pgsql.LogMode = "silent"
 	c.BlockChain.ChainID = 5
 	c.BlockChain.Provider = "https://rpc.ankr.com/eth_goerli"
 	// test contract address
@@ -35,6 +36,7 @@ func TestMain(m *testing.M) {
 	}
 	c.Pgsql.Prefix = "test_" // add test prefix
 	d = dao.New(c)
+	fmt.Println(d)
 	b = New(c, d)
 
 	result := m.Run()
@@ -50,8 +52,9 @@ func TestMain(m *testing.M) {
 }
 
 func deleteQuest() {
-	err := b.dao.DB().Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Quest{}).Error
-	if err != nil {
+	tx := b.dao.DB().Begin()
+	err := tx.Exec("truncate test_quest").Error
+	if tx.Commit().Error != nil {
 		panic(err)
 	}
 }

@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"backend-go/internal/app/dao"
 	"backend-go/internal/app/model"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/assert"
@@ -50,4 +51,12 @@ func TestHandleQuestCreated(t *testing.T) {
 func TestBlockChain_handleQuestCreated(t *testing.T) {
 	err := b.handleQuestCreated("", &types.Log{})
 	assert.Error(t, err, "should return error when error Log")
+}
+
+func TestQuestServiceCrash(t *testing.T) {
+	b.dao.Close() // Service Crash
+	// Start testing
+	b.handleTransactionReceipt(b.client, model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"})
+	// restart
+	b.dao = dao.New(c)
 }

@@ -3,6 +3,7 @@ package dao
 import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
+	"backend-go/internal/app/model/response"
 	"gorm.io/gorm"
 )
 
@@ -30,14 +31,21 @@ func (d *Dao) ValidTokenId(tokenId int64) (valid bool, err error) {
 }
 
 func (d *Dao) CreateQuest(req *model.Quest) (err error) {
-	return d.db.Model(&model.Quest{}).Create(&req).Error
+	return d.db.Create(&req).Error
 }
 
-func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []model.Quest, total int64, err error) {
+func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []response.GetQuestListRes, total int64, err error) {
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
 
-	db := d.db.Model(&model.Quest{}).Where(&req.Quest)
+	db := d.db.Model(&model.Quest{})
+	if req.Address != "" {
+		db.Select("quest.*,c.claimed")
+		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
+	} else {
+		db.Select("*")
+	}
+	db.Where(&req.Quest)
 	err = db.Count(&total).Error
 	if err != nil {
 		return questList, total, err

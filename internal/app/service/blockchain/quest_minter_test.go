@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"backend-go/internal/app/dao"
 	"backend-go/internal/app/model"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -12,19 +13,22 @@ import (
 
 func TestHandleClaimed(t *testing.T) {
 	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
+	time.Sleep(time.Second)
 	deleteQuest()
 	deleteChallenges()
 	deleteTransaction()
+	time.Sleep(time.Second)
 	// no such tokenId in quest
-	b.TaskChain <- model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}
-	time.Sleep(time.Second * 3)
+	b.handleTransactionReceipt(b.client, model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"})
 	assert.Error(t, b.dao.DB().Where("token_id", 10003).Where("address", address).First(&model.UserChallenges{}).Error)
 	// normal
+	deleteQuest()
+	deleteChallenges()
 	deleteTransaction()
-	b.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
+
+	b.handleTransactionReceipt(b.client, model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"})
 	waitForQuestCreated(10003)
-	b.TaskChain <- model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}
-	b.TaskChain <- model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}
+	b.handleTransactionReceipt(b.client, model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"})
 	waitForClaimed(10003, address)
 	var challenge model.UserChallenges
 	err := d.DB().Where("token_id", 10003).Where("address", address).First(&challenge).Error
@@ -46,6 +50,10 @@ func TestHandleClaimed(t *testing.T) {
 	//
 	err = b.handleClaimed("", &types.Log{Data: []byte("test")})
 	assert.Error(t, err, "should return error when error Log")
+	// clear
+	deleteQuest()
+	deleteChallenges()
+	deleteTransaction()
 }
 
 func TestBlockChain_receiverNotClaimList(t *testing.T) {
@@ -68,6 +76,11 @@ func TestBlockChain_receiverNotClaimList(t *testing.T) {
 
 func TestBlockChain_AirdropBadge(t *testing.T) {
 	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
+	// ethclient dial error
+	temp := b.c.BlockChain.Provider
+	b.c.BlockChain.Provider = "httest://12312"
+	assert.EqualErrorf(t, b.AirdropBadge(), "ethclient dial error", "")
+	b.c.BlockChain.Provider = temp
 	// no Airdrop list will nil error
 	err := b.AirdropBadge()
 	assert.Nil(t, err)
@@ -80,4 +93,14 @@ func TestBlockChain_AirdropBadge(t *testing.T) {
 	err = b.AirdropBadge()
 	assert.Nil(t, err)
 	deleteBadgeTweet()
+}
+
+func TestQuestMinterServiceCrash(t *testing.T) {
+	b.dao.Close() // Service Crash
+	// Start testing
+	assert.EqualErrorf(t, b.AirdropBadge(), "sql: database is closed", "")
+	b.handleTransactionReceipt(b.client, model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"})
+	b.receiverNotClaimList(b.client, 10003, []string{"0x7d32D1DE76acd73d58fc76542212e86ea638173232grerg43523", "0xBC5Ea980BdD0436a2798Bccf8fECc61bCb0010f2"})
+	// restart
+	b.dao = dao.New(c)
 }

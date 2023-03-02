@@ -75,16 +75,13 @@ func (b *BlockChain) handleTransactionReceipt(client *ethclient.Client, transHas
 			fmt.Println("success for transaction", transHash.Hash)
 			if err = b.eventsParser(transHash.Hash, res.Logs); err != nil {
 				log.Errorv("EventsParser", zap.Any("err", err))
-				return
-			} else {
-				return
 			}
+			return
 		}
 		time.Sleep(delay * time.Second)
 	}
 	// 超出尝试次数
 	transHash.Status = 3
-
 }
 
 func (b *BlockChain) eventsParser(hash string, Logs []*types.Log) (err error) {

@@ -7,6 +7,7 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/pkg/log"
 	"context"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 	"os"
@@ -23,10 +24,10 @@ func TestMain(m *testing.M) {
 	// 初始化日志框架
 	c.Log.Save = false
 	c.Log.Level = "silent"
-	c.Log.LogInConsole = false
+	c.Log.LogInConsole = true
 	log.Init(c.Log)
-	c.Pgsql.LogMode = "silent"
-	c.Pgsql.AutoMigrate = true
+	//c.Pgsql.LogMode = "silent"
+	c.Pgsql.AutoMigrate = false
 	c.BlockChain.ChainID = 5
 	c.BlockChain.Provider = "https://rpc.ankr.com/eth_goerli"
 	// test contract address
@@ -39,7 +40,7 @@ func TestMain(m *testing.M) {
 	c.Scheduler.Active = false
 	d = dao.New(c)
 	s = New(c)
-
+	fmt.Println(d)
 	result := m.Run()
 	//d.DB().Migrator().DropTable(
 	//	model.Users{},
@@ -81,7 +82,15 @@ func TestNew(t *testing.T) {
 }
 
 func deleteQuest() {
-	err := s.dao.DB().Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Quest{}).Error
+	tx := s.dao.DB().Begin()
+	err := tx.Exec("truncate test_quest").Error
+	if tx.Commit().Error != nil {
+		panic(err)
+	}
+}
+
+func deleteUser() {
+	err := s.dao.DB().Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Users{}).Error
 	if err != nil {
 		panic(err)
 	}
@@ -100,11 +109,18 @@ func deleteBadgeTweet() {
 		panic(err)
 	}
 }
+func deleteTransaction() {
+	err := s.dao.DB().Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Transaction{}).Error
+	if err != nil {
+		panic(err)
+	}
+}
 
 func waitForQuestCreated(tokenId int64) {
 	var count int64
 	for i := 0; i < 20; i++ {
-		_ = s.dao.DB().Model(&model.Quest{}).Where("token_id = ?", tokenId).Count(&count).Error
+		_ = s.dao.DB().Model(&model.Quest{}).Where("token_id", tokenId).Count(&count).Error
+		fmt.Println(count)
 		if count != 0 {
 			return
 		}

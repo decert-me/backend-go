@@ -79,12 +79,13 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	}
 	// 校验签名信息
 	if req.Message[:indexAddress] != s.c.BlockChain.Signature {
-		return token, errors.New("签名已失效")
+		return token, errors.New("签名信息错误")
 	}
 	// 保存用户信息
-	user := model.Users{Address: req.Address}
-	if err = s.dao.SaveUser(&user); err != nil {
-		log.Errorv("SaveUser error", zap.Any("user", user))
+	user, err := s.createUser(req.Address)
+	if err != nil {
+		log.Errorv("createUser error", zap.Any("address", req.Address), zap.Error(err))
+		return token, errors.New("获取token失败")
 	}
 	// 验证成功返回JWT
 	claims := midAuth.CreateClaims(auth.BaseClaims{
@@ -97,4 +98,20 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 		return token, errors.New("获取token失败")
 	}
 	return token, nil
+}
+
+// createUser 创建用户
+func (s *Service) createUser(address string) (user model.Users, err error) {
+	user, err = s.dao.GetUser(address)
+	if err == nil {
+		return
+	}
+	// create user
+	if err == gorm.ErrRecordNotFound {
+		user = model.Users{Address: address}
+		if err = s.dao.CreateUser(&user); err != nil {
+			return
+		}
+	}
+	return
 }

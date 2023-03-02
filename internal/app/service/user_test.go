@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend-go/internal/app/dao"
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/pkg/auth"
@@ -47,13 +48,20 @@ func TestService_GetLoginMessage(t *testing.T) {
 	hasNonce, err := s.dao.HasNonce(context.Background(), nonce)
 	assert.Nil(t, err)
 	assert.True(t, hasNonce)
-	// set nonce error
-
 }
 
 func TestService_AuthLoginSignRequest(t *testing.T) {
-	// 签名已失效
+	// 签名校验失败
 	_, err := s.AuthLoginSignRequest(
+		request.AuthLoginSignRequest{
+			Address:   "0x7d32D1DE76acd73d58fc76542212e86ea63817d8",
+			Message:   "Welcome to Decert!\n\nThis request will not trigger a blockchain transaction or cost any gas fees.\n\nYour authentication status will reset after 24 hours.\n\nWallet address:\n0x7d32D1DE76acd73d58fc76542212e86ea63817d8\n\nNonce:\nfee31011-c84d-4e06-8ff2-4e8c4dc29b31",
+			Signature: "0x31b510e0bbb0a6e52d500631d550f47802001ab958f2e5893fed591cae59e92330f8de89e999f75ab0607ce1f100de78f1dcd2030714624adc6ccf5c870928c21c",
+		},
+	)
+	assert.Equal(t, "签名校验失败", err.Error())
+	// 签名已失效
+	_, err = s.AuthLoginSignRequest(
 		request.AuthLoginSignRequest{
 			Address:   "0x7d32D1DE76acd73d58fc76542212e86ea63817d8",
 			Message:   "Welcome to Decert!\n\nThis request will not trigger a blockchain transaction or cost any gas fees.\n\nYour authentication status will reset after 24 hours.\n\nWallet address:\n0x7d32D1DE76acd73d58fc76542212e86ea63817d8\n\nNonce:\nfee31011-c84d-4e06-8ff2-4e8c4dc29b31",
@@ -102,6 +110,7 @@ func TestService_AuthLoginSignRequest(t *testing.T) {
 	assert.Equal(t, "签名信息错误", err.Error())
 
 	// 登陆成功
+	deleteUser()
 	err = s.dao.SetNonce(context.Background(), "fee31011-c84d-4e06-8ff2-4e8c4dc29b31")
 	assert.Nil(t, err)
 	token, err := s.AuthLoginSignRequest(
@@ -112,10 +121,46 @@ func TestService_AuthLoginSignRequest(t *testing.T) {
 		},
 	)
 	assert.Nil(t, err)
+	user, err := s.dao.GetUser("0x7d32D1DE76acd73d58fc76542212e86ea63817d8")
+	assert.Nil(t, err)
+	assert.Equal(t, "0x7d32D1DE76acd73d58fc76542212e86ea63817d8", user.Address)
+
 	var midAuth *auth.Auth
 	midAuth = auth.New(c.Auth)
 
 	claims, err := midAuth.ParseToken(token)
 	assert.Equal(t, "0x7d32D1DE76acd73d58fc76542212e86ea63817d8", claims.Address)
 	assert.Equal(t, "Decert", claims.Issuer)
+}
+
+func TestUserServiceCrash(t *testing.T) {
+	s.dao.Close() // Service Crash
+	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
+	// set nonce error
+	_, err := s.GetLoginMessage(address)
+	assert.EqualErrorf(t, err, "redis: client is closed", "")
+	//
+	_, err = s.AuthLoginSignRequest(
+		request.AuthLoginSignRequest{
+			Address:   "0x7d32D1DE76acd73d58fc76542212e86ea63817d8",
+			Message:   "Welcome to Decert!\n\nThis request will not trigger a blockchain transaction or cost any gas fees.\n\nYour authentication status will reset after 24 hours.\n\nWallet address:\n0x7d32D1DE76acd73d58fc76542212e86ea63817d8\n\nNonce:\nfee31011-c84d-4e06-8ff2-4e8c4dc29b31",
+			Signature: "0x32b510e0bbb0a6e52d500631d550f47802001ab958f2e5893fed591cae59e92330f8de89e999f75ab0607ce1f100de78f1dcd2030714624adc6ccf5c870928c21c",
+		},
+	)
+	assert.EqualErrorf(t, err, "签名已失效", "")
+	// restart
+	d = dao.New(c)
+	s = New(c)
+}
+
+func TestService_createUser(t *testing.T) {
+	deleteUser()
+	user, err := s.createUser("0x7d32D1DE76acd73d58fc76542212e86ea63817d8")
+	assert.Nil(t, err)
+	assert.Equal(t, "0x7d32D1DE76acd73d58fc76542212e86ea63817d8", user.Address)
+	// second
+	user, err = s.createUser("0x7d32D1DE76acd73d58fc76542212e86ea63817d8")
+	assert.Nil(t, err)
+	assert.Equal(t, "0x7d32D1DE76acd73d58fc76542212e86ea63817d8", user.Address)
+
 }

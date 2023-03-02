@@ -38,12 +38,12 @@ func (b *BlockChain) handleClaimed(hash string, vLog *types.Log) (err error) {
 	tokenId := vLog.Topics[1].Big().Int64()
 	// no such tokenId in quest
 	exist, err := b.dao.HasTokenId(tokenId)
-	if !exist {
-		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", tokenId))
-		return
-	}
 	if err != nil {
 		log.Errorv("HasTokenId error", zap.Int64("tokenId", tokenId), zap.Error(err))
+		return
+	}
+	if !exist {
+		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", tokenId))
 		return
 	}
 	//

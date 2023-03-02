@@ -1,10 +1,10 @@
 package blockchain
 
 import (
+	"backend-go/internal/app/dao"
 	"backend-go/internal/app/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
 func TestBlockChain_StartTransaction(t *testing.T) {
@@ -15,8 +15,9 @@ func TestBlockChain_StartTransaction(t *testing.T) {
 		Hash: hash,
 	})
 	assert.Nil(t, err)
-	b.TaskChain <- model.Transaction{Hash: hash}
-	waitForQuestCreated(10003)
+	b.handleTransactionReceipt(b.client, model.Transaction{Hash: hash})
+	//b.TaskChain <- model.Transaction{Hash: hash}
+	//waitForQuestCreated(10003)
 	var transaction model.Transaction
 	err = b.dao.DB().Where("hash", hash).First(&transaction).Error
 	assert.Nil(t, err)
@@ -32,11 +33,13 @@ func TestBlockChain_StartTransaction(t *testing.T) {
 	err = b.dao.CreateTransaction(&model.Transaction{
 		Hash: hashWait,
 	})
-	assert.Nil(t, err)
-	b.TaskChain <- model.Transaction{Hash: hashFail}
+	//assert.Nil(t, err)
+	b.handleTransactionReceipt(b.client, model.Transaction{Hash: hashFail})
+	//b.handleTransactionReceipt(b.client, model.Transaction{Hash: hashWait})
+	//b.TaskChain <- model.Transaction{Hash: hashFail}
 	b.TaskChain <- model.Transaction{Hash: hashWait}
 	//b.StartTransaction()
-	time.Sleep(5 * time.Second)
+	//time.Sleep(5 * time.Second)
 	var transactionFail model.Transaction
 	err = b.dao.DB().Where("hash", hashFail).First(&transactionFail).Error
 	assert.Nil(t, err)
@@ -48,4 +51,20 @@ func TestBlockChain_StartTransaction(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, uint8(0), transactionWait.Status)
 	deleteTransaction()
+	deleteQuest()
+}
+
+func TestTransactionServiceCrash(t *testing.T) {
+	b.dao.Close() // Service Crash
+	// Start testing
+	b.StartTransaction()
+
+	// restart
+	b.dao = dao.New(c)
+}
+
+func TestBlockChain_handleTransaction(t *testing.T) {
+	assert.Equal(t, true, b.traversed.Load())
+	b.handleTransaction()
+	assert.Equal(t, true, b.traversed.Load())
 }

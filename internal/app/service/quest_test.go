@@ -26,7 +26,9 @@ func TestService_GetQuest(t *testing.T) {
 	assert.Nil(t, err)
 	// Start testing
 	deleteQuest()
-	s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
+	deleteTransaction()
+	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
+	//s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
 	waitForQuestCreated(10003)
 	questList, total, err := s.GetQuestList(request.GetQuestListRequest{
 		Quest: model.Quest{
@@ -64,4 +66,7 @@ func TestService_GetQuest(t *testing.T) {
 
 	_, err = s.GetQuest("x212")
 	assert.Error(t, err, "", "should error when questId not digits")
+	// clear
+	deleteQuest()
+	deleteTransaction()
 }
