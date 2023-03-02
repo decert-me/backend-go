@@ -6,7 +6,6 @@ import (
 	"backend-go/internal/app/model/request"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
 func TestService_PermitClaimBadge(t *testing.T) {
@@ -72,7 +71,6 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 	deleteTransaction()
 	deleteQuest()
 	deleteBadgeTweet()
-	time.Sleep(time.Second)
 	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
 	//s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
 	waitForQuestCreated(10003)
@@ -138,7 +136,6 @@ func TestService_SubmitClaimTweet2(t *testing.T) {
 	deleteTransaction()
 	deleteQuest()
 	deleteBadgeTweet()
-	time.Sleep(time.Second)
 	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
 	//s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
 	waitForQuestCreated(10003)

@@ -35,11 +35,7 @@ func TestBlockChain_StartTransaction(t *testing.T) {
 	})
 	//assert.Nil(t, err)
 	b.handleTransactionReceipt(b.client, model.Transaction{Hash: hashFail})
-	//b.handleTransactionReceipt(b.client, model.Transaction{Hash: hashWait})
-	//b.TaskChain <- model.Transaction{Hash: hashFail}
 	b.TaskChain <- model.Transaction{Hash: hashWait}
-	//b.StartTransaction()
-	//time.Sleep(5 * time.Second)
 	var transactionFail model.Transaction
 	err = b.dao.DB().Where("hash", hashFail).First(&transactionFail).Error
 	assert.Nil(t, err)

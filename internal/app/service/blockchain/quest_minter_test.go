@@ -8,16 +8,13 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
 func TestHandleClaimed(t *testing.T) {
 	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
-	time.Sleep(time.Second)
 	deleteQuest()
 	deleteChallenges()
 	deleteTransaction()
-	time.Sleep(time.Second)
 	// no such tokenId in quest
 	b.handleTransactionReceipt(b.client, model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"})
 	assert.Error(t, b.dao.DB().Where("token_id", 10003).Where("address", address).First(&model.UserChallenges{}).Error)

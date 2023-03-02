@@ -52,9 +52,8 @@ func TestMain(m *testing.M) {
 }
 
 func deleteQuest() {
-	tx := b.dao.DB().Begin()
-	err := tx.Exec("truncate test_quest").Error
-	if tx.Commit().Error != nil {
+	err := b.dao.DB().Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&model.Quest{}).Error
+	if err != nil {
 		panic(err)
 	}
 }
