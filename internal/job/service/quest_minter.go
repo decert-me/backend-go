@@ -1,4 +1,4 @@
-package blockchain
+package service
 
 import (
 	ABI "backend-go/abi"
@@ -6,6 +6,7 @@ import (
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -30,14 +31,14 @@ func init() {
 	questMinterAbi = contractAbi
 }
 
-func (b *BlockChain) handleClaimed(hash string, vLog *types.Log) (err error) {
+func (s *Service) handleClaimed(hash string, vLog *types.Log) (err error) {
 	var claimed ABI.QuestMinterClaimed
 	if err = questMinterAbi.UnpackIntoInterface(&claimed, "Claimed", vLog.Data); err != nil || len(vLog.Topics) == 0 {
 		return errors.New("unpack error")
 	}
 	tokenId := vLog.Topics[1].Big().Int64()
 	// no such tokenId in quest
-	exist, err := b.dao.HasTokenId(tokenId)
+	exist, err := s.dao.HasTokenId(tokenId)
 	if err != nil {
 		log.Errorv("HasTokenId error", zap.Int64("tokenId", tokenId), zap.Error(err))
 		return
@@ -54,47 +55,67 @@ func (b *BlockChain) handleClaimed(hash string, vLog *types.Log) (err error) {
 		Claimed: true,
 		ClaimTs: time.Now().Unix(),
 	}
-	err = b.dao.CreateChallenges(&challenges)
+	err = s.dao.CreateChallenges(&challenges)
 	if err != nil {
 		log.Errorv("CreateChallenges error", zap.Any("challenges", challenges), zap.Error(err))
 		return err
 	}
-	b.handleTraverseStatus(hash, 1, "")
+	s.handleTraverseStatus(hash, 1, "")
 	return
 }
 
-func (b *BlockChain) AirdropBadge() error {
+func (s *Service) AirdropBadge() error {
 	log.Warn("AirdropBadge Run")
-	client, err := ethclient.Dial(b.c.BlockChain.Provider)
+	provider := s.w.Next()
+	defer func() {
+		if err := recover(); err != nil {
+			provider.OnInvokeFault()
+			log.Errorv("AirdropBadge error", zap.Any("error", err), zap.Any("provider", provider))
+		}
+	}()
+	client, err := ethclient.Dial(provider.Item)
 	if err != nil {
+		log.Error("ethclient dial error")
 		return errors.New("ethclient dial error")
 	}
-	paddingList, err := b.dao.GetPendingAirdrop()
+	paddingList, err := s.dao.GetPendingAirdrop()
+	fmt.Println(paddingList)
 	if err != nil {
+		log.Error("GetPendingAirdrop error")
 		return err
 	}
 	for tokenId, list := range paddingList {
-		receivers := b.receiverNotClaimList(client, tokenId, list)
-		hash, err := b._airdropBadge(client, tokenId, receivers)
+		receivers := s.receiverNotClaimList(client, tokenId, list)
+		fmt.Println(tokenId)
+		fmt.Println(receivers)
+		hash, err := s._airdropBadge(client, tokenId, receivers)
 		if err != nil {
 			log.Errorv("_airdropBadge", zap.Any("error", err))
 			continue
 		}
-		if err := b.dao.UpdateAirdroppedList(tokenId, receivers, hash.String()); err != nil {
+		if err := s.dao.UpdateAirdroppedList(tokenId, receivers, hash.String()); err != nil {
+			log.Errorv("updateAirdropStatus", zap.Any("error", err))
+		}
+		if err := s.dao.CreateChallengesList(tokenId, receivers); err != nil {
 			log.Errorv("updateAirdropStatus", zap.Any("error", err))
 		}
 	}
+	provider.OnInvokeSuccess()
 	return nil
 }
 
-func (b *BlockChain) _airdropBadge(client *ethclient.Client, tokenID int64, receivers []common.Address) (txHash common.Hash, err error) {
+func (s *Service) _airdropBadge(client *ethclient.Client, tokenID int64, receivers []common.Address) (txHash common.Hash, err error) {
 	tokenId := big.NewInt(tokenID)
 
-	privateKey, err := crypto.HexToECDSA(b.c.BlockChain.PrivateKey)
+	signPrivateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return
 	}
-	address, err := utils.PrivateKeyToAddress(privateKey)
+	airdropPrivateKey, err := crypto.HexToECDSA(s.c.BlockChain.AirdropPrivateKey)
+	if err != nil {
+		return
+	}
+	airdropAddress, err := utils.PrivateKeyToAddress(airdropPrivateKey)
 	if err != nil {
 		return
 	}
@@ -103,23 +124,23 @@ func (b *BlockChain) _airdropBadge(client *ethclient.Client, tokenID int64, rece
 		[]string{"string", "uint256", "address", "address"},
 		// values
 		[]interface{}{
-			"airdropBadge", tokenId, b.c.Contract.Badge, address,
+			"airdropBadge", tokenId, s.c.Contract.Badge, airdropAddress,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
-	signature, err := crypto.Sign(prefixedHash, privateKey)
+	signature, err := crypto.Sign(prefixedHash, signPrivateKey)
 	signature[64] += 27
 
-	questMinter, err := ABI.NewQuestMinter(common.HexToAddress(b.c.Contract.QuestMinter), client)
+	questMinter, err := ABI.NewQuestMinter(common.HexToAddress(s.c.Contract.QuestMinter), client)
 	if err != nil {
 		return
 	}
-	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(b.c.BlockChain.ChainID))
+	auth, err := bind.NewKeyedTransactorWithChainID(airdropPrivateKey, big.NewInt(s.c.BlockChain.ChainID))
 	if err != nil {
 		return
 	}
 	transactOpts := &bind.TransactOpts{
-		From:     address,
+		From:     airdropAddress,
 		Nonce:    auth.Nonce,
 		Signer:   auth.Signer,
 		Value:    big.NewInt(0),
@@ -136,8 +157,8 @@ func (b *BlockChain) _airdropBadge(client *ethclient.Client, tokenID int64, rece
 	return tx.Hash(), nil
 }
 
-func (b *BlockChain) receiverNotClaimList(client *ethclient.Client, tokenId int64, receivers []string) (receiversNotClaim []common.Address) {
-	badge, err := ABI.NewBadge(common.HexToAddress(b.c.Contract.Badge), client)
+func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId int64, receivers []string) (receiversNotClaim []common.Address) {
+	badge, err := ABI.NewBadge(common.HexToAddress(s.c.Contract.Badge), client)
 	if err != nil {
 		return
 	}
@@ -151,7 +172,7 @@ func (b *BlockChain) receiverNotClaimList(client *ethclient.Client, tokenId int6
 		}
 		if res.Cmp(big.NewInt(0)) != 0 {
 			// already claimed update status
-			if err = b.dao.UpdateAirdropped(&model.ClaimBadgeTweet{Address: receiver, TokenId: tokenId}); err != nil {
+			if err = s.dao.UpdateAirdropped(&model.ClaimBadgeTweet{Address: receiver, TokenId: tokenId}); err != nil {
 				log.Errorv("UpdateAirdropped error", zap.Error(err))
 			}
 			continue

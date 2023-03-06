@@ -1,4 +1,4 @@
-package blockchain
+package service
 
 import (
 	ABI "backend-go/abi"
@@ -24,7 +24,7 @@ func init() {
 	}
 	questAbi = contractAbi
 }
-func (b *BlockChain) handleQuestCreated(hash string, vLog *types.Log) (err error) {
+func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	var created ABI.QuestQuestCreated
 	if err = questAbi.UnpackIntoInterface(&created, "QuestCreated", vLog.Data); err != nil {
 		return
@@ -47,11 +47,11 @@ func (b *BlockChain) handleQuestCreated(hash string, vLog *types.Log) (err error
 		ExtraData:   extraData,
 		IsDraft:     false, // 当前发布不审核
 	}
-	if err = b.dao.CreateQuest(&quest); err != nil {
+	if err = s.dao.CreateQuest(&quest); err != nil {
 		log.Errorv("CreateQuest error", zap.Error(err), zap.Any("quest", quest))
 		return
 	}
-	b.handleTraverseStatus(hash, 1, "")
+	s.handleTraverseStatus(hash, 1, "")
 
 	return
 }

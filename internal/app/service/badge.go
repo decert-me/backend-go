@@ -19,17 +19,17 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 	// 校验分数正确性
 	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenId})
 	if err != nil {
-		return res, errors.New("tokenID invalid")
+		return res, errors.New("题目不存在")
 	}
 	score, pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
-		return res, errors.New("something error")
+		return res, errors.New("出现错误")
 	}
 	if !pass || score < req.Score {
-		return res, errors.New("answer error")
+		return res, errors.New("答案错误")
 	}
-	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.PrivateKey)
+	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return
 	}
@@ -52,47 +52,47 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	fmt.Println(err)
 	if err != nil {
 		log.Errorv("ValidTokenId error", zap.Int64("TokenId", req.TokenId), zap.Error(err))
-		return errors.New("ValidTokenId error")
+		return errors.New("题目不存在")
 	}
 	if !valid {
-		return errors.New("invalid quest")
+		return errors.New("题目不存在")
 	}
 	// TODO: 检查用户是否已通过挑战，或已领取SBT
 	// 校验分数正确性
 	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenId})
 	if err != nil {
-		return errors.New("tokenID invalid")
+		return errors.New("题目不存在")
 	}
 	score, pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
-		return errors.New("something error")
+		return errors.New("出现错误")
 	}
 	if !pass || score < req.Score {
-		return errors.New("answer error")
+		return errors.New("答案错误")
 	}
 	// 获取推文ID
 	tweetId := utils.GetTweetIdFromURL(req.TweetUrl)
 	if tweetId == "" {
-		return errors.New("cannot find tweet id")
+		return errors.New("链接错误")
 	}
 	// 检查是否重复使用
 	used, err := s.dao.HasTweet(tweetId)
 	if err != nil {
 		log.Errorv("HasTweet error", zap.Int64("TokenId", req.TokenId), zap.Error(err))
-		return
+		return errors.New(" Oops!出错了")
 	}
 	if used {
-		return errors.New("repeated tweet")
+		return errors.New("推文重复使用")
 	}
 	// 获取推文内容
 	tweet, err := utils.GetTweetById(s.c, tweetId)
 	if err != nil {
-		return errors.New("cannot get tweet")
+		return errors.New("推文获取失败")
 	}
 	// 验证推文内容
 	if !utils.CheckIfMatchClaimTweet(s.c, req.TokenId, tweet) {
-		return errors.New("tweet cannot match")
+		return errors.New("推文不匹配")
 	}
 	// 保存到数据库
 	err = s.dao.CreateClaimBadgeTweet(&model.ClaimBadgeTweet{
@@ -106,5 +106,5 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	if err != nil {
 		log.Errorv("CreateClaimBadgeTweet error", zap.Error(err))
 	}
-	return
+	return nil
 }

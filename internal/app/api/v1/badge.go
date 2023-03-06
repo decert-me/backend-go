@@ -11,7 +11,7 @@ func PermitClaimBadge(c *gin.Context) {
 	var req request.PermitClaimBadgeReq
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
-		response.FailWithMessage("param not valid", c)
+		response.FailWithMessage("参数错误", c)
 		return
 	}
 	address := c.GetString("address")

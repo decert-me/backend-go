@@ -16,7 +16,11 @@ nft-collect
 assets/
 /log
 uploads/
+internal/app/cmd/config.yaml
+internal/job/cmd/config.yaml
+internal/app/job/log/
+internal/app/job/log/
 config/config.yaml
-config/config.docker.yaml
 .idea
-deploy.sh
+bin/
+build/

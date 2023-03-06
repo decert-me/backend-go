@@ -57,7 +57,7 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	// 获取Address
 	indexAddress := strings.LastIndex(req.Message, "Wallet address:")
 	if indexAddress == -1 {
-		return token, errors.New("address获取失败")
+		return token, errors.New("地址获取失败")
 	}
 	address := req.Message[indexAddress+16 : indexNonce]
 	// 校验address

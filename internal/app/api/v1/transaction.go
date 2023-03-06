@@ -11,7 +11,7 @@ func HashSubmit(c *gin.Context) {
 	_ = c.ShouldBindJSON(&submit)
 	address := c.GetString("address")
 	if err := srv.HashSubmit(address, submit.Hash); err != nil {
-		response.FailWithMessage("error", c)
+		response.FailWithMessage("操作失败", c)
 	} else {
 		response.Ok(c)
 	}

@@ -9,7 +9,7 @@ import (
 
 func GetDiscordInfo(c *gin.Context) {
 	if list, err := srv.GetDiscordInfo(c.GetString("address")); err != nil {
-		response.OkWithData(nil, c)
+		response.FailWithMessage("未检测到绑定信息", c)
 	} else {
 		response.OkWithData(list, c)
 	}
@@ -25,7 +25,7 @@ func GetLoginMessage(c *gin.Context) {
 	var request request.GetLoginMessageRequest
 	_ = c.ShouldBindQuery(&request)
 	if !utils.IsValidAddress(request.Address) {
-		response.FailWithMessage("address error", c)
+		response.FailWithMessage("地址错误", c)
 		return
 	}
 	if loginMessage, err := srv.GetLoginMessage(request.Address); err != nil {
@@ -44,7 +44,7 @@ func GetLoginMessage(c *gin.Context) {
 func AuthLoginSign(c *gin.Context) {
 	var request request.AuthLoginSignRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		response.FailWithMessage("param not valid", c)
+		response.FailWithMessage("参数不正确", c)
 		return
 	}
 	if token, err := srv.AuthLoginSignRequest(request); err != nil {

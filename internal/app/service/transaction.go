@@ -13,7 +13,6 @@ func (s *Service) HashSubmit(address string, hash string) (err error) {
 		log.Errorv("CreateTransaction error", zap.Error(err))
 		return
 	}
-	s.blockchain.TaskChain <- transHash
 	return nil
 
 }

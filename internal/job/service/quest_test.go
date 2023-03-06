@@ -1,8 +1,6 @@
-package blockchain
+package service
 
 import (
-	"backend-go/internal/app/dao"
-	"backend-go/internal/app/model"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/tidwall/gjson"
@@ -10,10 +8,10 @@ import (
 )
 
 func TestHandleQuestCreated(t *testing.T) {
-	deleteQuest()
-	b.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
-	waitForQuestCreated(10003)
-	quest, err := b.dao.GetQuest(&model.Quest{
+	blockchain.deleteQuest()
+	blockchain.b.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
+	blockchain.waitForQuestCreated(10003)
+	quest, err := blockchain.b.dao.GetQuest(&model.Quest{
 		TokenId: 10003,
 	})
 	if err != nil {
@@ -45,18 +43,18 @@ func TestHandleQuestCreated(t *testing.T) {
 	assert.Equal(t, questAssert, quest)
 
 	// clean
-	deleteQuest()
+	blockchain.deleteQuest()
 }
 
 func TestBlockChain_handleQuestCreated(t *testing.T) {
-	err := b.handleQuestCreated("", &types.Log{})
+	err := blockchain.b.handleQuestCreated("", &types.Log{})
 	assert.Error(t, err, "should return error when error Log")
 }
 
 func TestQuestServiceCrash(t *testing.T) {
-	b.dao.Close() // Service Crash
+	blockchain.b.dao.Close() // Service Crash
 	// Start testing
-	b.handleTransactionReceipt(b.client, model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"})
+	blockchain.b.handleTransactionReceipt(blockchain.b.client, model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"})
 	// restart
-	b.dao = dao.New(c)
+	blockchain.b.dao = dao.New(blockchain.c)
 }

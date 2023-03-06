@@ -25,7 +25,7 @@ func (s *Service) GetQuest(id string) (quest model.Quest, err error) {
 }
 
 func (s *Service) AddQuest(address string, add request.AddQuestRequest) (res string, err error) {
-	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.PrivateKey)
+	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return
 	}
