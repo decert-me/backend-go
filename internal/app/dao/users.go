@@ -22,7 +22,7 @@ func (d *Dao) HasNonce(c context.Context, nonce string) (has bool, err error) {
 }
 
 func (d *Dao) SetNonce(c context.Context, nonce string) (err error) {
-	return d.redis.Set(c, d.nonceKeyRedis(nonce), "", time.Duration(d.c.BlockChain.SignatureExp)).Err()
+	return d.redis.Set(c, d.nonceKeyRedis(nonce), "", time.Duration(d.c.BlockChain.SignatureExp)*time.Second).Err()
 }
 
 func (d *Dao) DelNonce(c context.Context, nonce string) (err error) {
