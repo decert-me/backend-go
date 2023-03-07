@@ -8,21 +8,37 @@ git clone https://github.com/decert-me/backend-go.git
 ```
 ## 编译
 ```bash
-go build
+# 主程序
+go build -o bin/app/decert-app internal/app/cmd/main.go
+
+# 定时处理程序
+go build -o bin/job/job-app internal/job/cmd/main.go
+```
+## 配置
+```bash
+# 主程序配置
+cp ./internal/app/cmd/config.demo.yaml ./bin/app/config.yaml
+vi ./bin/app/config.yaml
+
+# 定时处理程序配置
+cp ./internal/job/cmd/config.demo.yaml ./bin/job/config.yaml
+vi ./bin/job/config.yaml
 ```
 ## 运行
 ```bash
-# 复制配置文件demo
-cp ./config/config.demo.yaml ./config/config.yaml
-# 修改配置文件
-vi ./config/config.yaml
-# 运行
-./backend-go (windows运行命令为 backend-go.exe)
+# 主程序
+cd bin/app
+./decert-app
+
+# 定时处理程序
+cd bin/job
+./job-app
 ```
+
 ## 测试
 ```bash
 go test ./internal/app/service
-go test ./internal/app/service/blockchain/
+go test ./internal/job/service
 go test ./pkg/...
 ```
 

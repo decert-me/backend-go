@@ -16,7 +16,6 @@ func TestService_PermitClaimBadge(t *testing.T) {
 	deleteChallenges()
 	// Start testing
 	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
-	//s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
 	waitForQuestCreated(10003)
 	res, err := s.PermitClaimBadge("0x7d32D1DE76acd73d58fc76542212e86ea63817d8", request.PermitClaimBadgeReq{
 		TokenId: 10003,
@@ -31,7 +30,7 @@ func TestService_PermitClaimBadge(t *testing.T) {
 		Score:   100,
 		Answer:  "[0,[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "tokenID invalid", "")
+	assert.EqualErrorf(t, err, "题目不存在", "")
 	// clear
 	deleteQuest()
 	deleteTransaction()
@@ -50,14 +49,14 @@ func TestService_PermitClaimBadge2(t *testing.T) {
 		Score:   100,
 		Answer:  "[1,[0,1],\"trued\"]",
 	})
-	assert.EqualErrorf(t, err, "answer error", "")
+	assert.EqualErrorf(t, err, "答案错误", "")
 	// answer length error
 	_, err = s.PermitClaimBadge(address, request.PermitClaimBadgeReq{
 		TokenId: 10003,
 		Score:   100,
 		Answer:  "[[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "something error", "")
+	assert.EqualErrorf(t, err, "出现错误", "")
 
 	// clear
 	deleteQuest()
@@ -72,11 +71,10 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 	deleteQuest()
 	deleteBadgeTweet()
 	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
-	//s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
 	waitForQuestCreated(10003)
 	err := s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
+		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
 		Score:    100,
 		Answer:   "[0,[0,1],\"true\"]",
 	})
@@ -89,8 +87,8 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 		ID:         claimTweet.ID,
 		Address:    address,
 		TokenId:    10003,
-		Url:        "https://twitter.com/liangjies/status/1630110919815733248",
-		TweetId:    "1630110919815733248",
+		Url:        "https://twitter.com/liangjies/status/1633028821715927041?s=20",
+		TweetId:    "1633028821715927041",
 		AddTs:      claimTweet.AddTs,
 		Airdropped: false,
 	}
@@ -98,29 +96,29 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 	// repeated tweet
 	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
+		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
 		Score:    100,
 		Answer:   "[0,[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "repeated tweet", "")
+	assert.EqualErrorf(t, err, "推文重复使用", "")
 
 	deleteBadgeTweet()
 	// invalid quest
 	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10,
-		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
+		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
 		Score:    100,
 		Answer:   "[0,[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "invalid quest", "")
+	assert.EqualErrorf(t, err, "题目不存在", "")
 	// answer error
 	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
+		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
 		Score:    100,
 		Answer:   "[1,[0,1],\"false\"]",
 	})
-	assert.EqualErrorf(t, err, "answer error", "")
+	assert.EqualErrorf(t, err, "答案错误", "")
 
 	// clear
 	deleteQuest()
@@ -137,16 +135,15 @@ func TestService_SubmitClaimTweet2(t *testing.T) {
 	deleteQuest()
 	deleteBadgeTweet()
 	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
-	//s.blockchain.TaskChain <- model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}
 	waitForQuestCreated(10003)
 	// answer length error
 	err := s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
+		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
 		Score:    100,
 		Answer:   "[[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "something error", "")
+	assert.EqualErrorf(t, err, "出现错误", "")
 	// cannot find tweet id
 	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
@@ -154,7 +151,7 @@ func TestService_SubmitClaimTweet2(t *testing.T) {
 		Score:    100,
 		Answer:   "[0,[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "cannot find tweet id", "")
+	assert.EqualErrorf(t, err, "链接错误", "")
 	// tweet cannot match
 	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
 		TokenId:  10003,
@@ -162,7 +159,7 @@ func TestService_SubmitClaimTweet2(t *testing.T) {
 		Score:    100,
 		Answer:   "[0,[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "tweet cannot match", "")
+	assert.EqualErrorf(t, err, "推文不匹配", "")
 
 	// clear
 	deleteQuest()
@@ -180,7 +177,7 @@ func TestBadgeServiceCrash(t *testing.T) {
 		Score:    100,
 		Answer:   "[0,[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "ValidTokenId error", "")
+	assert.EqualErrorf(t, err, "题目不存在", "")
 	// restart
 	d = dao.New(c)
 	s = New(c)

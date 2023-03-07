@@ -95,7 +95,7 @@ func TestService_AuthLoginSignRequest(t *testing.T) {
 			Signature: "0xb509ed2e9bf35579431f6da48051e5fe968a2af3202483754d91198d8cf7693c2b2edc5e359e37a83ca6969abbcb236f5f89483875cd1e27dddb28a2601af7cd1c",
 		},
 	)
-	assert.Equal(t, "address获取失败", err.Error())
+	assert.Equal(t, "地址获取失败", err.Error())
 	// 签名信息错误
 	err = s.dao.SetNonce(context.Background(), "0d2c1cb5-3cad-431a-a266-6e3262cb5fb7")
 	assert.Nil(t, err)

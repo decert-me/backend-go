@@ -1,12 +1,10 @@
 package service
 
 import (
-	"backend-go/internal/app/config"
-	"backend-go/internal/app/dao"
-	"backend-go/internal/app/initialize"
 	"backend-go/internal/app/model"
-	jobInit "backend-go/internal/job/initialize"
-	jobService "backend-go/internal/job/service"
+	"backend-go/internal/job/config"
+	"backend-go/internal/job/dao"
+	"backend-go/internal/job/initialize"
 	"backend-go/pkg/log"
 	"context"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +27,8 @@ func TestMain(m *testing.M) {
 	log.Init(c.Log)
 	c.Pgsql.LogMode = "silent"
 	c.Pgsql.AutoMigrate = true
-	c.Twitter.ClaimContent = "我在 @DecertMe 上完成了一个挑战并获得了链上能力认证的徽章。\nhttps://decert.me/quests/\n#DecertMe"
+	c.BlockChain.ChainID = 5
+	c.BlockChain.Attempt = 5
 	// test contract address
 	c.Contract = &config.Contract{
 		Badge:       "0x0049770260b599Ecc2e2c0645450c965A44938b7",
@@ -37,23 +36,9 @@ func TestMain(m *testing.M) {
 		QuestMinter: "0xbE866FE4BAFC11ae886238772AFBD24570f9B530",
 	}
 	c.Pgsql.Prefix = "test_" // add test prefix
+	c.Scheduler.Active = true
 	d = dao.New(c)
 	s = New(c)
-	/*
-	 * Job
-	 */
-	jobConfig := jobInit.Viper("../../job/cmd/config.yaml")
-	// 初始化日志框架
-	jobConfig.Log.Save = false
-	jobConfig.Log.Level = "silent"
-	jobConfig.Log.LogInConsole = true
-	jobConfig.Pgsql.AutoMigrate = false
-
-	jobConfig.Pgsql.Prefix = "test_" // add test prefix
-	log.Init(jobConfig.Log)
-
-	jobS := jobService.New(jobConfig)
-	_ = jobS
 
 	result := m.Run()
 	d.DB().Migrator().DropTable(
@@ -76,6 +61,23 @@ func TestService_Close(t *testing.T) {
 	testService.Close()
 	db, _ := testService.dao.DB().DB()
 	assert.EqualErrorf(t, db.Ping(), "sql: database is closed", "")
+}
+
+func TestNew(t *testing.T) {
+	testConfig := *c
+	testConfig.Scheduler.Active = true
+	testConfig.Scheduler.AirdropBadge = "46 */6 * * *"
+	testService := New(&testConfig)
+	assert.Equal(t, 1, len(testService.cron.Entries()), "should have 1 entry")
+	// Scheduler rules error
+	testConfig.Scheduler.AirdropBadge = "46 * * *"
+	testServiceScheduler := New(&testConfig)
+	assert.Equal(t, 0, len(testServiceScheduler.cron.Entries()), "should have 0 entry")
+	// Scheduler off
+	testConfig.Scheduler.Active = false
+	testConfig.Scheduler.AirdropBadge = "46 */6 * * *"
+	testServiceNone := New(&testConfig)
+	assert.Nil(t, testServiceNone.cron)
 }
 
 func deleteQuest() {
