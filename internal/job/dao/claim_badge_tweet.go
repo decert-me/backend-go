@@ -2,7 +2,9 @@ package dao
 
 import (
 	"backend-go/internal/app/model"
+	"errors"
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 	"time"
 )
 
@@ -18,16 +20,20 @@ func (d *Dao) CreateClaimBadgeTweet(req *model.ClaimBadgeTweet) (err error) {
 	return d.db.Create(req).Error
 }
 
-func (d *Dao) GetPendingAirdrop() (res map[int64][]string, err error) {
-	res = make(map[int64][]string)
+func (d *Dao) GetPendingAirdrop() (tokenId []*big.Int, listAddr []string, err error) {
 	var pending []model.ClaimBadgeTweet
 	if err = d.db.Where("airdropped", false).Find(&pending).Error; err != nil {
 		return
 	}
 	for _, v := range pending {
-		res[v.TokenId] = append(res[v.TokenId], v.Address)
+		tokenId = append(tokenId, big.NewInt(v.TokenId))
+		listAddr = append(listAddr, v.Address)
 	}
-	return res, nil
+	if len(tokenId) != len(listAddr) {
+		err = errors.New("token and address len error")
+		return
+	}
+	return tokenId, listAddr, nil
 }
 
 func (d *Dao) UpdateAirdropped(req *model.ClaimBadgeTweet) (err error) {
@@ -37,10 +43,10 @@ func (d *Dao) UpdateAirdropped(req *model.ClaimBadgeTweet) (err error) {
 	return
 }
 
-func (d *Dao) UpdateAirdroppedList(tokenId int64, receivers []common.Address, hash string) (err error) {
+func (d *Dao) UpdateAirdroppedList(tokenIds []*big.Int, receivers []common.Address, hash string) (err error) {
 	tx := d.db.Model(&model.ClaimBadgeTweet{}).Begin()
-	for _, v := range receivers {
-		tx.Where("token_id = ? AND address = ?", tokenId, v.String()).
+	for i, _ := range receivers {
+		tx.Where("token_id = ? AND address = ?", tokenIds[i], receivers[i].String()).
 			Updates(map[string]interface{}{"airdropped": "true", "airdrop_hash": hash, "airdrop_ts": time.Now().Unix()})
 	}
 	return tx.Commit().Error

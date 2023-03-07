@@ -6,7 +6,6 @@ import (
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -78,35 +77,30 @@ func (s *Service) AirdropBadge() error {
 		log.Error("ethclient dial error")
 		return errors.New("ethclient dial error")
 	}
-	paddingList, err := s.dao.GetPendingAirdrop()
-	fmt.Println(paddingList)
+	tokenIds, listAddr, err := s.dao.GetPendingAirdrop()
 	if err != nil {
 		log.Error("GetPendingAirdrop error")
 		return err
 	}
-	for tokenId, list := range paddingList {
-		receivers := s.receiverNotClaimList(client, tokenId, list)
-		fmt.Println(tokenId)
-		fmt.Println(receivers)
-		hash, err := s._airdropBadge(client, tokenId, receivers)
-		if err != nil {
-			log.Errorv("_airdropBadge", zap.Any("error", err))
-			continue
-		}
-		if err := s.dao.UpdateAirdroppedList(tokenId, receivers, hash.String()); err != nil {
-			log.Errorv("updateAirdropStatus", zap.Any("error", err))
-		}
-		if err := s.dao.CreateChallengesList(tokenId, receivers); err != nil {
-			log.Errorv("updateAirdropStatus", zap.Any("error", err))
-		}
+
+	tokenIdRes, receivers := s.receiverNotClaimList(client, tokenIds, listAddr)
+
+	hash, err := s._airdropBadge(client, tokenIdRes, receivers)
+	if err != nil {
+		log.Errorv("_airdropBadge", zap.Any("error", err))
+		return nil
+	}
+	if err := s.dao.UpdateAirdroppedList(tokenIdRes, receivers, hash.String()); err != nil {
+		log.Errorv("updateAirdropStatus", zap.Any("error", err))
+	}
+	if err := s.dao.CreateChallengesList(tokenIdRes, receivers); err != nil {
+		log.Errorv("updateAirdropStatus", zap.Any("error", err))
 	}
 	provider.OnInvokeSuccess()
 	return nil
 }
 
-func (s *Service) _airdropBadge(client *ethclient.Client, tokenID int64, receivers []common.Address) (txHash common.Hash, err error) {
-	tokenId := big.NewInt(tokenID)
-
+func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, receivers []common.Address) (txHash common.Hash, err error) {
 	signPrivateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return
@@ -121,10 +115,10 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenID int64, receive
 	}
 	hash := solsha3.SoliditySHA3(
 		// types
-		[]string{"string", "uint256", "address", "address"},
+		[]string{"string", "uint256[]", "address", "address"},
 		// values
 		[]interface{}{
-			"airdropBadge", tokenId, s.c.Contract.Badge, airdropAddress,
+			"airdropBadge", tokenIDs, s.c.Contract.Badge, airdropAddress,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
@@ -149,7 +143,7 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenID int64, receive
 		Context:  auth.Context,
 		NoSend:   false,
 	}
-	tx, err := questMinter.AirdropBadge(transactOpts, tokenId, receivers, signature)
+	tx, err := questMinter.AirdropBadge(transactOpts, tokenIDs, receivers, signature)
 	if err != nil {
 		return
 	}
@@ -157,27 +151,32 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenID int64, receive
 	return tx.Hash(), nil
 }
 
-func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId int64, receivers []string) (receiversNotClaim []common.Address) {
+func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.Int, receivers []string) (tokenIdRes []*big.Int, receiversNotClaim []common.Address) {
 	badge, err := ABI.NewBadge(common.HexToAddress(s.c.Contract.Badge), client)
 	if err != nil {
 		return
 	}
-	for _, receiver := range receivers {
-		if !utils.IsValidAddress(receiver) {
+	for i, _ := range receivers {
+		if !utils.IsValidAddress(receivers[i]) {
 			continue
 		}
-		res, err := badge.BalanceOf(nil, common.HexToAddress(receiver), big.NewInt(tokenId))
+		res, err := badge.BalanceOf(nil, common.HexToAddress(receivers[i]), tokenId[i])
 		if err != nil {
 			continue
 		}
 		if res.Cmp(big.NewInt(0)) != 0 {
 			// already claimed update status
-			if err = s.dao.UpdateAirdropped(&model.ClaimBadgeTweet{Address: receiver, TokenId: tokenId}); err != nil {
+			if err = s.dao.UpdateAirdropped(&model.ClaimBadgeTweet{Address: receivers[i], TokenId: tokenId[i].Int64()}); err != nil {
 				log.Errorv("UpdateAirdropped error", zap.Error(err))
 			}
 			continue
 		}
-		receiversNotClaim = append(receiversNotClaim, common.HexToAddress(receiver))
+		tokenIdRes = append(tokenIdRes, tokenId[i])
+		receiversNotClaim = append(receiversNotClaim, common.HexToAddress(receivers[i]))
+	}
+	if len(tokenIdRes) != len(receiversNotClaim) {
+		err = errors.New("token and address len error")
+		return
 	}
 	return
 }

@@ -9,7 +9,7 @@ import (
 var c *config.Config
 
 func TestMain(m *testing.M) {
-	c = initialize.Viper("../../../config/config.yaml")
+	c = initialize.Viper("../cmd/config.yaml")
 	m.Run()
 }
 
@@ -38,6 +38,7 @@ func Test_getTweetIdFromURL(t *testing.T) {
 }
 
 func Test_checkIfMatchClaimTweet(t *testing.T) {
+	c.Twitter.ClaimContent = "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://decert.me/quests/\n#Decert.me"
 	type args struct {
 		tokenId int64
 		tweet   string
@@ -64,6 +65,7 @@ func Test_checkIfMatchClaimTweet(t *testing.T) {
 }
 
 func TestGetTweetById(t *testing.T) {
+	c.Twitter.ClaimContent = "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://decert.me/quests/\n#Decert.me"
 	type args struct {
 		c       *config.Config
 		tweetId string
@@ -74,7 +76,7 @@ func TestGetTweetById(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{name: "#0 should return right data", args: args{c: c, tweetId: "1630110919815733248"}, want: "我通过了@DecertMe的挑战并获得了一个链上的能力认证徽章。\nhttps://t.co/YkPclYsZYw\n#Decert.me"},
+		{name: "#0 should return right data", args: args{c: c, tweetId: "1633028821715927041"}, want: "我在 @DecertMe 上完成了一个挑战并获得了链上能力认证的徽章。\n https://t.co/YkPclYsZYw\n #DecertMe"},
 		{name: "#1 should return empty data when tweeId no correct", args: args{c: c, tweetId: "123124214"}, want: ""},
 	}
 	for _, tt := range tests {

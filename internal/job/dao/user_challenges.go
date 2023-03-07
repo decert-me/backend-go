@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/app/model"
 	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/gorm/clause"
+	"math/big"
 )
 
 func (d *Dao) CreateChallenges(challenges *model.UserChallenges) (err error) {
@@ -14,12 +15,12 @@ func (d *Dao) CreateChallenges(challenges *model.UserChallenges) (err error) {
 	return
 }
 
-func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (err error) {
+func (d *Dao) CreateChallengesList(tokenIds []*big.Int, receivers []common.Address) (err error) {
 	var challenge []model.UserChallenges
-	for _, v := range receivers {
+	for i, _ := range receivers {
 		challenge = append(challenge, model.UserChallenges{
-			Address: v.String(),
-			TokenId: tokenId,
+			Address: receivers[i].String(),
+			TokenId: tokenIds[i].Int64(),
 			Claimed: true,
 			Status:  2,
 		})

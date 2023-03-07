@@ -46,7 +46,11 @@ func New(c *config.Config) (s *Service) {
 
 // Close Service.
 func (s *Service) Close() {
-	s.dao.Close()
+	if s.cron != nil {
+		s.cron.Stop() // stop cron
+	}
+	s.dao.Close() // close db
+	s = nil
 }
 
 // Ping check server ok.

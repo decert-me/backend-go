@@ -38,7 +38,7 @@ cd bin/job
 ## 测试
 ```bash
 go test ./internal/app/service
-go test ./internal/app/service/blockchain/
+go test ./internal/job/service
 go test ./pkg/...
 ```
 

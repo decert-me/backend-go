@@ -48,7 +48,7 @@ func (s *Service) StartTransaction() {
 		// 超出扫描次数删除
 		countMap.Range(func(key, value interface{}) bool {
 			v, ok := value.(int)
-			if ok && v > 100 {
+			if ok && v > 10 {
 				s.handleTraverseStatus(key.(string), 3, "")
 				countMap.Delete(key)
 			}
@@ -75,9 +75,7 @@ func (s *Service) StartTransaction() {
 
 func (s *Service) consumeTransaction() {
 	for {
-		fmt.Println("consumeTransaction start")
 		go s.handleTransactionReceipt(<-s.TaskChain)
-		fmt.Println("consumeTransaction")
 	}
 }
 
@@ -90,6 +88,14 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 			provider.OnInvokeFault()
 			log.Errorv("HandleTransactionReceipt", zap.Any("err ", err))
 			time.Sleep(time.Second * 3)
+			//  控制尝试次数
+			times, exist := task.countMap.LoadOrStore(hash, 1)
+			if exist {
+				v, ok := times.(int)
+				if ok {
+					task.countMap.Store(hash, v+1)
+				}
+			}
 			s.handleTransactionReceipt(task)
 		}
 	}()
