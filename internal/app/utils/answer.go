@@ -58,7 +58,7 @@ func AnswerCheck(key, answerUser, uri string, userScore int64) (pass bool, err e
 			score += scoreList[i].Int()
 		}
 	}
-	if userScore <= ((totalScore-passingScore)*10000/totalScore) && score >= passingScore {
+	if userScore == (score*10000/totalScore) && score >= passingScore {
 		return true, nil
 	}
 	return
