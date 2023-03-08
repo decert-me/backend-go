@@ -64,7 +64,6 @@ func (s *Service) handleClaimed(hash string, vLog *types.Log) (err error) {
 }
 
 func (s *Service) AirdropBadge() error {
-	log.Warn("AirdropBadge Run")
 	provider := s.w.Next()
 	defer func() {
 		if err := recover(); err != nil {
@@ -82,11 +81,11 @@ func (s *Service) AirdropBadge() error {
 		log.Error("GetPendingAirdrop error")
 		return err
 	}
-
-	tokenIdRes, receivers := s.receiverNotClaimList(client, tokenIds, listAddr)
-	if len(tokenIdRes) == 0 { // no task return
+	if len(tokenIds) == 0 { // no task return
 		return nil
 	}
+	tokenIdRes, receivers := s.receiverNotClaimList(client, tokenIds, listAddr)
+	log.Warn("AirdropBadge Run")
 	hash, err := s._airdropBadge(client, tokenIdRes, receivers)
 	if err != nil {
 		log.Errorv("_airdropBadge", zap.Any("error", err))
