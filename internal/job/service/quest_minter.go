@@ -84,7 +84,9 @@ func (s *Service) AirdropBadge() error {
 	}
 
 	tokenIdRes, receivers := s.receiverNotClaimList(client, tokenIds, listAddr)
-
+	if len(tokenIdRes) == 0 { // no task return
+		return nil
+	}
 	hash, err := s._airdropBadge(client, tokenIdRes, receivers)
 	if err != nil {
 		log.Errorv("_airdropBadge", zap.Any("error", err))
@@ -145,6 +147,7 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 	}
 	tx, err := questMinter.AirdropBadge(transactOpts, tokenIDs, receivers, signature)
 	if err != nil {
+		log.Errorv("questMinter.AirdropBadge error", zap.Any("tokenIDs", tokenIDs), zap.Any("receivers", receivers), zap.Any("signature", signature), zap.Error(err))
 		return
 	}
 	log.Infov("Airdrop tx sent :", zap.String("hash: ", tx.Hash().Hex()))
