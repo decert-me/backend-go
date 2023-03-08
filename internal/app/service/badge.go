@@ -8,7 +8,7 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
+	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"go.uber.org/zap"
 	"math/big"
 	"time"
@@ -20,12 +20,12 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 	if err != nil {
 		return res, errors.New("题目不存在")
 	}
-	score, pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri)
+	pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri, req.Score)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return res, errors.New("出现错误")
 	}
-	if !pass || score < req.Score {
+	if !pass {
 		return res, errors.New("答案错误")
 	}
 	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
@@ -33,9 +33,9 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 		return
 	}
 	hash := solsha3.SoliditySHA3(
-		[]string{"uint256", "uint256", "address", "address"},
+		[]string{"string", "uint256", "uint256", "address", "address"},
 		[]interface{}{
-			big.NewInt(req.TokenId), big.NewInt(req.Score), s.c.Contract.Badge, address,
+			"claim", big.NewInt(req.TokenId), big.NewInt(req.Score), s.c.Contract.Badge, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
@@ -60,12 +60,12 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	if err != nil {
 		return errors.New("题目不存在")
 	}
-	score, pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri)
+	pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri, req.Score)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return errors.New("出现错误")
 	}
-	if !pass || score < req.Score {
+	if !pass {
 		return errors.New("答案错误")
 	}
 	// 获取推文ID

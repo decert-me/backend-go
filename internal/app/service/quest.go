@@ -4,9 +4,10 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
+	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"strconv"
 )
 
@@ -29,12 +30,14 @@ func (s *Service) AddQuest(address string, add request.AddQuestRequest) (res str
 	if err != nil {
 		return
 	}
+	//supply, _ := new(big.Int).SetString(add.Supply, 10)
+	fmt.Println(add.Supply)
 	hash := solsha3.SoliditySHA3(
 		// types
 		[]string{"uint32", "uint32", "uint192", "string", "string", "address", "address"},
 		// values
 		[]interface{}{
-			0, 0, 0, add.Title, add.Uri, s.c.Contract.QuestMinter, address,
+			add.StartTs, add.EndTs, add.Supply, add.Title, add.Uri, s.c.Contract.QuestMinter, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)

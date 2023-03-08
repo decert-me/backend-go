@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
+	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"go.uber.org/zap"
 	"math/big"
 	"strings"
