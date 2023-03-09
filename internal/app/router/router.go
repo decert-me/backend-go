@@ -59,6 +59,7 @@ func Routers(c *config.Config) *gin.Engine {
 		})
 	}
 	v1Group := Router.Group("v1")
+	v1Group.Use(middleware.I18n())
 	{
 		InitQuestRouter(v1Group)
 		InitUserRouter(v1Group)

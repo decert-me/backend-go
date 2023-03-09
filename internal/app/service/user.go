@@ -46,32 +46,32 @@ func (s *Service) GetLoginMessage(address string) (loginMessage string, err erro
 func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token string, err error) {
 	midAuth := auth.New(s.c.Auth)
 	if !utils.VerifySignature(req.Address, req.Signature, []byte(req.Message)) {
-		return token, errors.New("签名校验失败")
+		return token, errors.New("SignatureVerificationFailed")
 	}
 	// 获取Nonce
 	indexNonce := strings.LastIndex(req.Message, "Nonce:")
 	if indexNonce == -1 {
-		return token, errors.New("nonce获取失败")
+		return token, errors.New("SignatureExpired")
 	}
 	nonce := req.Message[indexNonce+7:]
 	// 获取Address
 	indexAddress := strings.LastIndex(req.Message, "Wallet address:")
 	if indexAddress == -1 {
-		return token, errors.New("地址获取失败")
+		return token, errors.New("AddressError")
 	}
 	address := req.Message[indexAddress+16 : indexNonce]
 	// 校验address
 	if strings.TrimSpace(address) != req.Address {
-		return token, errors.New("签名地址错误")
+		return token, errors.New("AddressError")
 	}
 	// 校验Nonce
 	hasNonce, err := s.dao.HasNonce(context.Background(), nonce)
 	if err != nil {
 		log.Errorv("HasNonce error", zap.String("nonce", nonce))
-		return token, errors.New("签名已失效")
+		return token, errors.New("SignatureExpired")
 	}
 	if !hasNonce {
-		return token, errors.New("签名已失效")
+		return token, errors.New("SignatureExpired")
 	}
 	// 删除Nonce
 	if err = s.dao.DelNonce(context.Background(), nonce); err != nil {
@@ -79,13 +79,13 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	}
 	// 校验签名信息
 	if req.Message[:indexAddress] != s.c.BlockChain.Signature {
-		return token, errors.New("签名信息错误")
+		return token, errors.New("SignatureVerificationFailed")
 	}
 	// 保存用户信息
 	user, err := s.createUser(req.Address)
 	if err != nil {
 		log.Errorv("createUser error", zap.Any("address", req.Address), zap.Error(err))
-		return token, errors.New("获取token失败")
+		return token, errors.New("UnexpectedError")
 	}
 	// 验证成功返回JWT
 	claims := midAuth.CreateClaims(auth.BaseClaims{
@@ -95,7 +95,7 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 	token, err = midAuth.CreateToken(claims)
 	if err != nil {
 		log.Error("CreateToken error (%+v)", err)
-		return token, errors.New("获取token失败")
+		return token, errors.New("UnexpectedError")
 	}
 	return token, nil
 }

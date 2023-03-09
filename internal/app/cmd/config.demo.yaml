@@ -2,6 +2,7 @@
 system:
   env: develop
   addr: 8888
+  i18n: "locale.json"
 
 # pgsql configuration
 pgsql:
