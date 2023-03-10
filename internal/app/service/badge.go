@@ -54,7 +54,6 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	if !valid {
 		return errors.New("TokenIDInvalid")
 	}
-	// TODO: 检查用户是否已通过挑战，或已领取SBT
 	// 校验分数正确性
 	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenId})
 	if err != nil {
@@ -82,23 +81,14 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	if used {
 		return errors.New("TweetRepeated")
 	}
-	// 获取推文内容
-	tweet, err := utils.GetTweetById(s.c, tweetId)
-	if err != nil {
-		return errors.New("BrokenLink")
-	}
-	// 验证推文内容
-	if !utils.CheckIfMatchClaimTweet(s.c, req.TokenId, tweet) {
-		return errors.New("InconsistentTweet")
-	}
 	// 保存到数据库
 	err = s.dao.CreateClaimBadgeTweet(&model.ClaimBadgeTweet{
-		Address:    address,
-		TokenId:    req.TokenId,
-		Url:        req.TweetUrl,
-		TweetId:    tweetId,
-		AddTs:      time.Now().Unix(),
-		Airdropped: false,
+		Address: address,
+		TokenId: req.TokenId,
+		Score:   req.Score,
+		Url:     req.TweetUrl,
+		TweetId: tweetId,
+		AddTs:   time.Now().Unix(),
 	})
 	if err != nil {
 		log.Errorv("CreateClaimBadgeTweet error", zap.Error(err))

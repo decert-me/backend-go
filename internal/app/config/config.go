@@ -11,7 +11,6 @@ type Config struct {
 	Pgsql      *Pgsql       `mapstructure:"pgsql" json:"pgsql" yaml:"pgsql"`
 	BlockChain *BlockChain  `mapstructure:"blockchain" json:"blockchain" yaml:"blockchain"`
 	Contract   *Contract    `mapstructure:"contract" json:"contract" yaml:"contract"`
-	Twitter    *Twitter     `mapstructure:"twitter" json:"twitter" yaml:"twitter"`
 	Auth       *auth.Config `mapstructure:"auth" json:"auth" yaml:"auth"`
 	Redis      *Redis       `mapstructure:"redis" json:"redis" yaml:"redis"`
 	Quest      *Quest       `mapstructure:"quest" json:"quest" yaml:"quest"`

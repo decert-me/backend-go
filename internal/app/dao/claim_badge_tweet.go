@@ -3,19 +3,24 @@ package dao
 import (
 	"backend-go/internal/app/model"
 	"github.com/ethereum/go-ethereum/common"
+	"gorm.io/gorm/clause"
 	"time"
 )
 
 func (d *Dao) HasTweet(tweetId string) (bool, error) {
 	var total int64
 	err := d.db.Model(&model.ClaimBadgeTweet{}).
-		Where("tweet_id", tweetId).
+		Where("tweet_id", tweetId).Where("status != 2").
 		Count(&total).Error
 	return total != 0, err
 }
 
 func (d *Dao) CreateClaimBadgeTweet(req *model.ClaimBadgeTweet) (err error) {
-	return d.db.Create(req).Error
+	err = d.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "address"}, {Name: "token_id"}},
+		UpdateAll: true,
+	}).Create(&req).Error
+	return err
 }
 
 func (d *Dao) GetPendingAirdrop() (res map[int64][]string, err error) {

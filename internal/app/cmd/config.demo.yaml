@@ -61,11 +61,6 @@ contract:
   badge: "0xaD1789A4cA2640a570a1268c84EA87e09A10A1f5"
   quest: "0xd1E50047cEbaD1d826c3F7961A35048B518652F2"
   quest-minter: "0xeb4E2EE6f165e7E1B9a4F1c4532C0433a6Ef397B"
-  
-# twitter configuration
-twitter:
-  bear-token: ""
-  claim-content: "我通过了 @DecertMe 上完成了一个挑战并获得了链上能力认证的徽章。\nhttps://decert.me/quests/\n#DecertMe"
 
 # quest configuration
 quest:

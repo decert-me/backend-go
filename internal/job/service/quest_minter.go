@@ -76,7 +76,7 @@ func (s *Service) AirdropBadge() error {
 		log.Error("ethclient dial error")
 		return errors.New("ethclient dial error")
 	}
-	tokenIds, listAddr, err := s.dao.GetPendingAirdrop()
+	tokenIds, listAddr, scores, err := s.dao.GetPendingAirdrop()
 	if err != nil {
 		log.Error("GetPendingAirdrop error")
 		return err
@@ -84,9 +84,9 @@ func (s *Service) AirdropBadge() error {
 	if len(tokenIds) == 0 { // no task return
 		return nil
 	}
-	tokenIdRes, receivers := s.receiverNotClaimList(client, tokenIds, listAddr)
+	tokenIdRes, receivers, scores := s.receiverNotClaimList(client, tokenIds, listAddr, scores)
 	log.Warn("AirdropBadge Run")
-	hash, err := s._airdropBadge(client, tokenIdRes, receivers)
+	hash, err := s._airdropBadge(client, tokenIdRes, receivers, scores)
 	if err != nil {
 		log.Errorv("_airdropBadge", zap.Any("error", err))
 		return nil
@@ -101,7 +101,7 @@ func (s *Service) AirdropBadge() error {
 	return nil
 }
 
-func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, receivers []common.Address) (txHash common.Hash, err error) {
+func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, receivers []common.Address, scores []*big.Int) (txHash common.Hash, err error) {
 	signPrivateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return
@@ -144,7 +144,7 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 		Context:  auth.Context,
 		NoSend:   false,
 	}
-	tx, err := questMinter.AirdropBadge(transactOpts, tokenIDs, receivers, signature)
+	tx, err := questMinter.AirdropBadge(transactOpts, tokenIDs, receivers, scores, signature)
 	if err != nil {
 		log.Errorv("questMinter.AirdropBadge error", zap.Any("tokenIDs", tokenIDs), zap.Any("receivers", receivers), zap.Any("signature", signature), zap.Error(err))
 		return
@@ -153,7 +153,7 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 	return tx.Hash(), nil
 }
 
-func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.Int, receivers []string) (tokenIdRes []*big.Int, receiversNotClaim []common.Address) {
+func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.Int, receivers []string, scores []*big.Int) (tokenIdRes []*big.Int, receiversNotClaim []common.Address, scoresRes []*big.Int) {
 	badge, err := ABI.NewBadge(common.HexToAddress(s.c.Contract.Badge), client)
 	if err != nil {
 		return
@@ -175,6 +175,7 @@ func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.
 		}
 		tokenIdRes = append(tokenIdRes, tokenId[i])
 		receiversNotClaim = append(receiversNotClaim, common.HexToAddress(receivers[i]))
+		scoresRes = append(scoresRes, scores[i])
 	}
 	if len(tokenIdRes) != len(receiversNotClaim) {
 		err = errors.New("token and address len error")
