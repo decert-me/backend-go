@@ -28,6 +28,13 @@ func Init(s *service.Service, i map[string]map[string]string) {
 	i18n = i
 }
 
+func Ping(c *gin.Context) {
+	if err := srv.Ping(c); err != nil {
+		c.JSON(500, err)
+	}
+	c.JSON(200, "ok")
+}
+
 // GetMessage get i18n message
 func GetMessage(c *gin.Context, key string) string {
 	lang := c.GetString("lang")
