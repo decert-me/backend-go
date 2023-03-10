@@ -19,10 +19,10 @@ func (d *Dao) HasTweet(tweetId string) (bool, error) {
 func (d *Dao) CreateClaimBadgeTweet(req *model.ClaimBadgeTweet) (exists bool, err error) {
 	var claimd model.ClaimBadgeTweet
 	result := d.db.Where("address = ? AND token_id = ?", req.Address, req.TokenId).Where("status = 1").First(&claimd)
-	if result.Error != gorm.ErrRecordNotFound {
+	if result.Error == nil {
 		return true, nil
 	}
-	if result.Error != nil {
+	if result.Error != gorm.ErrRecordNotFound {
 		return false, result.Error
 	}
 	err = d.db.Clauses(clause.OnConflict{
