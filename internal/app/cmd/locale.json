@@ -14,8 +14,9 @@
     "NoBindingDetected": "No binding detected!",
     "AddressError": "Address error!",
     "SignatureExpired": "Signature has expired!",
-    "SignatureVerificationFailed": "Signature verification failed",
-    "UnauthorizedAccess": "Unauthorized access"
+    "SignatureVerificationFailed": "Signature verification failed!",
+    "UnauthorizedAccess": "Unauthorized access!",
+    "AlreadyHoldsBadge": "Already holds badge!"
   },
   "zh-CN": {
     "OperationSuccess": "操作成功！",
@@ -29,10 +30,11 @@
     "BrokenLink": "链接错误！",
     "TweetRepeated": "推文重复使用！",
     "InconsistentTweet": "推文不匹配！",
-    "NoBindingDetected": "未检测到绑定信息!",
-    "AddressError": "地址错误!",
-    "SignatureExpired": "签名已失效!",
-    "SignatureVerificationFailed": "签名校验失败",
-    "UnauthorizedAccess": "授权已过期"
+    "NoBindingDetected": "未检测到绑定信息！",
+    "AddressError": "地址错误！",
+    "SignatureExpired": "签名已失效！",
+    "SignatureVerificationFailed": "签名校验失败！",
+    "UnauthorizedAccess": "授权已过期！",
+    "AlreadyHoldsBadge": "已经拥有徽章！"
   }
 }
