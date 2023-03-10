@@ -82,7 +82,7 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 		return errors.New("TweetRepeated")
 	}
 	// 保存到数据库
-	err = s.dao.CreateClaimBadgeTweet(&model.ClaimBadgeTweet{
+	exists, err := s.dao.CreateClaimBadgeTweet(&model.ClaimBadgeTweet{
 		Address: address,
 		TokenId: req.TokenId,
 		Score:   req.Score,
@@ -92,6 +92,10 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	})
 	if err != nil {
 		log.Errorv("CreateClaimBadgeTweet error", zap.Error(err))
+		return errors.New("UnexpectedError")
+	}
+	if exists {
+		return errors.New("AlreadyHoldsBadge")
 	}
 	return nil
 }
