@@ -26,7 +26,7 @@ const FailHash = "0x438688940d6bcaf169dae9207e97872392f0b81717250596777f8713be37
 const WaitHash = "0x3e47e241a2b7a5bcaecacc89c563b1eb70231222b561369c82d9f951d39b75f1"
 
 func TestMain(m *testing.M) {
-	c = initialize.Viper("../cmd/config.yaml")
+	c = initialize.Viper("../../../bin/job/config.yaml")
 	// 初始化日志框架
 	c.Log.Save = false
 	c.Log.Level = "silent"

@@ -31,7 +31,7 @@ const TWEETID = "1633028821715927041"
 const ADDRESS = "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
 
 func TestMain(m *testing.M) {
-	c = initialize.Viper("../cmd/config.yaml")
+	c = initialize.Viper("../../../bin/app/config.yaml")
 	// 初始化日志框架
 	c.Log.Save = false
 	c.Log.Level = "silent"
@@ -54,7 +54,7 @@ func TestMain(m *testing.M) {
 	/*
 	 * Job
 	 */
-	jobConfig := jobInit.Viper("../../job/cmd/config.yaml")
+	jobConfig := jobInit.Viper("../../../bin/job/config.yaml")
 	// 初始化日志框架
 	jobConfig.Log.Save = false
 	jobConfig.Log.Level = "silent"
