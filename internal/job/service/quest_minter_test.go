@@ -15,33 +15,32 @@ import (
 )
 
 func TestHandleClaimed(t *testing.T) {
-	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
 	deleteQuest()
 	deleteChallenges()
 	deleteTransaction()
 
 	// no such tokenId in quest
-	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}, txMap: new(sync.Map), countMap: new(sync.Map)})
-	assert.Error(t, s.dao.DB().Where("token_id", 10003).Where("address", address).First(&model.UserChallenges{}).Error)
+	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: ClaimHash}, txMap: new(sync.Map), countMap: new(sync.Map)})
+	assert.Error(t, s.dao.DB().Where("token_id", TOKENID).Where("address", ADDRESS).First(&model.UserChallenges{}).Error)
 	// normal
 	deleteQuest()
 	deleteChallenges()
 	deleteTransaction()
 
-	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa"}, txMap: new(sync.Map), countMap: new(sync.Map)})
-	waitForQuestCreated(10003)
-	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}, txMap: new(sync.Map), countMap: new(sync.Map)})
-	waitForClaimed(10003, address)
+	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: QuestCreatedHash}, txMap: new(sync.Map), countMap: new(sync.Map)})
+	waitForQuestCreated(TOKENID)
+	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: ClaimHash}, txMap: new(sync.Map), countMap: new(sync.Map)})
+	waitForClaimed(TOKENID, ADDRESS)
 	var challenge model.UserChallenges
-	err := d.DB().Where("token_id", 10003).Where("address", address).First(&challenge).Error
+	err := d.DB().Where("token_id", TOKENID).Where("address", ADDRESS).First(&challenge).Error
 	assert.Nil(t, err)
 	assert.NotZero(t, challenge.AddTs)
 	assert.NotZero(t, challenge.UpdateTs)
 	assert.NotZero(t, challenge.ClaimTs)
 	challengeExpected := model.UserChallenges{
 		ID:       challenge.ID,
-		Address:  address,
-		TokenId:  10003,
+		Address:  ADDRESS,
+		TokenId:  TOKENID,
 		Status:   2,
 		Claimed:  true,
 		ClaimTs:  challenge.ClaimTs,
@@ -82,9 +81,7 @@ func TestBlockChain_receiverNotClaimList(t *testing.T) {
 }
 
 func TestBlockChain_AirdropBadge(t *testing.T) {
-	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
 	// ethclient dial error
-
 	temp := *s.c.BlockChain
 	*s.c.BlockChain = config.BlockChain{Provider: []config.Provider{{"httest://12312", 5}}}
 	s.w = initialize.InitProvider(s.c)
@@ -97,8 +94,8 @@ func TestBlockChain_AirdropBadge(t *testing.T) {
 	//
 	deleteBadgeTweet()
 	s.dao.CreateClaimBadgeTweet(&model.ClaimBadgeTweet{
-		Address: address,
-		TokenId: 10003,
+		Address: ADDRESS,
+		TokenId: TOKENID,
 	})
 	err = s.AirdropBadge()
 	assert.Nil(t, err)
@@ -109,7 +106,7 @@ func TestQuestMinterServiceCrash(t *testing.T) {
 	s.dao.Close() // Service Crash
 	// Start testing
 	assert.EqualErrorf(t, s.AirdropBadge(), "sql: database is closed", "")
-	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: "0xd4a9528e8600cab85835c4ac6282771e66d5cab6c62f9e34b0f955917f6f1511"}, txMap: new(sync.Map), countMap: new(sync.Map)})
+	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: ClaimHash}, txMap: new(sync.Map), countMap: new(sync.Map)})
 
 	client, err := ethclient.Dial(s.w.Next().Item)
 	assert.Nil(t, err)
