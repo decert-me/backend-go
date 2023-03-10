@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	solsha3 "github.com/miguelmota/go-solidity-sha3"
+	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"go.uber.org/zap"
 	"math/big"
 	"strings"
@@ -64,7 +64,6 @@ func (s *Service) handleClaimed(hash string, vLog *types.Log) (err error) {
 }
 
 func (s *Service) AirdropBadge() error {
-	log.Warn("AirdropBadge Run")
 	provider := s.w.Next()
 	defer func() {
 		if err := recover(); err != nil {
@@ -77,15 +76,17 @@ func (s *Service) AirdropBadge() error {
 		log.Error("ethclient dial error")
 		return errors.New("ethclient dial error")
 	}
-	tokenIds, listAddr, err := s.dao.GetPendingAirdrop()
+	tokenIds, listAddr, scores, err := s.dao.GetPendingAirdrop()
 	if err != nil {
 		log.Error("GetPendingAirdrop error")
 		return err
 	}
-
-	tokenIdRes, receivers := s.receiverNotClaimList(client, tokenIds, listAddr)
-
-	hash, err := s._airdropBadge(client, tokenIdRes, receivers)
+	if len(tokenIds) == 0 { // no task return
+		return nil
+	}
+	tokenIdRes, receivers, scores := s.receiverNotClaimList(client, tokenIds, listAddr, scores)
+	log.Warn("AirdropBadge Run")
+	hash, err := s._airdropBadge(client, tokenIdRes, receivers, scores)
 	if err != nil {
 		log.Errorv("_airdropBadge", zap.Any("error", err))
 		return nil
@@ -100,7 +101,7 @@ func (s *Service) AirdropBadge() error {
 	return nil
 }
 
-func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, receivers []common.Address) (txHash common.Hash, err error) {
+func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, receivers []common.Address, scores []*big.Int) (txHash common.Hash, err error) {
 	signPrivateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return
@@ -143,15 +144,16 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 		Context:  auth.Context,
 		NoSend:   false,
 	}
-	tx, err := questMinter.AirdropBadge(transactOpts, tokenIDs, receivers, signature)
+	tx, err := questMinter.AirdropBadge(transactOpts, tokenIDs, receivers, scores, signature)
 	if err != nil {
+		log.Errorv("questMinter.AirdropBadge error", zap.Any("tokenIDs", tokenIDs), zap.Any("receivers", receivers), zap.Any("signature", signature), zap.Error(err))
 		return
 	}
 	log.Infov("Airdrop tx sent :", zap.String("hash: ", tx.Hash().Hex()))
 	return tx.Hash(), nil
 }
 
-func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.Int, receivers []string) (tokenIdRes []*big.Int, receiversNotClaim []common.Address) {
+func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.Int, receivers []string, scores []*big.Int) (tokenIdRes []*big.Int, receiversNotClaim []common.Address, scoresRes []*big.Int) {
 	badge, err := ABI.NewBadge(common.HexToAddress(s.c.Contract.Badge), client)
 	if err != nil {
 		return
@@ -173,6 +175,7 @@ func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.
 		}
 		tokenIdRes = append(tokenIdRes, tokenId[i])
 		receiversNotClaim = append(receiversNotClaim, common.HexToAddress(receivers[i]))
+		scoresRes = append(scoresRes, scores[i])
 	}
 	if len(tokenIdRes) != len(receiversNotClaim) {
 		err = errors.New("token and address len error")

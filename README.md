@@ -20,6 +20,7 @@ go build -o bin/job/job-app internal/job/cmd/main.go
 cp ./internal/app/cmd/config.demo.yaml ./bin/app/config.yaml
 vi ./bin/app/config.yaml
 
+cp ./internal/app/cmd/locale.json ./bin/app/locale.json
 # 定时处理程序配置
 cp ./internal/job/cmd/config.demo.yaml ./bin/job/config.yaml
 vi ./bin/job/config.yaml

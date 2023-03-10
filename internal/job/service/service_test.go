@@ -18,22 +18,30 @@ var c *config.Config
 var d *dao.Dao
 var s *Service
 
+const QuestCreatedHash = "0x86760fe2fd761b497c40df0f2c3ebbaaef911b5d238c7c77b483b78c7a64f57c"
+const ClaimHash = "0x6314296c70327955f089734d4b67de7b174798e32424a0dd3874f85c8ff82e25"
+const TOKENID = 10033
+const ADDRESS = "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
+const FailHash = "0x438688940d6bcaf169dae9207e97872392f0b81717250596777f8713be37b945"
+const WaitHash = "0x3e47e241a2b7a5bcaecacc89c563b1eb70231222b561369c82d9f951d39b75f1"
+
 func TestMain(m *testing.M) {
-	c = initialize.Viper("../cmd/config.yaml")
+	c = initialize.Viper("../../../bin/job/config.yaml")
 	// 初始化日志框架
 	c.Log.Save = false
-	c.Log.Level = "silent"
-	c.Log.LogInConsole = true
 	log.Init(c.Log)
-	c.Pgsql.LogMode = "silent"
 	c.Pgsql.AutoMigrate = true
 	c.BlockChain.ChainID = 5
 	c.BlockChain.Attempt = 5
+	c.Twitter.ClaimContent = "我在 @DecertMe 上完成了一个挑战并获得了链上能力认证的徽章。\nhttps://decert.me/quests/\n#DecertMe"
 	// test contract address
 	c.Contract = &config.Contract{
-		Badge:       "0x0049770260b599Ecc2e2c0645450c965A44938b7",
-		Quest:       "0xfE3e0366a52C6F668a1026dAF5e81162d34Ec38b",
-		QuestMinter: "0xbE866FE4BAFC11ae886238772AFBD24570f9B530",
+		Badge:       "0x66C54CB10Ef3d038aaBA2Ac06d2c25B326be8142",
+		Quest:       "0x020ef5c45182019A5aa48A8dD089a3712ad491b4",
+		QuestMinter: "0xEdC46868f04d482f04A8c29E915aBED72C03cD35",
+	}
+	c.BlockChain.Provider = []config.Provider{
+		{Url: "https://rpc.ankr.com/polygon_mumbai"},
 	}
 	c.Pgsql.Prefix = "test_" // add test prefix
 	c.Scheduler.Active = true

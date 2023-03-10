@@ -59,7 +59,7 @@ func TestService_AuthLoginSignRequest(t *testing.T) {
 			Signature: "0x31b510e0bbb0a6e52d500631d550f47802001ab958f2e5893fed591cae59e92330f8de89e999f75ab0607ce1f100de78f1dcd2030714624adc6ccf5c870928c21c",
 		},
 	)
-	assert.Equal(t, "签名校验失败", err.Error())
+	assert.Equal(t, "SignatureVerificationFailed", err.Error())
 	// 签名已失效
 	_, err = s.AuthLoginSignRequest(
 		request.AuthLoginSignRequest{
@@ -68,7 +68,7 @@ func TestService_AuthLoginSignRequest(t *testing.T) {
 			Signature: "0x32b510e0bbb0a6e52d500631d550f47802001ab958f2e5893fed591cae59e92330f8de89e999f75ab0607ce1f100de78f1dcd2030714624adc6ccf5c870928c21c",
 		},
 	)
-	assert.Equal(t, "签名已失效", err.Error())
+	assert.Equal(t, "SignatureExpired", err.Error())
 	// 签名地址错误
 	_, err = s.AuthLoginSignRequest(
 		request.AuthLoginSignRequest{
@@ -77,7 +77,7 @@ func TestService_AuthLoginSignRequest(t *testing.T) {
 			Signature: "0x521f0d827ea82621971b74d40ca897565b1d80f3242ea1153544167716d8da6f4a8639aa6c8d889081e8d430471ae484c863cc9725399548637e7138b3b69b571b",
 		},
 	)
-	assert.Equal(t, "签名地址错误", err.Error())
+	assert.Equal(t, "AddressError", err.Error())
 	// nonce获取失败
 	_, err = s.AuthLoginSignRequest(
 		request.AuthLoginSignRequest{
@@ -86,7 +86,7 @@ func TestService_AuthLoginSignRequest(t *testing.T) {
 			Signature: "0x400e034b9a53e5653d5a9e565a7d915a5793689cadac2942b6fbfe22afb881b1229b28e6ce4693b71335f697c67933a7d506de937f42b050206ed6b684ec17021c",
 		},
 	)
-	assert.Equal(t, "nonce获取失败", err.Error())
+	assert.Equal(t, "SignatureExpired", err.Error())
 	// address获取失败
 	_, err = s.AuthLoginSignRequest(
 		request.AuthLoginSignRequest{
@@ -95,7 +95,7 @@ func TestService_AuthLoginSignRequest(t *testing.T) {
 			Signature: "0xb509ed2e9bf35579431f6da48051e5fe968a2af3202483754d91198d8cf7693c2b2edc5e359e37a83ca6969abbcb236f5f89483875cd1e27dddb28a2601af7cd1c",
 		},
 	)
-	assert.Equal(t, "地址获取失败", err.Error())
+	assert.Equal(t, "AddressError", err.Error())
 	// 签名信息错误
 	err = s.dao.SetNonce(context.Background(), "0d2c1cb5-3cad-431a-a266-6e3262cb5fb7")
 	assert.Nil(t, err)
@@ -107,7 +107,7 @@ func TestService_AuthLoginSignRequest(t *testing.T) {
 			Signature: "0xa37af8f9d6889ab2bdfd2ed0769d93514045d3d8a2e2b046167032567e67babe497512fe14c369f44bc1d39ed3d26b86c58d63dec7dd4a5c5ffa665a63ba70491c",
 		},
 	)
-	assert.Equal(t, "签名信息错误", err.Error())
+	assert.Equal(t, "SignatureVerificationFailed", err.Error())
 
 	// 登陆成功
 	deleteUser()
@@ -147,7 +147,7 @@ func TestUserServiceCrash(t *testing.T) {
 			Signature: "0x32b510e0bbb0a6e52d500631d550f47802001ab958f2e5893fed591cae59e92330f8de89e999f75ab0607ce1f100de78f1dcd2030714624adc6ccf5c870928c21c",
 		},
 	)
-	assert.EqualErrorf(t, err, "签名已失效", "")
+	assert.EqualErrorf(t, err, "SignatureExpired", "")
 	// restart
 	d = dao.New(c)
 	s = New(c)

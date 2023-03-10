@@ -2,7 +2,6 @@ package v1
 
 import (
 	"backend-go/internal/app/model/request"
-	"backend-go/internal/app/model/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,14 +10,14 @@ func PermitClaimBadge(c *gin.Context) {
 	var req request.PermitClaimBadgeReq
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
-		response.FailWithMessage("参数错误", c)
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
 	address := c.GetString("address")
 	if list, err := srv.PermitClaimBadge(address, req); err != nil {
-		response.Fail(c)
+		Fail(c)
 	} else {
-		response.OkWithData(list, c)
+		OkWithData(list, c)
 	}
 }
 
@@ -27,8 +26,8 @@ func SubmitClaimTweet(c *gin.Context) {
 	_ = c.ShouldBindJSON(&req)
 	address := c.GetString("address")
 	if err := srv.SubmitClaimTweet(address, req); err != nil {
-		response.FailWithMessage(err.Error(), c)
+		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
-		response.Ok(c)
+		Ok(c)
 	}
 }

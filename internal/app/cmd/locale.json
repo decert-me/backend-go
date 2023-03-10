@@ -1,0 +1,40 @@
+{
+  "en-US": {
+    "OperationSuccess": "Success!",
+    "OperationFailed": "Failed!",
+    "UnexpectedError": "Oops!",
+    "ParameterError": "Parameter error!",
+    "FetchSuccess": "Fetch success!",
+    "FetchFailed": "Fetch failed!",
+    "AnswerIncorrect": "Answer incorrect!",
+    "TokenIDInvalid": "TokenID invalid!",
+    "BrokenLink": "Broken link!",
+    "TweetRepeated": "Tweet repeated!",
+    "InconsistentTweet": "Inconsistent tweet!",
+    "NoBindingDetected": "No binding detected!",
+    "AddressError": "Address error!",
+    "SignatureExpired": "Signature has expired!",
+    "SignatureVerificationFailed": "Signature verification failed!",
+    "UnauthorizedAccess": "Unauthorized access!",
+    "AlreadyHoldsBadge": "Already holds badge!"
+  },
+  "zh-CN": {
+    "OperationSuccess": "操作成功！",
+    "OperationFailed": "操作失败！",
+    "UnexpectedError": "抱歉，出错了！",
+    "ParameterError": "参数错误！",
+    "FetchSuccess": "获取成功！",
+    "FetchFailed": "获取失败！",
+    "AnswerIncorrect": "答案错误！",
+    "TokenIDInvalid": "题目不存在！",
+    "BrokenLink": "链接错误！",
+    "TweetRepeated": "推文重复使用！",
+    "InconsistentTweet": "推文不匹配！",
+    "NoBindingDetected": "未检测到绑定信息！",
+    "AddressError": "地址错误！",
+    "SignatureExpired": "签名已失效！",
+    "SignatureVerificationFailed": "签名校验失败！",
+    "UnauthorizedAccess": "授权已过期！",
+    "AlreadyHoldsBadge": "已经拥有徽章！"
+  }
+}

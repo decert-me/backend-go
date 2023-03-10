@@ -20,8 +20,10 @@ func main() {
 	log.Init(config.Log)
 	// 初始化service
 	s := service.New(config)
+	// 国际化
+	i18n := initialize.InitI18n(config)
 	// 初始化api
-	v1.Init(s)
+	v1.Init(s, i18n)
 	// 初始化router
 	router.New(config)
 

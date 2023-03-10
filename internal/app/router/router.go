@@ -1,6 +1,7 @@
 package router
 
 import (
+	v1 "backend-go/internal/app/api/v1"
 	"backend-go/internal/app/config"
 	"backend-go/internal/app/middleware"
 	"fmt"
@@ -55,10 +56,11 @@ func Routers(c *config.Config) *gin.Engine {
 	{
 		// 健康监测
 		PublicGroup.GET("/health", func(c *gin.Context) {
-			c.JSON(200, "ok")
+			v1.Ping(c)
 		})
 	}
 	v1Group := Router.Group("v1")
+	v1Group.Use(middleware.I18n())
 	{
 		InitQuestRouter(v1Group)
 		InitUserRouter(v1Group)

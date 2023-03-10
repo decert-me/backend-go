@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"backend-go/internal/app/model/response"
+	v1 "backend-go/internal/app/api/v1"
 	"backend-go/pkg/auth"
 	"github.com/gin-gonic/gin"
 )
@@ -11,7 +11,8 @@ func Auth() gin.HandlerFunc {
 		// 鉴权头部信息： x-token
 		token := c.Request.Header.Get("x-token")
 		if token == "" {
-			response.FailWithDetailed(gin.H{"reload": true}, "授权已过期或非法访问1", c)
+			v1.FailWithDetailed(gin.H{"reload": true}, v1.GetMessage(c, "UnauthorizedAccess"), c)
+			//FailWithDetailed(gin.H{"reload": true}, "授权已过期或非法访问1", c)
 			c.Abort()
 			return
 		}
@@ -19,11 +20,11 @@ func Auth() gin.HandlerFunc {
 		claims, err := midAuth.ParseToken(token)
 		if err != nil {
 			if err == auth.TokenExpired {
-				response.FailWithDetailed(gin.H{"reload": true}, "授权已过期", c)
+				v1.FailWithDetailed(gin.H{"reload": true}, v1.GetMessage(c, "UnauthorizedAccess"), c)
 				c.Abort()
 				return
 			}
-			response.FailWithDetailed(gin.H{"reload": true}, err.Error(), c)
+			v1.FailWithDetailed(gin.H{"reload": true}, err.Error(), c)
 			c.Abort()
 			return
 		}
