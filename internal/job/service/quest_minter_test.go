@@ -63,17 +63,19 @@ func TestBlockChain_receiverNotClaimList(t *testing.T) {
 	assert.Nil(t, err)
 	tokenIds := []*big.Int{big.NewInt(10003), big.NewInt(10003), big.NewInt(10003)}
 	receivers := []string{"0x7d32D1DE76acd73d58fc76542212e86ea63817d8", "0xBC5Ea980BdD0436a2798Bccf8fECc61bCb0010f2", "0xbe866fe4bafc11ae886238772afbd24570f9b530"}
-	_, receiversNotClaim := s.receiverNotClaimList(client, tokenIds, receivers)
+	scores := []*big.Int{big.NewInt(100), big.NewInt(100), big.NewInt(100)}
+	// should filter claimed
+	_, receiversNotClaim, _ := s.receiverNotClaimList(client, tokenIds, receivers, scores)
 	receiversNotClaimExpected := []common.Address{common.HexToAddress("0xBC5Ea980BdD0436a2798Bccf8fECc61bCb0010f2"), common.HexToAddress("0xbe866fe4bafc11ae886238772afbd24570f9b530")}
 	assert.Equal(t, receiversNotClaimExpected, receiversNotClaim, "should filter claimed")
-
+	// should not filter
 	tokenIds = []*big.Int{big.NewInt(9999), big.NewInt(9999), big.NewInt(9999)}
-	_, receiversNotClaim = s.receiverNotClaimList(client, tokenIds, receivers)
+	_, receiversNotClaim, _ = s.receiverNotClaimList(client, tokenIds, receivers, scores)
 	receiversNotClaimExpected = []common.Address{common.HexToAddress("0x7d32D1DE76acd73d58fc76542212e86ea63817d8"), common.HexToAddress("0xBC5Ea980BdD0436a2798Bccf8fECc61bCb0010f2"), common.HexToAddress("0xbe866fe4bafc11ae886238772afbd24570f9b530")}
 	assert.Equal(t, receiversNotClaimExpected, receiversNotClaim, "should not filter")
-
+	// should filter wrong addresses
 	tokenIds = []*big.Int{big.NewInt(10003), big.NewInt(10003)}
-	_, receiversNotClaim = s.receiverNotClaimList(client, tokenIds, []string{"0x7d32D1DE76acd73d58fc76542212e86ea638173232grerg43523", "0xBC5Ea980BdD0436a2798Bccf8fECc61bCb0010f2"})
+	_, receiversNotClaim, _ = s.receiverNotClaimList(client, tokenIds, []string{"0x7d32D1DE76acd73d58fc76542212e86ea638173232grerg43523", "0xBC5Ea980BdD0436a2798Bccf8fECc61bCb0010f2"}, scores)
 	receiversNotClaimExpected = []common.Address{common.HexToAddress("0xBC5Ea980BdD0436a2798Bccf8fECc61bCb0010f2")}
 	assert.Equal(t, receiversNotClaimExpected, receiversNotClaim, "should filter wrong addresses")
 
@@ -111,7 +113,7 @@ func TestQuestMinterServiceCrash(t *testing.T) {
 
 	client, err := ethclient.Dial(s.w.Next().Item)
 	assert.Nil(t, err)
-	s.receiverNotClaimList(client, []*big.Int{big.NewInt(10003)}, []string{"0x7d32D1DE76acd73d58fc76542212e86ea638173232grerg43523"})
+	s.receiverNotClaimList(client, []*big.Int{big.NewInt(10003)}, []string{"0x7d32D1DE76acd73d58fc76542212e86ea638173232grerg43523"}, []*big.Int{big.NewInt(100)})
 	// restart
 	s.dao = dao.New(c)
 }

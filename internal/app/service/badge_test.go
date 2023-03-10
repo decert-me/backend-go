@@ -10,27 +10,26 @@ import (
 
 func TestService_PermitClaimBadge(t *testing.T) {
 	// delete exist
-	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
 	deleteQuest()
 	deleteTransaction()
 	deleteChallenges()
 	// Start testing
-	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
-	waitForQuestCreated(10003)
-	res, err := s.PermitClaimBadge("0x7d32D1DE76acd73d58fc76542212e86ea63817d8", request.PermitClaimBadgeReq{
-		TokenId: 10003,
-		Score:   100,
-		Answer:  "[0,[0,1],\"true\"]",
+	s.HashSubmit("", QuestCreatedHash)
+	waitForQuestCreated(TOKENID)
+	res, err := s.PermitClaimBadge(ADDRESS, request.PermitClaimBadgeReq{
+		TokenId: TOKENID,
+		Score:   SCORE,
+		Answer:  ANSWER,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "0x07de3bb6c6e6c4889c25d6f1aab4f282ae41296460e97f699af5d36527ab28d7645169d4bc6aca9482623db91f42e9044335127092172d252ee895cc492ba1141b", res, "sign should equal")
+	assert.Equal(t, "0xeddb0acc916fdcc5dff6d3f75818f146dce95974239dbaf18370af72ac37f0ca0449ec58ac2c57c1998463609770d85dc09c3489cf86c06d9c5edbce04e264391c", res, "sign should equal")
 	// tokenID invalid
-	_, err = s.PermitClaimBadge(address, request.PermitClaimBadgeReq{
+	_, err = s.PermitClaimBadge(ADDRESS, request.PermitClaimBadgeReq{
 		TokenId: 10,
-		Score:   100,
-		Answer:  "[0,[0,1],\"true\"]",
+		Score:   SCORE,
+		Answer:  ANSWER,
 	})
-	assert.EqualErrorf(t, err, "题目不存在", "")
+	assert.EqualErrorf(t, err, "TokenIDInvalid", "")
 	// clear
 	deleteQuest()
 	deleteTransaction()
@@ -38,25 +37,24 @@ func TestService_PermitClaimBadge(t *testing.T) {
 }
 func TestService_PermitClaimBadge2(t *testing.T) {
 	// delete exist
-	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
 	deleteQuest()
 	deleteTransaction()
-	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
-	waitForQuestCreated(10003)
+	s.HashSubmit("", QuestCreatedHash)
+	waitForQuestCreated(TOKENID)
 	// answer error
-	_, err := s.PermitClaimBadge(address, request.PermitClaimBadgeReq{
-		TokenId: 10003,
-		Score:   100,
+	_, err := s.PermitClaimBadge(ADDRESS, request.PermitClaimBadgeReq{
+		TokenId: TOKENID,
+		Score:   SCORE,
 		Answer:  "[1,[0,1],\"trued\"]",
 	})
-	assert.EqualErrorf(t, err, "答案错误", "")
+	assert.EqualErrorf(t, err, "AnswerIncorrect", "")
 	// answer length error
-	_, err = s.PermitClaimBadge(address, request.PermitClaimBadgeReq{
-		TokenId: 10003,
-		Score:   100,
+	_, err = s.PermitClaimBadge(ADDRESS, request.PermitClaimBadgeReq{
+		TokenId: TOKENID,
+		Score:   SCORE,
 		Answer:  "[[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "出现错误", "")
+	assert.EqualErrorf(t, err, "UnexpectedError", "")
 
 	// clear
 	deleteQuest()
@@ -65,60 +63,60 @@ func TestService_PermitClaimBadge2(t *testing.T) {
 
 func TestService_SubmitClaimTweet(t *testing.T) {
 	// delete exist
-	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
-	// Start testing
 	deleteTransaction()
 	deleteQuest()
 	deleteBadgeTweet()
-	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
-	waitForQuestCreated(10003)
-	err := s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
-		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
-		Score:    100,
-		Answer:   "[0,[0,1],\"true\"]",
+	// Start testing
+	s.HashSubmit("", QuestCreatedHash)
+	waitForQuestCreated(TOKENID)
+	err := s.SubmitClaimTweet(ADDRESS, request.SubmitClaimTweetReq{
+		TokenId:  TOKENID,
+		TweetUrl: TWEETURL,
+		Score:    SCORE,
+		Answer:   ANSWER,
 	})
 	assert.Nil(t, err)
+
 	var claimTweet model.ClaimBadgeTweet
-	err = s.dao.DB().Where("token_id", 10003).Where("address", address).First(&claimTweet).Error
+	err = s.dao.DB().Where("token_id", TOKENID).Where("address", ADDRESS).First(&claimTweet).Error
 	assert.Nil(t, err)
 	assert.NotZero(t, claimTweet.AddTs)
 	claimTweetExcept := model.ClaimBadgeTweet{
-		ID:         claimTweet.ID,
-		Address:    address,
-		TokenId:    10003,
-		Url:        "https://twitter.com/liangjies/status/1633028821715927041?s=20",
-		TweetId:    "1633028821715927041",
-		AddTs:      claimTweet.AddTs,
-		Airdropped: false,
+		ID:      claimTweet.ID,
+		Address: ADDRESS,
+		TokenId: TOKENID,
+		Url:     TWEETURL,
+		TweetId: TWEETID,
+		Score:   SCORE,
+		AddTs:   claimTweet.AddTs,
 	}
 	assert.Equal(t, claimTweetExcept, claimTweet)
 	// repeated tweet
-	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
-		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
-		Score:    100,
-		Answer:   "[0,[0,1],\"true\"]",
+	err = s.SubmitClaimTweet(ADDRESS, request.SubmitClaimTweetReq{
+		TokenId:  TOKENID,
+		TweetUrl: TWEETURL,
+		Score:    SCORE,
+		Answer:   ANSWER,
 	})
-	assert.EqualErrorf(t, err, "推文重复使用", "")
+	assert.EqualErrorf(t, err, "TweetRepeated", "")
 
 	deleteBadgeTweet()
 	// invalid quest
-	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
+	err = s.SubmitClaimTweet(ADDRESS, request.SubmitClaimTweetReq{
 		TokenId:  10,
-		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
-		Score:    100,
-		Answer:   "[0,[0,1],\"true\"]",
+		TweetUrl: TWEETURL,
+		Score:    SCORE,
+		Answer:   ANSWER,
 	})
-	assert.EqualErrorf(t, err, "题目不存在", "")
+	assert.EqualErrorf(t, err, "TokenIDInvalid", "")
 	// answer error
-	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
-		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
-		Score:    100,
+	err = s.SubmitClaimTweet(ADDRESS, request.SubmitClaimTweetReq{
+		TokenId:  TOKENID,
+		TweetUrl: TWEETURL,
+		Score:    SCORE,
 		Answer:   "[1,[0,1],\"false\"]",
 	})
-	assert.EqualErrorf(t, err, "答案错误", "")
+	assert.EqualErrorf(t, err, "AnswerIncorrect", "")
 
 	// clear
 	deleteQuest()
@@ -128,39 +126,28 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 }
 
 func TestService_SubmitClaimTweet2(t *testing.T) {
-	// delete exist
-	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
 	// Start testing
 	deleteTransaction()
 	deleteQuest()
 	deleteBadgeTweet()
-	s.HashSubmit("", "0x60b66b2e0627aaadb42981d7edeacd7150cc7632801a11aba1e01e895105fcfa")
-	waitForQuestCreated(10003)
+	s.HashSubmit("", QuestCreatedHash)
+	waitForQuestCreated(TOKENID)
 	// answer length error
-	err := s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
-		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1633028821715927041?s=20",
-		Score:    100,
+	err := s.SubmitClaimTweet(ADDRESS, request.SubmitClaimTweetReq{
+		TokenId:  TOKENID,
+		TweetUrl: TWEETURL,
+		Score:    SCORE,
 		Answer:   "[[0,1],\"true\"]",
 	})
-	assert.EqualErrorf(t, err, "出现错误", "")
+	assert.EqualErrorf(t, err, "UnexpectedError", "")
 	// cannot find tweet id
-	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
-		TokenId:  10003,
+	err = s.SubmitClaimTweet(ADDRESS, request.SubmitClaimTweetReq{
+		TokenId:  TOKENID,
 		TweetUrl: "https://twitter.com/liangjies/544t3tq/",
-		Score:    100,
-		Answer:   "[0,[0,1],\"true\"]",
+		Score:    SCORE,
+		Answer:   ANSWER,
 	})
-	assert.EqualErrorf(t, err, "链接错误", "")
-	// tweet cannot match
-	err = s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
-		TokenId:  10003,
-		TweetUrl: "https://twitter.com/taylorswift13/status/1587420273325838336",
-		Score:    100,
-		Answer:   "[0,[0,1],\"true\"]",
-	})
-	assert.EqualErrorf(t, err, "推文不匹配", "")
-
+	assert.EqualErrorf(t, err, "BrokenLink", "")
 	// clear
 	deleteQuest()
 	deleteTransaction()
@@ -169,15 +156,14 @@ func TestService_SubmitClaimTweet2(t *testing.T) {
 
 func TestBadgeServiceCrash(t *testing.T) {
 	s.dao.Close() // Service Crash
-	address := "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
 	// Start testing
-	err := s.SubmitClaimTweet(address, request.SubmitClaimTweetReq{
-		TokenId:  10003,
-		TweetUrl: "https://twitter.com/liangjies/status/1630110919815733248",
-		Score:    100,
-		Answer:   "[0,[0,1],\"true\"]",
+	err := s.SubmitClaimTweet(ADDRESS, request.SubmitClaimTweetReq{
+		TokenId:  TOKENID,
+		TweetUrl: TWEETURL,
+		Score:    SCORE,
+		Answer:   ANSWER,
 	})
-	assert.EqualErrorf(t, err, "题目不存在", "")
+	assert.EqualErrorf(t, err, "TokenIDInvalid", "")
 	// restart
 	d = dao.New(c)
 	s = New(c)

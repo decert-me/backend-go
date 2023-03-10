@@ -25,10 +25,11 @@ func TestMain(m *testing.M) {
 	c.Log.Level = "silent"
 	c.Log.LogInConsole = true
 	log.Init(c.Log)
-	c.Pgsql.LogMode = "silent"
+	c.Pgsql.LogMode = "info"
 	c.Pgsql.AutoMigrate = true
 	c.BlockChain.ChainID = 5
 	c.BlockChain.Attempt = 5
+	c.Twitter.ClaimContent = "我在 @DecertMe 上完成了一个挑战并获得了链上能力认证的徽章。\nhttps://decert.me/quests/\n#DecertMe"
 	// test contract address
 	c.Contract = &config.Contract{
 		Badge:       "0x0049770260b599Ecc2e2c0645450c965A44938b7",

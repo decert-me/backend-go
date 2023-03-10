@@ -5,6 +5,7 @@ import (
 	"backend-go/internal/app/dao"
 	"backend-go/internal/app/initialize"
 	"backend-go/internal/app/model"
+	jobConfigStruct "backend-go/internal/job/config"
 	jobInit "backend-go/internal/job/initialize"
 	jobService "backend-go/internal/job/service"
 	"backend-go/pkg/log"
@@ -20,6 +21,15 @@ var c *config.Config
 var d *dao.Dao
 var s *Service
 
+// init const
+const QuestCreatedHash = "0x1ec6cee6b706ecfaaf1d691873dee9765c15217982d1d591b4e7e26a3fcfed2e"
+const TOKENID = 10032
+const SCORE = 10000
+const ANSWER = "[0,[0,1],\"true\"]"
+const TWEETURL = "https://twitter.com/liangjies/status/1633028821715927041?s=20"
+const TWEETID = "1633028821715927041"
+const ADDRESS = "0x7d32D1DE76acd73d58fc76542212e86ea63817d8"
+
 func TestMain(m *testing.M) {
 	c = initialize.Viper("../cmd/config.yaml")
 	// 初始化日志框架
@@ -29,16 +39,18 @@ func TestMain(m *testing.M) {
 	log.Init(c.Log)
 	c.Pgsql.LogMode = "silent"
 	c.Pgsql.AutoMigrate = true
-	c.Twitter.ClaimContent = "我在 @DecertMe 上完成了一个挑战并获得了链上能力认证的徽章。\nhttps://decert.me/quests/\n#DecertMe"
 	// test contract address
 	c.Contract = &config.Contract{
 		Badge:       "0x0049770260b599Ecc2e2c0645450c965A44938b7",
 		Quest:       "0xfE3e0366a52C6F668a1026dAF5e81162d34Ec38b",
 		QuestMinter: "0xbE866FE4BAFC11ae886238772AFBD24570f9B530",
 	}
+	c.BlockChain.SignPrivateKey = "94e0a5961679f979d86020010513d0825d1cb6905e6ae0bf31f41e7fc23dd272" // for testing
+	c.Quest.EncryptKey = "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca"
 	c.Pgsql.Prefix = "test_" // add test prefix
 	d = dao.New(c)
 	s = New(c)
+	time.Sleep(time.Second)
 	/*
 	 * Job
 	 */
@@ -48,7 +60,10 @@ func TestMain(m *testing.M) {
 	jobConfig.Log.Level = "silent"
 	jobConfig.Log.LogInConsole = true
 	jobConfig.Pgsql.AutoMigrate = false
-
+	jobConfig.BlockChain.ChainID = 80001
+	jobConfig.BlockChain.Provider = []jobConfigStruct.Provider{
+		{Url: "https://rpc.ankr.com/polygon_mumbai"},
+	}
 	jobConfig.Pgsql.Prefix = "test_" // add test prefix
 	log.Init(jobConfig.Log)
 
@@ -56,13 +71,13 @@ func TestMain(m *testing.M) {
 	_ = jobS
 
 	result := m.Run()
-	d.DB().Migrator().DropTable(
-		model.Users{},
-		model.ClaimBadgeTweet{},
-		model.Quest{},
-		model.UserChallenges{},
-		model.Transaction{},
-	)
+	//d.DB().Migrator().DropTable(
+	//	model.Users{},
+	//	model.ClaimBadgeTweet{},
+	//	model.Quest{},
+	//	model.UserChallenges{},
+	//	model.Transaction{},
+	//)
 
 	os.Exit(result)
 }

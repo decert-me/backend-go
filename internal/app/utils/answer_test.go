@@ -1,42 +1,46 @@
 package utils
 
 import (
+	"fmt"
 	"testing"
 )
 
+func TestTT(t *testing.T) {
+	fmt.Println(answerDecode("eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", "PlIZOgVOU28BRxYQEUgWaA=="))
+	fmt.Println(answerEncode("Pz8HN1LAD7Q2C6gvQewnM3pxFvLeO8z8eKNnWxGQ", "[0,[0,1],\"true\"]"))
+}
 func TestAnswerCheck(t *testing.T) {
 	type args struct {
 		key        string
 		answerUser string
 		uri        string
+		score      int64
 	}
 	tests := []struct {
-		name      string
-		args      args
-		wantScore int64
-		wantPass  bool
-		wantErr   bool
+		name     string
+		args     args
+		wantPass bool
+		wantErr  bool
 	}{
-		{name: "#0 should pass score 40/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案2\",0]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4"}, wantPass: true, wantScore: 40},
-		{name: "#1 should pass score 30/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案2\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4"}, wantPass: true, wantScore: 30},
-		{name: "#2 should fail pass score 20/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案1\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4"}, wantPass: false, wantScore: 20},
-		{name: "#3 should fail pass score 10/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[1,33],\"答案\",\"答案1\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4"}, wantPass: false, wantScore: 10},
-		{name: "#4 should fail pass score 0/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[1,33],\"答案3\",\"答案1\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4"}, wantPass: false, wantScore: 0},
-		{name: "#5 should fail not enough quantity", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[1,33],\"答案3\",\"答案1\"]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4"}, wantErr: true},
-		{name: "#5 should fail uri invalid", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案2\",0]", uri: "ipfs://QmXuPi"}, wantErr: true},
+		{name: "#0 should pass score 40/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案2\",0]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4", score: 10000}, wantPass: true},
+		{name: "#1 should pass score 30/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案2\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4", score: 7500}, wantPass: true},
+		{name: "#2 should fail pass score 20/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案1\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4", score: 5000}, wantPass: false},
+		{name: "#3 should fail pass score 10/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[1,33],\"答案\",\"答案1\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4", score: 5000}, wantPass: false},
+		{name: "#4 should fail pass score 0/40", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[1,33],\"答案3\",\"答案1\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4", score: 10000}, wantPass: false},
+		{name: "#5 should fail not enough quantity", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[1,33],\"答案3\",\"答案1\"]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4", score: 10000}, wantErr: true},
+		{name: "#5 should fail uri invalid", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案2\",0]", uri: "ipfs://QmXuPi", score: 10000}, wantErr: true},
+		{name: "#6 should fail score 30/40 then higher", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案2\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4", score: 7501}, wantPass: false},
+		{name: "#7 should fail score 30/40 then slower", args: args{key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca", answerUser: "[[0,33],\"答案\",\"答案2\",1]", uri: "ipfs://QmXuPifE21Jo3uReKoDRF2ctCLferCbgBL7F9GzmrhNhF4", score: 7499}, wantPass: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotScore, gotPass, err := AnswerCheck(tt.args.key, tt.args.answerUser, tt.args.uri)
+			gotPass, err := AnswerCheck(tt.args.key, tt.args.answerUser, tt.args.uri, tt.args.score)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AnswerCheck() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotPass != tt.wantPass {
 				t.Errorf("AnswerCheck() gotPass = %v, want %v", gotPass, tt.wantPass)
-			}
-			if gotScore != tt.wantScore {
-				t.Errorf("AnswerCheck() gotScore = %v, want %v", gotScore, tt.wantScore)
 			}
 		})
 	}
