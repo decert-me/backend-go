@@ -34,10 +34,7 @@ func TestMain(m *testing.M) {
 	c = initialize.Viper("../../../bin/app/config.yaml")
 	// 初始化日志框架
 	c.Log.Save = false
-	c.Log.Level = "silent"
-	c.Log.LogInConsole = true
 	log.Init(c.Log)
-	c.Pgsql.LogMode = "silent"
 	c.Pgsql.AutoMigrate = true
 	// test contract address
 	c.Contract = &config.Contract{
@@ -57,8 +54,6 @@ func TestMain(m *testing.M) {
 	jobConfig := jobInit.Viper("../../../bin/job/config.yaml")
 	// 初始化日志框架
 	jobConfig.Log.Save = false
-	jobConfig.Log.Level = "silent"
-	jobConfig.Log.LogInConsole = true
 	jobConfig.Pgsql.AutoMigrate = false
 	jobConfig.BlockChain.ChainID = 80001
 	jobConfig.BlockChain.Provider = []jobConfigStruct.Provider{

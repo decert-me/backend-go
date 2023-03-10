@@ -29,10 +29,7 @@ func TestMain(m *testing.M) {
 	c = initialize.Viper("../../../bin/job/config.yaml")
 	// 初始化日志框架
 	c.Log.Save = false
-	c.Log.Level = "silent"
-	c.Log.LogInConsole = true
 	log.Init(c.Log)
-	c.Pgsql.LogMode = "info"
 	c.Pgsql.AutoMigrate = true
 	c.BlockChain.ChainID = 5
 	c.BlockChain.Attempt = 5
