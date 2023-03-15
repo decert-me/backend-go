@@ -2,7 +2,7 @@
   "en-US": {
     "OperationSuccess": "Success!",
     "OperationFailed": "Failed!",
-    "UnexpectedError": "Oops!",
+    "UnexpectedError": "Oops，Something went wrong!",
     "ParameterError": "Parameter error!",
     "FetchSuccess": "Fetch success!",
     "FetchFailed": "Fetch failed!",
@@ -16,7 +16,13 @@
     "SignatureExpired": "Signature has expired!",
     "SignatureVerificationFailed": "Signature verification failed!",
     "UnauthorizedAccess": "Unauthorized access!",
-    "AlreadyHoldsBadge": "Already holds badge!"
+    "AlreadyHoldsBadge": "Already holds badge!",
+    "AddressNotExist": "Address does not exist!",
+    "UpdateSuccess": "Update success!",
+    "UpdateFailed": "Update failed!",
+    "ReceiveFileFailed": "Failed to receive file!",
+    "FileSizeExceedsLimit": "File size exceeds the limit!",
+    "FileFormatIncorrect": "File format Incorrect!"
   },
   "zh-CN": {
     "OperationSuccess": "操作成功！",
@@ -35,6 +41,12 @@
     "SignatureExpired": "签名已失效！",
     "SignatureVerificationFailed": "签名校验失败！",
     "UnauthorizedAccess": "授权已过期！",
-    "AlreadyHoldsBadge": "已经拥有徽章！"
+    "AlreadyHoldsBadge": "已经拥有徽章！",
+    "AddressNotExist": "地址不存在！",
+    "UpdateSuccess": "更新成功！",
+    "UpdateFailed": "更新失败!",
+    "ReceiveFileFailed": "接收文件失败!",
+    "FileSizeExceedsLimit": "文件大小超过限制!",
+    "FileFormatIncorrect": "文件格式不正确!"
   }
 }

@@ -13,8 +13,28 @@ import (
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"io"
+	"mime/multipart"
+	"os"
+	"path"
 	"strings"
 )
+
+func (s *Service) GetUserInfo(address string) (res interface{}, err error) {
+	var user model.Users
+	if user, err = s.dao.GetUser(address); err != nil {
+		return
+	}
+	return user, err
+}
+
+func (s *Service) UpdateUserInfo(address string, user request.UpdateUserInfo) (err error) {
+	err = s.dao.UpdateUser(address, model.Users{Avatar: user.Avatar, Description: user.Description, NickName: user.NickName})
+	if err != nil {
+		log.Errorv("UpdateUser error", zap.Error(err))
+	}
+	return
+}
 
 func (s *Service) GetDiscordInfo(address string) (res interface{}, err error) {
 	var socials string
@@ -22,6 +42,44 @@ func (s *Service) GetDiscordInfo(address string) (res interface{}, err error) {
 		return
 	}
 	return gjson.Get(socials, "discord").Value(), err
+}
+
+func (s *Service) UpdateAvatar(address string, header *multipart.FileHeader) (p string, err error) {
+	ext := strings.ToLower(path.Ext(header.Filename))
+	// 文件名
+	key := uuid.NewV4().String()
+	filename := key + ext
+	director := s.c.Local.Path + "/"
+	p = director + filename
+	// 创建路径
+	err = os.MkdirAll(director, os.ModePerm)
+	if err != nil {
+		log.Errorv("MkdirAll error", zap.Error(err))
+		return
+	}
+	out, err := os.Create(p)
+	if err != nil {
+		log.Errorv("os.Create error", zap.Error(err))
+		return
+	}
+	f, err := header.Open() // 读取文件
+	if err != nil {
+		log.Errorv("header.Open error", zap.Error(err))
+		return
+	}
+	defer f.Close()
+	_, err = io.Copy(out, f)
+	if err != nil {
+		log.Errorv("io.Copy error", zap.Error(err))
+		return
+	}
+	//if err = s.dao.UpdateAvatar(address, filename); err != nil {
+	//	return err
+	//}
+	if err = s.dao.UploadFile(model.Upload{Address: address, Name: filename, Key: key}); err != nil {
+		return
+	}
+	return "/" + p, err
 }
 
 // GetLoginMessage

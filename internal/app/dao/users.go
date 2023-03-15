@@ -3,6 +3,7 @@ package dao
 import (
 	"backend-go/internal/app/model"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"time"
@@ -36,6 +37,28 @@ func (d *Dao) CreateUser(user *model.Users) (err error) {
 func (d *Dao) GetUser(address string) (user model.Users, err error) {
 	err = d.db.Model(&model.Users{}).Where("address", address).First(&user).Error
 	return
+}
+
+func (d *Dao) UpdateUser(address string, user model.Users) error {
+	raw := d.db.Model(&model.Users{}).Where("address = ?", address).Updates(&user)
+	if raw.Error != nil {
+		return raw.Error
+	}
+	if raw.RowsAffected == 0 {
+		return errors.New("UpdateUser failed")
+	}
+	return nil
+}
+
+func (d *Dao) UpdateAvatar(address string, avatar string) error {
+	raw := d.db.Model(&model.Users{}).Where("address = ?", address).Update("avatar", avatar)
+	if raw.Error != nil {
+		return raw.Error
+	}
+	if raw.RowsAffected == 0 {
+		return errors.New("UpdateUser failed")
+	}
+	return nil
 }
 
 func (d *Dao) GetSocialsInfo(user *model.Users) (socials string, err error) {

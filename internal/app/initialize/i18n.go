@@ -15,6 +15,7 @@ func InitI18n(c *config.Config) (res map[string]map[string]string) {
 	data, err := os.ReadFile(c.System.I18n)
 	if err != nil {
 		log.Errorv("InitI18n ReadFile error", zap.String("path", c.System.I18n), zap.Error(err))
+		panic("InitI18n ReadFile error")
 		return res
 	}
 
