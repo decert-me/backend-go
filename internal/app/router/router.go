@@ -51,6 +51,7 @@ func Routers(c *config.Config) *gin.Engine {
 		Router = gin.New()
 		Router.Use(gin.Recovery())
 	}
+	Router.StaticFS(c.Local.Path, http.Dir(c.Local.Path))
 	Router.Use(middleware.Cors()) // 放行跨域请求
 	PublicGroup := Router.Group("")
 	{

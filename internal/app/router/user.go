@@ -7,13 +7,18 @@ import (
 )
 
 func InitUserRouter(Router *gin.RouterGroup) {
-	userRouter := Router.Group("users")
+	userRouter := Router.Group("users").Use(middleware.Addr())
 	userRouterAuth := Router.Group("users").Use(middleware.Auth())
 	{
 		userRouter.GET("getLoginMessage", v1.GetLoginMessage)
 		userRouter.POST("authLoginSign", v1.AuthLoginSign)
+		userRouter.GET("/:address", v1.GetUserInfo)
+		userRouter.GET("/challenge/:address", v1.GetUserChallengeList)
+		userRouter.GET("/quests/:address", v1.GetUserQuestList)
 	}
 	{
 		userRouterAuth.GET("discord", v1.GetDiscordInfo)
+		userRouterAuth.PUT("/:address", v1.UpdateUserInfo)
+		userRouterAuth.POST("/avatar", v1.UpdateAvatar)
 	}
 }

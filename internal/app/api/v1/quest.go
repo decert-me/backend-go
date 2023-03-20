@@ -11,7 +11,7 @@ func GetQuestList(c *gin.Context) {
 	_ = c.ShouldBindQuery(&searchInfo)
 	searchInfo.Address = c.GetString("address")
 	if list, total, err := srv.GetQuestList(searchInfo); err != nil {
-		FailWithMessage(GetMessage(c, "FetchSuccess"), c)
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
 		OkWithDetailed(response.PageResult{
 			List:     list,

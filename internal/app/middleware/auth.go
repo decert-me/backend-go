@@ -44,6 +44,5 @@ func Addr() gin.HandlerFunc {
 			}
 			c.Set("address", claims.Address)
 		}
-
 	}
 }
