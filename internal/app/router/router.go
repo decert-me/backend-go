@@ -67,6 +67,7 @@ func Routers(c *config.Config) *gin.Engine {
 		InitUserRouter(v1Group)
 		InitBadgeRouter(v1Group)
 		InitTransactionRouter(v1Group)
+		InitChallengeRouter(v1Group)
 	}
 
 	fmt.Println("router register success")
