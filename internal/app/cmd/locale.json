@@ -22,7 +22,9 @@
     "UpdateFailed": "Update failed!",
     "ReceiveFileFailed": "Failed to receive file!",
     "FileSizeExceedsLimit": "File size exceeds the limit!",
-    "FileFormatIncorrect": "File format Incorrect!"
+    "FileFormatIncorrect": "File format Incorrect!",
+    "UploadSuccess": "Upload Success！",
+    "UploadFailed": "Upload Failed！"
   },
   "zh-CN": {
     "OperationSuccess": "操作成功！",
@@ -47,6 +49,8 @@
     "UpdateFailed": "更新失败!",
     "ReceiveFileFailed": "接收文件失败!",
     "FileSizeExceedsLimit": "文件大小超过限制!",
-    "FileFormatIncorrect": "文件格式不正确!"
+    "FileFormatIncorrect": "文件格式不正确!",
+    "UploadSuccess": "上传成功！",
+    "UploadFailed": "上传失败！"
   }
 }

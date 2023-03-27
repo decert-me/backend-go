@@ -51,7 +51,6 @@ func Routers(c *config.Config) *gin.Engine {
 		Router = gin.New()
 		Router.Use(gin.Recovery())
 	}
-	Router.StaticFS(c.Local.Path, http.Dir(c.Local.Path))
 	Router.Use(middleware.Cors()) // 放行跨域请求
 	PublicGroup := Router.Group("")
 	{
@@ -68,6 +67,7 @@ func Routers(c *config.Config) *gin.Engine {
 		InitBadgeRouter(v1Group)
 		InitTransactionRouter(v1Group)
 		InitChallengeRouter(v1Group)
+		InitIPFSRouter(v1Group)
 	}
 
 	fmt.Println("router register success")

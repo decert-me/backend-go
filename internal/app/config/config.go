@@ -15,4 +15,5 @@ type Config struct {
 	Redis      *Redis       `mapstructure:"redis" json:"redis" yaml:"redis"`
 	Quest      *Quest       `mapstructure:"quest" json:"quest" yaml:"quest"`
 	Local      *Local       `mapstructure:"local" json:"local" yaml:"local"`
+	IPFS       []IPFS       `mapstructure:"ipfs" json:"ipfs" yaml:"ipfs"`
 }
