@@ -14,7 +14,7 @@ func TestService_PermitClaimBadge(t *testing.T) {
 	deleteTransaction()
 	deleteChallenges()
 	// Start testing
-	s.HashSubmit("", QuestCreatedHash)
+	s.HashSubmit("", request.HashSubmitRequest{Hash: QuestCreatedHash})
 	waitForQuestCreated(TOKENID)
 	res, err := s.PermitClaimBadge(ADDRESS, request.PermitClaimBadgeReq{
 		TokenId: TOKENID,
@@ -39,7 +39,7 @@ func TestService_PermitClaimBadge2(t *testing.T) {
 	// delete exist
 	deleteQuest()
 	deleteTransaction()
-	s.HashSubmit("", QuestCreatedHash)
+	s.HashSubmit("", request.HashSubmitRequest{Hash: QuestCreatedHash})
 	waitForQuestCreated(TOKENID)
 	// answer error
 	_, err := s.PermitClaimBadge(ADDRESS, request.PermitClaimBadgeReq{
@@ -67,7 +67,7 @@ func TestService_SubmitClaimTweet(t *testing.T) {
 	deleteQuest()
 	deleteBadgeTweet()
 	// Start testing
-	s.HashSubmit("", QuestCreatedHash)
+	s.HashSubmit("", request.HashSubmitRequest{Hash: QuestCreatedHash})
 	waitForQuestCreated(TOKENID)
 	err := s.SubmitClaimTweet(ADDRESS, request.SubmitClaimTweetReq{
 		TokenId:  TOKENID,
@@ -130,7 +130,7 @@ func TestService_SubmitClaimTweet2(t *testing.T) {
 	deleteTransaction()
 	deleteQuest()
 	deleteBadgeTweet()
-	s.HashSubmit("", QuestCreatedHash)
+	s.HashSubmit("", request.HashSubmitRequest{Hash: QuestCreatedHash})
 	waitForQuestCreated(TOKENID)
 	// answer length error
 	err := s.SubmitClaimTweet(ADDRESS, request.SubmitClaimTweetReq{

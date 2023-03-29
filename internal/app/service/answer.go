@@ -13,10 +13,10 @@ import (
 
 func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *model.Quest) (pass bool, err error) {
 	res := string(quest.MetaData)
-	answerU := gjson.Get(utils.AnswerDecode(key, gjson.Get(res, "properties.answers").String()), "@this").Array() // 标准答案
-	passingScore := gjson.Get(res, "properties.passingScore").Int()                                               // 通过分数
-	scoreList := gjson.Get(res, "properties.questions.#.score").Array()                                           // 题目分数
-	answerS := gjson.Get(answerUser, "@this").Array()                                                             // 用户答案
+	answerU := gjson.Get(utils.AnswerDecode(key, gjson.Get(res, "answers").String()), "@this").Array() // 标准答案
+	passingScore := gjson.Get(res, "passingScore").Int()                                               // 通过分数
+	scoreList := gjson.Get(res, "questions.#.score").Array()                                           // 题目分数
+	answerS := gjson.Get(answerUser, "@this").Array()                                                  // 用户答案
 	var totalScore int64
 	for _, s := range scoreList {
 		totalScore += s.Int()
@@ -61,10 +61,10 @@ func AnswerScore(key, answerUser, uri string) (userScore int64, pass bool, err e
 	if err != nil || !gjson.Valid(res) {
 		return userScore, pass, errors.New("tokenID invalid")
 	}
-	answerU := gjson.Get(utils.AnswerDecode(key, gjson.Get(res, "properties.answers").String()), "@this").Array() // 标准答案
-	passingScore := gjson.Get(res, "properties.passingScore").Int()                                               // 通过分数
-	scoreList := gjson.Get(res, "properties.questions.#.score").Array()                                           // 题目分数
-	answerS := gjson.Get(answerUser, "@this").Array()                                                             // 用户答案
+	answerU := gjson.Get(utils.AnswerDecode(key, gjson.Get(res, "answers").String()), "@this").Array() // 标准答案
+	passingScore := gjson.Get(res, "passingScore").Int()                                               // 通过分数
+	scoreList := gjson.Get(res, "questions.#.score").Array()                                           // 题目分数
+	answerS := gjson.Get(answerUser, "@this").Array()                                                  // 用户答案
 	var totalScore int64
 	for _, s := range scoreList {
 		totalScore += s.Int()

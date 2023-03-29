@@ -117,11 +117,16 @@ func (s *Service) RunSpecialSolidity(req request.TryRunReq) (tryRunRes response.
 		return
 	}
 	spjCode := gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).String()
+	if spjCode == "" {
+		return tryRunRes, errors.New("no spj code found")
+	}
 	// 编译
 	res, err := s.TestSolidity(request.ForgeTestReq{
 		Code:    req.Code,
 		Address: "",
 	}, spjCode)
+	tryRunRes.TotalCorrect = res.TotalCorrect
+	tryRunRes.TotalTestcases = res.TotalTestcases
 	if err != nil || res.Status == 1 {
 		tryRunRes.Status = 1
 		tryRunRes.Msg = res.Output

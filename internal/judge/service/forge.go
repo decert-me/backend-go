@@ -5,7 +5,6 @@ import (
 	"backend-go/internal/judge/model/response"
 	"backend-go/pkg/log"
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
@@ -48,26 +47,27 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	if err != nil {
 		return
 	}
+	execResList := strings.Split(execRes, "\n")
 
-	if !gjson.Valid(execRes) {
-		fmt.Println(req.Address + "/" + fileName)
+	if len(execResList) == 0 || !gjson.Valid(execResList[len(execResList)-2]) {
 		res.Output = strings.Replace(execRes, req.Address+"/"+fileName, result[1]+".sol", -1)
 		res.Status = 1
 		return
 	}
-	res.Output = "Compiler successful"
-	// 合约地址
-	res.ContractAddress = gjson.Get(execRes, "deployedTo").String()
-	// 读取ABI
-	abiFilePath := foundryPath + "/out/" + fileName + "/" + result[1] + ".json"
-	data, _ := os.ReadFile(abiFilePath)
-	res.ABI = gjson.Get(string(data), "abi").String()
-	// Gas消耗
-	argsTx := []string{"tx", gjson.Get(execRes, "transactionHash").String(), "--json"}
-	gasRes, err := execCommand(foundryPath, "cast", argsTx...)
-	if err != nil {
-		return
+	resultArray := gjson.Get(execResList[len(execResList)-2], "*.test_results").Array()
+	res.TotalTestcases = len(resultArray)
+	for _, v := range resultArray {
+		if !gjson.Get(v.String(), "*.success").Bool() {
+			if gjson.Get(v.String(), "*.reason").String() != "" {
+				res.Output = gjson.Get(v.String(), "*.reason").String()
+			} else {
+				res.Output = gjson.Get(v.String(), "*.decoded_logs").String()
+			}
+			res.Status = 1
+			return
+		}
+		res.TotalCorrect++
 	}
-	res.Gas = gjson.Get(gasRes, "gas").String()
+
 	return res, nil
 }

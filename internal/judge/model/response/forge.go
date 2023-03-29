@@ -1,9 +1,8 @@
 package response
 
 type ForgeTestRes struct {
-	Output          string `json:"output"`
-	Gas             string `json:"gas"`
-	ContractAddress string `json:"contract_address"`
-	ABI             string `json:"abi"`
-	Status          uint8  `json:"status"` // 0 成功 1 异常
+	Output         string `json:"output"`
+	Status         uint8  `json:"status"` // 0 成功 1 异常
+	TotalTestcases int    `json:"total_testcases"`
+	TotalCorrect   uint   `json:"total_correct"`
 }
