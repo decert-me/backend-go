@@ -25,6 +25,7 @@ func RegisterTables(db *gorm.DB) {
 		model.Transaction{},
 		model.Upload{},
 		model.UserChallengeLog{},
+		model.JudgeResult{},
 	)
 	if err != nil {
 		panic("register table failed")

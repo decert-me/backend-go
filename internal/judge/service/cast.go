@@ -3,6 +3,7 @@ package service
 import (
 	"backend-go/internal/judge/model/request"
 	"backend-go/internal/judge/model/response"
+	"fmt"
 	"github.com/tidwall/gjson"
 	"strings"
 )
@@ -11,15 +12,35 @@ func (s *Service) CastCall(req request.CastCallReq) (res response.CastCallRes, e
 	args := []string{"call", req.To}
 	if req.CallData != "" {
 		args = append(args, req.CallData)
-	} else {
+	} else if !strings.Contains(req.Data, "],") {
 		args = append(args, req.Method)
 		args = append(args, strings.Split(req.Data, ",")...)
+		fmt.Println(args)
+		fmt.Println(req.Data)
+	} else {
+		args = append(args, req.Method)
+		for _, v := range strings.Split(req.Data, "],") {
+			if v[:1] == "[" {
+				args = append(args, v+"]")
+				continue
+			} else {
+				args = append(args, strings.Split(v, ",")...)
+			}
+		}
 	}
 	execRes, err := execCommand("", "cast", args...)
 	if err != nil {
+		res.Msg = err.Error()
+		res.Status = 1
 		return
 	}
-	return response.CastCallRes{Data: strings.TrimSpace(execRes)}, nil
+	if len(execRes) > 5 && execRes[:5] == "Error" {
+		res.Msg = execRes
+		res.Status = 1
+		return
+	}
+	res.Data = strings.TrimRight(execRes, "\n")
+	return res, nil
 }
 
 func (s *Service) CastSend(req request.CastSendReq) (res response.CastSend, err error) {
@@ -41,4 +62,5 @@ func (s *Service) CastSend(req request.CastSendReq) (res response.CastSend, err 
 	res.GasUsed = gjson.Get(execRes, "gasUsed").String()
 	res.Status = gjson.Get(execRes, "status").String()
 	return res, nil
+
 }

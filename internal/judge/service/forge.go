@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func (s *Service) BuildSolidity(req request.BuildReq) (res response.BuildRes, err error) {
+func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res response.ForgeTestRes, err error) {
 	if req.Address == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
@@ -35,12 +35,12 @@ func (s *Service) BuildSolidity(req request.BuildReq) (res response.BuildRes, er
 		return
 	}
 	p := foundryPath + "/" + relativeFilePath
-	if err = os.WriteFile(p, []byte(req.Code), 0664); err != nil {
+	if err = os.WriteFile(p, []byte(req.Code+"\n"+spjCode), 0664); err != nil {
 		log.Errorv("os.WriteFile() Filed", zap.Error(err))
 		return
 	}
-	contract := relativeFilePath + ":" + result[1]
-	args := []string{"create", contract, "--private-key=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", "--offline", "--json"}
+	contract := "--match-path=" + relativeFilePath
+	args := []string{"test", contract, "--offline", "--json"}
 	execRes, err := execCommand(foundryPath, "forge", args...)
 	if err := os.Rename(p, p+".bak"); err != nil {
 		log.Errorv("os.Remove error", zap.Error(err))

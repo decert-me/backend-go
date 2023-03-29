@@ -1,8 +1,9 @@
 package request
 
 type TryRunReq struct {
-	Lang      string `json:"lang"`
-	TokenID   uint64 `json:"token_id"`
-	Code      string `json:"code"`
-	DataInput string `json:"data_input"`
+	Lang       string `json:"lang"`
+	TokenID    int64  `json:"token_id"`
+	QuestIndex uint8  `json:"quest_index"`
+	Code       string `json:"code"`
+	Input      string `json:"input"`
 }

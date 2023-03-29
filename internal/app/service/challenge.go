@@ -4,7 +4,6 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
-	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
 	"github.com/tidwall/gjson"
@@ -34,7 +33,7 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 	if err != nil {
 		return errors.New("TokenIDInvalid")
 	}
-	userScore, pass, err := utils.AnswerScore(s.c.Quest.EncryptKey, req.Answer, quest.Uri)
+	userScore, pass, err := AnswerScore(s.c.Quest.EncryptKey, req.Answer, quest.Uri)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return errors.New("UnexpectedError")

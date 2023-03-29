@@ -1,6 +1,6 @@
 package response
 
-type BuildRes struct {
+type ForgeTestRes struct {
 	Output          string `json:"output"`
 	Gas             string `json:"gas"`
 	ContractAddress string `json:"contract_address"`

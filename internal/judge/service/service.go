@@ -17,8 +17,8 @@ type Service struct {
 // New init.
 func New(c *config.Config) (s *Service) {
 	s = &Service{
-		c: c,
-		//dao: dao.New(c),
+		c:   c,
+		dao: dao.New(c),
 	}
 
 	return
