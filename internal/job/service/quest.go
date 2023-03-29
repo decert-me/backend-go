@@ -33,9 +33,12 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	if err != nil {
 		return
 	}
+	tr, err := s.dao.QueryTransactionByHash(hash)
+	if err != nil {
+		return err
+	}
 	questData := created.QuestData
 	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs, Supply: questData.Supply.Uint64()})
-	_ = extraData
 	quest := model.Quest{
 		Title:       questData.Title,
 		Description: gjson.Get(metadata, "description").String(),
@@ -46,6 +49,7 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
 		IsDraft:     false, // 当前发布不审核
+		Recommend:   gjson.Get(tr.Params.String(), "recommend").Raw,
 	}
 	if err = s.dao.CreateQuest(&quest); err != nil {
 		log.Errorv("CreateQuest error", zap.Error(err), zap.Any("quest", quest))
