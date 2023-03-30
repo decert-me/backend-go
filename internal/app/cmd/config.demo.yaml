@@ -49,6 +49,7 @@ auth:
 # local configuration
 local:
   path: 'uploads/file'
+  ipfs: 'uploads/ipfs'
 
 # blockchain configuration
 blockchain:
@@ -65,3 +66,8 @@ contract:
 # quest configuration
 quest:
   encrypt-key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca"
+
+# ipfs configuration
+ipfs:
+  - api: "https://ipfs.io/ipfs"
+    upload-api: "http://192.168.1.10:3022/v1"

@@ -19,4 +19,6 @@ type Quest struct {
 	MetaData     datatypes.JSON `gorm:"column:meta_data" json:"metadata"`                          // 元数据
 	ExtraData    datatypes.JSON `gorm:"column:extra_data" json:"-"`                                // 额外数据
 	Uri          string         `gorm:"column:uri" json:"uri"`
+	PassScore    int64          `gorm:"column:pass_score" form:"pass_score" json:"pass_score"`    // 通过分数
+	TotalScore   int64          `gorm:"column:total_score" form:"total_score" json:"total_score"` // 总分
 }

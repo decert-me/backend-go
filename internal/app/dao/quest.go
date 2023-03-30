@@ -50,7 +50,7 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	if err != nil {
 		return questList, total, err
 	}
-	err = db.Limit(limit).Offset(offset).Order("add_ts desc").Find(&questList).Error
+	err = db.Limit(limit).Offset(offset).Order("token_id desc").Find(&questList).Error
 
 	return questList, total, err
 }

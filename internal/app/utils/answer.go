@@ -63,3 +63,31 @@ func AnswerCheck(key, answerUser, uri string, userScore int64) (pass bool, err e
 	}
 	return
 }
+
+func AnswerScore(key, answerUser, uri string) (userScore int64, pass bool, err error) {
+	res, err := GetDataFromUri(uri)
+	if err != nil || !gjson.Valid(res) {
+		return userScore, pass, errors.New("tokenID invalid")
+	}
+	answerU := gjson.Get(answerDecode(key, gjson.Get(res, "properties.answers").String()), "@this").Array() // 标准答案
+	passingScore := gjson.Get(res, "properties.passingScore").Int()                                         // 通过分数
+	scoreList := gjson.Get(res, "properties.questions.#.score").Array()                                     // 题目分数
+	answerS := gjson.Get(answerUser, "@this").Array()                                                       // 用户答案
+	var totalScore int64
+	for _, s := range scoreList {
+		totalScore += s.Int()
+	}
+	if len(answerU) != len(answerS) || len(scoreList) != len(answerS) {
+		return userScore, false, errors.New("unexpect error")
+	}
+	var score int64
+	for i, _ := range answerS {
+		if answerS[i].String() == answerU[i].String() {
+			score += scoreList[i].Int()
+		}
+	}
+	if score >= passingScore {
+		return score, true, nil
+	}
+	return score, false, nil
+}

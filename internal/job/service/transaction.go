@@ -140,6 +140,8 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 
 		time.Sleep(delay * time.Second)
 	}
+	task.txMap.Delete(hash)
+	task.countMap.Delete(hash)
 	// 超出尝试次数
 	s.handleTraverseStatus(hash, 3, "")
 }

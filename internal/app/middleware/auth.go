@@ -24,7 +24,7 @@ func Auth() gin.HandlerFunc {
 				c.Abort()
 				return
 			}
-			v1.FailWithDetailed(gin.H{"reload": true}, err.Error(), c)
+			v1.FailWithDetailed(gin.H{"reload": true}, v1.GetMessage(c, "UnauthorizedAccess"), c)
 			c.Abort()
 			return
 		}
