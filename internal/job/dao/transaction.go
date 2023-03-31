@@ -19,3 +19,8 @@ func (d *Dao) CreateTransaction(req *model.Transaction) (err error) {
 	return
 
 }
+
+func (d *Dao) QueryTransactionByHash(hash string) (transHash model.Transaction, err error) {
+	err = d.db.Where("hash", hash).First(&transHash).Error
+	return
+}
