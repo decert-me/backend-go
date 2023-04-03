@@ -14,6 +14,7 @@ import (
 	"mime/multipart"
 	"os"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -223,4 +224,49 @@ func (s *Service) IPFSUploadJSON(data string) (err error, hash string) {
 		return err, hash
 	}
 	return err, resJson.Hash
+}
+
+// GetDataFromCid
+// @description: 获取IPFS内容
+// @param: cid string
+// @return: string, error
+func (s *Service) GetDataFromCid(cid string) (result string, err error) {
+	// 读取文件内容
+	path := s.c.Local.IPFS
+	filePath := path + "/" + cid
+	// 判断文件是否存在
+	if _, errExist := os.Stat(filePath); os.IsNotExist(errExist) {
+		url := s.GetIPFSGateway(cid)
+		client := req.C().SetTimeout(30 * time.Second)
+		res, err := client.R().Get(url)
+		if err != nil {
+			return result, err
+		}
+		if !gjson.Valid(res.String()) {
+			return res.String(), errors.New("invalid json")
+		}
+
+		director := path + "/"
+		err = os.MkdirAll(director, os.ModePerm)
+		if err != nil {
+			log.Errorv("os.MkdirAll() Filed", zap.Error(err))
+			return result, err
+		}
+		err = os.WriteFile(filePath, res.Bytes(), 0664)
+		if err != nil {
+			log.Errorv("os.WriteFile() Filed", zap.Error(err))
+			return result, err
+		}
+		return res.String(), nil
+	}
+	data, err := os.ReadFile(path + "/" + cid)
+	if err != nil {
+		log.Errorv("读取文件出错: ", zap.Error(err))
+		return
+	}
+	return string(data), err
+}
+
+func (s *Service) GetDataFromUri(uri string) (string, error) {
+	return s.GetDataFromCid(strings.Replace(uri, "ipfs://", "", 1))
 }
