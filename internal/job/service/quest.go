@@ -6,6 +6,7 @@ import (
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -55,6 +56,43 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		log.Errorv("CreateQuest error", zap.Error(err), zap.Any("quest", quest))
 		return
 	}
+	s.handleTraverseStatus(hash, 1, "")
+
+	return
+}
+
+func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
+	tr, err := s.dao.QueryTransactionByHash(hash)
+	if err != nil {
+		return err
+	}
+	fmt.Println(gjson.Get(string(resJson), "questData").String())
+	var questData ABI.IQuestQuestData
+	err = json.Unmarshal([]byte(gjson.Get(string(resJson), "questData").String()), &questData)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	metadata, err := utils.GetDataFromCid(strings.Replace(questData.Uri, "ipfs://", "", 1))
+	if err != nil {
+		return
+	}
+	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs, Supply: questData.Supply.Uint64()})
+	quest := model.Quest{
+		Title:       questData.Title,
+		Description: gjson.Get(metadata, "description").String(),
+		TokenId:     gjson.Get(string(resJson), "tokenId").Int(),
+		Uri:         questData.Uri,
+		Type:        0, // TODO
+		MetaData:    []byte(metadata),
+		ExtraData:   extraData,
+		Recommend:   gjson.Get(tr.Params.String(), "recommend").Raw,
+	}
+	if err = s.dao.UpdateQuest(&quest); err != nil {
+		log.Errorv("UpdateQuest error", zap.Error(err), zap.Any("quest", quest))
+		return
+	}
+
 	s.handleTraverseStatus(hash, 1, "")
 
 	return

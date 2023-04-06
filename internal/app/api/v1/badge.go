@@ -31,3 +31,17 @@ func SubmitClaimTweet(c *gin.Context) {
 		Ok(c)
 	}
 }
+
+func UpdateBadgeURI(c *gin.Context) {
+	var badgeURI request.UpdateBadgeURIRequest
+	if err := c.ShouldBindJSON(&badgeURI); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	address := c.GetString("address")
+	if list, err := srv.UpdateBadgeURI(address, badgeURI); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithData(list, c)
+	}
+}

@@ -43,3 +43,16 @@ func AddQuest(c *gin.Context) {
 		OkWithData(list, c)
 	}
 }
+func UpdateQuest(c *gin.Context) {
+	var modify request.UpdateQuestRequest
+	if err := c.ShouldBindJSON(&modify); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	address := c.GetString("address")
+	if list, err := srv.UpdateQuest(address, modify); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithData(list, c)
+	}
+}

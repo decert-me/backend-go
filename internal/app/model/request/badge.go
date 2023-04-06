@@ -11,3 +11,8 @@ type SubmitClaimTweetReq struct {
 	Score    int64  `json:"score"  binding:"required"`
 	Answer   string `json:"answer" binding:"required"`
 }
+
+type UpdateBadgeURIRequest struct {
+	TokenId int64  `json:"token_id" binding:"required"`
+	Uri     string `json:"uri" binding:"required"`
+}
