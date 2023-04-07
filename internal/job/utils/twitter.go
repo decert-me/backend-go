@@ -50,9 +50,17 @@ func GetTweetById(c *config.Config, tweetId string) (string, error) {
 // @param: tokenId uint64, tweet string
 // @return: bool
 func CheckIfMatchClaimTweet(c *config.Config, tokenId int64, tweet string) bool {
-	expect := strings.Split(c.Twitter.ClaimContent, "\n")
 	actual := strings.Split(tweet, "\n")
-	if len(actual) != len(expect) || strings.TrimSpace(actual[0]) != expect[0] || strings.TrimSpace(actual[2]) != expect[2] {
+	var expect []string
+	var contentMatch bool
+	for _, v := range c.Twitter.ClaimContent {
+		expect = strings.Split(v, "\n")
+		if len(actual) == len(expect) && strings.TrimSpace(actual[0]) == expect[0] && strings.TrimSpace(actual[2]) == expect[2] {
+			contentMatch = true
+			break
+		}
+	}
+	if !contentMatch {
 		return false
 	}
 	expectURL := strings.TrimSpace(expect[1]) + strconv.FormatInt(tokenId, 10)
@@ -64,5 +72,6 @@ func CheckIfMatchClaimTweet(c *config.Config, tokenId int64, tweet string) bool 
 	if len(res.Header["Location"]) == 0 || res.Header["Location"][0] != expectURL {
 		return false
 	}
+
 	return true
 }
