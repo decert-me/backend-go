@@ -59,6 +59,8 @@ func (s *Service) handleClaimed(hash string, vLog *types.Log) (err error) {
 		log.Errorv("CreateChallenges error", zap.Any("challenges", challenges), zap.Error(err))
 		return err
 	}
+	// 如果有空投记录则删除
+	s.dao.UpdateAirdroppedError(tokenId, common.HexToAddress(vLog.Topics[2].Hex()).String(), "already claimed")
 	s.handleTraverseStatus(hash, 1, "")
 	return
 }
