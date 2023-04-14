@@ -28,7 +28,7 @@ func TestService_GetQuest(t *testing.T) {
 	// Start testing
 	deleteQuest()
 	deleteTransaction()
-	s.HashSubmit("", QuestCreatedHash)
+	s.HashSubmit("", request.HashSubmitRequest{Hash: QuestCreatedHash})
 	waitForQuestCreated(TOKENID)
 	questList, total, err := s.GetQuestList(request.GetQuestListRequest{
 		Quest: model.Quest{
