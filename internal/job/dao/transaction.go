@@ -23,8 +23,3 @@ func (d *Dao) QueryTransactionByHash(hash string) (transHash model.Transaction, 
 	err = d.db.Where("hash", hash).First(&transHash).Error
 	return
 }
-
-func (d *Dao) QueryTransactionByHash(hash string) (transHash model.Transaction, err error) {
-	err = d.db.Where("hash", hash).First(&transHash).Error
-	return
-}
