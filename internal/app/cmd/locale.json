@@ -24,7 +24,8 @@
     "FileSizeExceedsLimit": "File size exceeds the limit!",
     "FileFormatIncorrect": "File format Incorrect!",
     "UploadSuccess": "Upload Success！",
-    "UploadFailed": "Upload Failed！"
+    "UploadFailed": "Upload Failed！",
+    "RecordNotFound": "Record Not Found！"
   },
   "zh-CN": {
     "OperationSuccess": "操作成功！",
@@ -51,6 +52,7 @@
     "FileSizeExceedsLimit": "文件大小超过限制!",
     "FileFormatIncorrect": "文件格式不正确!",
     "UploadSuccess": "上传成功！",
-    "UploadFailed": "上传失败！"
+    "UploadFailed": "上传失败！",
+    "RecordNotFound": "记录不存在！"
   }
 }

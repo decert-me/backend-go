@@ -53,6 +53,7 @@ local:
 
 # blockchain configuration
 blockchain:
+  ens-rpc: "https://rpc.ankr.com/eth"
   sign-private-key: ""
   signature: "Welcome to Decert!\n\nThis request will not trigger a blockchain transaction or cost any gas fees.\n\nYour authentication status will reset after 24 hours.\n\n"
   signature-exp: 240
