@@ -1,10 +1,10 @@
 package service
 
 import (
+	"backend-go/internal/app/model/response"
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	ens "github.com/wealdtech/go-ens/v3"
@@ -17,7 +17,7 @@ func (s *Service) GetEnsRecords(ctx context.Context, q string) (result interface
 	ensValue, err := s.dao.GetEns(ctx, q)
 	if err == nil {
 		if ensValue == "" {
-			return result, errors.New("RecordNotFound")
+			return response.GetEnsResponse{}, nil
 		}
 		_ = json.Unmarshal([]byte(ensValue), &result)
 		return result, err
@@ -25,12 +25,15 @@ func (s *Service) GetEnsRecords(ctx context.Context, q string) (result interface
 	if strings.Contains(q, ".") {
 		return s.resolveName(ctx, q)
 	} else {
-		return s.resolveAddress(ctx, q)
+		if !common.IsHexAddress(q) {
+			return result, errors.New("RecordNotFound")
+		}
+		return s.resolveAddress(ctx, common.HexToAddress(q).Hex())
 	}
 }
 
-func (s *Service) resolveName(ctx context.Context, input string) (result interface{}, err error) {
-	jsonMap := make(map[string]interface{})
+func (s *Service) resolveName(ctx context.Context, input string) (result response.GetEnsResponse, err error) {
+	result.Domain = input
 	client, err := ethclient.Dial(s.c.BlockChain.EnsRpc)
 	if err != nil {
 		return result, errors.New("UnexpectedError")
@@ -38,31 +41,34 @@ func (s *Service) resolveName(ctx context.Context, input string) (result interfa
 	// Resolve a name to an address.
 	address, err := ens.Resolve(client, input)
 	if err != nil {
-		s.dao.SetEns(ctx, input, "", time.Second*60)
-		return result, errors.New("RecordNotFound")
+		jsonStr, err := json.Marshal(result)
+		if err != nil {
+			return result, errors.New("UnexpectedError")
+		}
+		s.dao.SetEns(ctx, input, string(jsonStr), time.Second*60)
+		return result, nil
 	}
-	jsonMap["address"] = address.Hex()
-	jsonMap["domain"] = input
+	result.Address = address.Hex()
 	text, errResolver := ens.NewResolver(client, input)
 	if errResolver == nil {
 		avatar, errAvatar := text.Text("avatar")
 		if errAvatar == nil {
-			jsonMap["avatar"] = avatar
+			result.Avatar = avatar
 		}
 	}
 
-	jsonStr, err := json.Marshal(jsonMap)
+	jsonStr, err := json.Marshal(result)
 	if err != nil {
 		return result, errors.New("UnexpectedError")
 	}
 	if err = s.dao.SetEns(ctx, input, string(jsonStr), time.Hour*24); err != nil {
 		return result, errors.New("UnexpectedError")
 	}
-	return jsonMap, nil
+	return result, nil
 }
 
-func (s *Service) resolveAddress(ctx context.Context, input string) (result interface{}, err error) {
-	jsonMap := make(map[string]interface{})
+func (s *Service) resolveAddress(ctx context.Context, input string) (result response.GetEnsResponse, err error) {
+	result.Address = input
 	client, err := ethclient.Dial(s.c.BlockChain.EnsRpc)
 	if err != nil {
 		return result, errors.New("UnexpectedError")
@@ -70,26 +76,28 @@ func (s *Service) resolveAddress(ctx context.Context, input string) (result inte
 	// Resolve address to name
 	domain, err := ens.ReverseResolve(client, common.HexToAddress(input))
 	if err != nil {
-		s.dao.SetEns(ctx, input, "", time.Second*60)
-		return result, errors.New("RecordNotFound")
+		jsonStr, err := json.Marshal(result)
+		if err != nil {
+			return result, errors.New("UnexpectedError")
+		}
+		s.dao.SetEns(ctx, input, string(jsonStr), time.Second*60)
+		return result, nil
 	}
-	fmt.Println(domain)
-	jsonMap["address"] = input
-	jsonMap["domain"] = domain
+	result.Domain = domain
 	text, errResolver := ens.NewResolver(client, domain)
 	if errResolver == nil {
 		avatar, errAvatar := text.Text("avatar")
 		if errAvatar == nil {
-			jsonMap["avatar"] = avatar
+			result.Avatar = avatar
 		}
 	}
 
-	jsonStr, err := json.Marshal(jsonMap)
+	jsonStr, err := json.Marshal(result)
 	if err != nil {
 		return result, errors.New("UnexpectedError")
 	}
 	if err = s.dao.SetEns(ctx, input, string(jsonStr), time.Hour*24); err != nil {
 		return result, errors.New("UnexpectedError")
 	}
-	return jsonMap, nil
+	return result, nil
 }

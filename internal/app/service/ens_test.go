@@ -43,3 +43,7 @@ func TestEns(t *testing.T) {
 	}
 	fmt.Println(dns.Text("avatar"))
 }
+
+func TestService_GetEnsRecords(t *testing.T) {
+	fmt.Println(common.IsHexAddress("b3f204a5f3dabef6be51015fd57e307080db6498"))
+}
