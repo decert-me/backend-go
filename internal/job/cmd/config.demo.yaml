@@ -47,7 +47,7 @@ contract:
 # twitter configuration
 twitter:
   bear-token: ""
-  claim-content: ["I completed a challenge on @decertme and earned an on-chain competency Certification badge.\nhttps://decert.me/quests/\n#DeCert","我在 @decertme 上完成了一个挑战并获得了链上>能力认证的徽章。\nhttps://decert.me/quests/\n#DeCert"]
+  claim-content: ["I completed a challenge on @decertme and earned an on-chain competency Certification badge.\nhttps://decert.me/quests/\n#DeCert","我在 @decertme 上完成了一个挑战并获得了链上能力认证的徽章。\nhttps://decert.me/quests/\n#DeCert"]
 
 # scheduler configuration
 scheduler:
