@@ -4,6 +4,8 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/pkg/log"
 	"context"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -111,7 +113,8 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 		delay = time.Duration(math.Floor(float64(i)/50)*0.5 + 1)
 		// 解析 Hash
 		//fmt.Println(transHash)
-		res, err := client.TransactionReceipt(context.Background(), common.HexToHash(hash))
+		ctx, _ := context.WithTimeout(context.Background(), time.Second*15)
+		res, err := client.TransactionReceipt(ctx, common.HexToHash(hash))
 		provider.OnInvokeSuccess()
 		// 待交易
 		if err != nil {
@@ -119,6 +122,7 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 			time.Sleep(time.Second)
 			continue
 		}
+
 		// 交易失败
 		if res.Status == 0 {
 			fmt.Println("fail for transaction", hash)
@@ -147,27 +151,47 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 }
 
 func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
+	var logEvent bool
 	for _, vLog := range Logs {
 		name, ok := s.contractEvent[vLog.Topics[0]]
 		if !ok {
 			continue
 		}
+		fmt.Println(name)
 		switch name {
 		case "QuestCreated":
-			if err = s.handleQuestCreated(hash, vLog); err != nil {
+			logEvent = true
+			if err := s.handleQuestCreated(hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
-				return err
+				continue
 			}
 			return nil
 		case "Claimed":
-			if err = s.handleClaimed(hash, vLog); err != nil {
+			logEvent = true
+			if err := s.handleClaimed(hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
-				return err
+				continue
+			}
+			return nil
+		case "URI":
+			logEvent = true
+			if err := s.handleURI(hash, vLog); err != nil {
+				s.handleTraverseStatus(hash, 5, err.Error())
+				continue
 			}
 			return nil
 		}
+
 	}
-	s.handleTraverseStatus(hash, 4, "")
+	if logEvent {
+		return
+	}
+	if err = s.handleDefaultEvent(hash); err != nil {
+		log.Errorv("handleDefaultEvent", zap.Error(err))
+		s.handleTraverseStatus(hash, 5, err.Error())
+		return err
+	}
+	//s.handleTraverseStatus(hash, 4, "")
 	return nil
 }
 
@@ -176,4 +200,50 @@ func (s *Service) handleTraverseStatus(hash string, status uint8, msg string) {
 	if err != nil {
 		log.Errorv("UpdateTransactionStatus error", zap.Error(err))
 	}
+}
+
+func (s *Service) handleDefaultEvent(hash string) (err error) {
+	provider := s.w.Next()
+	client, err := ethclient.Dial(provider.Item)
+	if err != nil {
+		log.Errorv("dial error", zap.Any("error", err))
+		panic("Error dial")
+	}
+	res, _, err := client.TransactionByHash(context.Background(), common.HexToHash(hash))
+	if err != nil {
+		log.Errorv("TransactionReceipt error", zap.Error(err))
+		return
+	}
+	stringData := hex.EncodeToString(res.Data())
+	if err != nil {
+		return
+	}
+	methodData, err := hex.DecodeString(stringData[:8])
+	if err != nil {
+		return
+	}
+	inPutData, err := hex.DecodeString(stringData[8:])
+	if err != nil {
+		return
+	}
+	method, err := questMinterAbi.MethodById(methodData)
+	if err != nil {
+		log.Errorv("MethodById error", zap.Error(err))
+		return
+	}
+	resMap := make(map[string]interface{})
+	err = method.Inputs.UnpackIntoMap(resMap, inPutData)
+	if err != nil {
+		log.Errorv("UnpackIntoMap error", zap.Error(err))
+		return
+	}
+	resJson, err := json.Marshal(resMap)
+	if err != nil {
+		return
+	}
+	switch method.Name {
+	case "modifyQuest":
+		s.handleModifyQuest(hash, resJson)
+	}
+	return nil
 }

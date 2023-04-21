@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
+	"math/big"
 	"strconv"
 )
 
@@ -43,6 +44,25 @@ func (s *Service) AddQuest(address string, add request.AddQuestRequest) (res str
 		// values
 		[]interface{}{
 			add.StartTs, add.EndTs, add.Supply, add.Title, add.Uri, s.c.Contract.QuestMinter, address,
+		},
+	)
+	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
+	signature, err := crypto.Sign(prefixedHash, privateKey)
+	signature[64] += 27
+	return hexutil.Encode(signature), err
+}
+
+func (s *Service) UpdateQuest(address string, modify request.UpdateQuestRequest) (res string, err error) {
+	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
+	if err != nil {
+		return
+	}
+	hash := solsha3.SoliditySHA3(
+		// types
+		[]string{"uint256", "uint32", "uint32", "uint192", "string", "string", "address", "address"},
+		// values
+		[]interface{}{
+			big.NewInt(modify.TokenId), modify.StartTs, modify.EndTs, modify.Supply, modify.Title, modify.Uri, s.c.Contract.QuestMinter, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)

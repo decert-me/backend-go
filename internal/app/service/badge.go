@@ -99,3 +99,22 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	}
 	return nil
 }
+
+func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURIRequest) (res string, err error) {
+	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
+	if err != nil {
+		return
+	}
+	hash := solsha3.SoliditySHA3(
+		// types
+		[]string{"uint256", "string", "address", "address"},
+		// values
+		[]interface{}{
+			big.NewInt(badgeURI.TokenId), badgeURI.Uri, s.c.Contract.Badge, address,
+		},
+	)
+	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
+	signature, err := crypto.Sign(prefixedHash, privateKey)
+	signature[64] += 27
+	return hexutil.Encode(signature), err
+}
