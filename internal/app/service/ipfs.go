@@ -5,6 +5,7 @@ import (
 	"backend-go/pkg/log"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
@@ -179,6 +180,9 @@ func (s *Service) IPFSUploadFile(header *multipart.FileHeader) (err error, hash 
 // @param: header *multipart.FileHeader
 // @return: err error, list interface{}, total int64
 func (s *Service) IPFSUploadJSON(data string) (err error, hash string) {
+	if !json.Valid([]byte(data)) {
+		return errors.New("err"), hash
+	}
 	// 组成请求体
 	jsonReq := make(map[string]interface{})
 	jsonReq["body"] = data

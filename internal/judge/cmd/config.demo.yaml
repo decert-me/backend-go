@@ -1,0 +1,46 @@
+# system configuration
+system:
+  env: develop
+  addr: 8888
+
+# pgsql configuration
+pgsql:
+  path: "127.0.0.1"
+  port: "5432"
+  config: ""
+  db-name: ""
+  username: "postgres"
+  password: "123456"
+  auto-migrate: true
+  prefix: ""
+  slow-threshold: 200
+  max-idle-conns: 10
+  max-open-conns: 100
+  log-mode: "info"
+  log-zap: false
+
+# log configuration
+log:
+  level: info
+  save: true
+  format: console
+  log-in-console: true
+  prefix: '[backend-go]'
+  director: log
+  show-line: true
+  encode-level: LowercaseColorLevelEncoder
+  stacktrace-key: stacktrace
+
+
+# auth configuration
+auth:
+  signing-key: "Decert"
+  expires-time: 86400
+  issuer: "Decert"
+
+# local configuration
+local:
+  path: 'uploads/file'
+
+foundry:
+  work-path: "/Users/mac/Code/cloud-run-foundry"

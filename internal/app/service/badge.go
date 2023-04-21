@@ -20,7 +20,7 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 	if err != nil {
 		return res, errors.New("TokenIDInvalid")
 	}
-	pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri, req.Score)
+	pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Score, &quest)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return res, errors.New("UnexpectedError")
@@ -59,7 +59,7 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	if err != nil {
 		return errors.New("TokenIDInvalid")
 	}
-	pass, err := utils.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, quest.Uri, req.Score)
+	pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Score, &quest)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return errors.New("UnexpectedError")
