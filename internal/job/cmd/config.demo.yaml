@@ -55,4 +55,4 @@ scheduler:
   airdrop-badge: "15 * * * *"
 
 ipfs:
-  api: "https://ipfs.io/ipfs"
+  api: "https://ipfs.io/ipfs/"
