@@ -3,7 +3,6 @@ package service
 import (
 	ABI "backend-go/abi"
 	"backend-go/internal/app/model"
-	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -32,7 +31,7 @@ func (s *Service) handleURI(hash string, vLog *types.Log) (err error) {
 		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", tokenId))
 		return errors.New("no such tokenId in quest")
 	}
-	metadata, err := utils.GetDataFromCid(strings.Replace(uri.Value, "ipfs://", "", 1))
+	metadata, err := s.GetDataFromCid(strings.Replace(uri.Value, "ipfs://", "", 1))
 	if err != nil {
 		return
 	}

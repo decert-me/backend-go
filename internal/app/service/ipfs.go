@@ -39,7 +39,6 @@ func (s *Service) GetIPFSGateway(hash string) string {
 }
 
 func (s *Service) BalanceIPFS() {
-	fmt.Println("test")
 	if ipfsPoint.lock.Load() {
 		return
 	}
