@@ -3,7 +3,6 @@ package service
 import (
 	ABI "backend-go/abi"
 	"backend-go/internal/app/model"
-	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"encoding/json"
 	"fmt"
@@ -30,7 +29,7 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	if err = questAbi.UnpackIntoInterface(&created, "QuestCreated", vLog.Data); err != nil {
 		return
 	}
-	metadata, err := utils.GetDataFromCid(strings.Replace(created.QuestData.Uri, "ipfs://", "", 1))
+	metadata, err := s.GetDataFromCid(strings.Replace(created.QuestData.Uri, "ipfs://", "", 1))
 	if err != nil {
 		return
 	}
@@ -66,14 +65,13 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 	if err != nil {
 		return err
 	}
-	fmt.Println(gjson.Get(string(resJson), "questData").String())
 	var questData ABI.IQuestQuestData
 	err = json.Unmarshal([]byte(gjson.Get(string(resJson), "questData").String()), &questData)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	metadata, err := utils.GetDataFromCid(strings.Replace(questData.Uri, "ipfs://", "", 1))
+	metadata, err := s.GetDataFromCid(strings.Replace(questData.Uri, "ipfs://", "", 1))
 	if err != nil {
 		return
 	}
