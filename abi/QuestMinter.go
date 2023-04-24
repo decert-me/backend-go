@@ -28,10 +28,17 @@ var (
 	_ = event.NewSubscription
 )
 
+// IQuestQuestData is an auto generated low-level Go binding around an user-defined struct.
+type IQuestQuestData struct {
+	StartTs uint32
+	EndTs   uint32
+	Title   string
+	Uri     string
+}
 
 // QuestMinterMetaData contains all meta data concerning the QuestMinter contract.
 var QuestMinterMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"badge_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"quest_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidArray\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NonexistentToken\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotCreator\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInTime\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OverLimit\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"}],\"name\":\"Airdroped\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"Claimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Donation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"SignerChanged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"tokenIds\",\"type\":\"uint256[]\"},{\"internalType\":\"address[]\",\"name\":\"receivers\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"scores\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"airdropBadge\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"badge\",\"outputs\":[{\"internalType\":\"contractIBadge\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"claim\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"uint192\",\"name\":\"supply\",\"type\":\"uint192\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"createQuest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"uint192\",\"name\":\"supply\",\"type\":\"uint192\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"modifyQuest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"quest\",\"outputs\":[{\"internalType\":\"contractIQuest\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"setBadgeURI\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer_\",\"type\":\"address\"}],\"name\":\"setSigner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"signer\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"updateScore\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"quest_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidArray\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotCreator\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"SignerChanged\",\"type\":\"event\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"createQuest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"modifyQuest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"quest\",\"outputs\":[{\"internalType\":\"contractIQuest\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer_\",\"type\":\"address\"}],\"name\":\"setSigner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"signer\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"badgeNum\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"updateQuestBadgeNum\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // QuestMinterABI is the input ABI used to generate the binding from.
@@ -180,37 +187,6 @@ func (_QuestMinter *QuestMinterTransactorRaw) Transact(opts *bind.TransactOpts, 
 	return _QuestMinter.Contract.contract.Transact(opts, method, params...)
 }
 
-// Badge is a free data retrieval call binding the contract method 0x91d768de.
-//
-// Solidity: function badge() view returns(address)
-func (_QuestMinter *QuestMinterCaller) Badge(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _QuestMinter.contract.Call(opts, &out, "badge")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// Badge is a free data retrieval call binding the contract method 0x91d768de.
-//
-// Solidity: function badge() view returns(address)
-func (_QuestMinter *QuestMinterSession) Badge() (common.Address, error) {
-	return _QuestMinter.Contract.Badge(&_QuestMinter.CallOpts)
-}
-
-// Badge is a free data retrieval call binding the contract method 0x91d768de.
-//
-// Solidity: function badge() view returns(address)
-func (_QuestMinter *QuestMinterCallerSession) Badge() (common.Address, error) {
-	return _QuestMinter.Contract.Badge(&_QuestMinter.CallOpts)
-}
-
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
 // Solidity: function owner() view returns(address)
@@ -335,86 +311,44 @@ func (_QuestMinter *QuestMinterCallerSession) StartTokenId() (*big.Int, error) {
 	return _QuestMinter.Contract.StartTokenId(&_QuestMinter.CallOpts)
 }
 
-// AirdropBadge is a paid mutator transaction binding the contract method 0x0091ae8b.
+// CreateQuest is a paid mutator transaction binding the contract method 0x7a1d3f44.
 //
-// Solidity: function airdropBadge(uint256[] tokenIds, address[] receivers, uint256[] scores, bytes signature) returns()
-func (_QuestMinter *QuestMinterTransactor) AirdropBadge(opts *bind.TransactOpts, tokenIds []*big.Int, receivers []common.Address, scores []*big.Int, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.contract.Transact(opts, "airdropBadge", tokenIds, receivers, scores, signature)
-}
-
-// AirdropBadge is a paid mutator transaction binding the contract method 0x0091ae8b.
-//
-// Solidity: function airdropBadge(uint256[] tokenIds, address[] receivers, uint256[] scores, bytes signature) returns()
-func (_QuestMinter *QuestMinterSession) AirdropBadge(tokenIds []*big.Int, receivers []common.Address, scores []*big.Int, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.Contract.AirdropBadge(&_QuestMinter.TransactOpts, tokenIds, receivers, scores, signature)
-}
-
-// AirdropBadge is a paid mutator transaction binding the contract method 0x0091ae8b.
-//
-// Solidity: function airdropBadge(uint256[] tokenIds, address[] receivers, uint256[] scores, bytes signature) returns()
-func (_QuestMinter *QuestMinterTransactorSession) AirdropBadge(tokenIds []*big.Int, receivers []common.Address, scores []*big.Int, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.Contract.AirdropBadge(&_QuestMinter.TransactOpts, tokenIds, receivers, scores, signature)
-}
-
-// Claim is a paid mutator transaction binding the contract method 0x5eddd157.
-//
-// Solidity: function claim(uint256 tokenId, uint256 score, bytes signature) payable returns()
-func (_QuestMinter *QuestMinterTransactor) Claim(opts *bind.TransactOpts, tokenId *big.Int, score *big.Int, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.contract.Transact(opts, "claim", tokenId, score, signature)
-}
-
-// Claim is a paid mutator transaction binding the contract method 0x5eddd157.
-//
-// Solidity: function claim(uint256 tokenId, uint256 score, bytes signature) payable returns()
-func (_QuestMinter *QuestMinterSession) Claim(tokenId *big.Int, score *big.Int, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.Contract.Claim(&_QuestMinter.TransactOpts, tokenId, score, signature)
-}
-
-// Claim is a paid mutator transaction binding the contract method 0x5eddd157.
-//
-// Solidity: function claim(uint256 tokenId, uint256 score, bytes signature) payable returns()
-func (_QuestMinter *QuestMinterTransactorSession) Claim(tokenId *big.Int, score *big.Int, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.Contract.Claim(&_QuestMinter.TransactOpts, tokenId, score, signature)
-}
-
-// CreateQuest is a paid mutator transaction binding the contract method 0x7fac8ce4.
-//
-// Solidity: function createQuest((uint32,uint32,uint192,string,string) questData, bytes signature) returns()
+// Solidity: function createQuest((uint32,uint32,string,string) questData, bytes signature) returns()
 func (_QuestMinter *QuestMinterTransactor) CreateQuest(opts *bind.TransactOpts, questData IQuestQuestData, signature []byte) (*types.Transaction, error) {
 	return _QuestMinter.contract.Transact(opts, "createQuest", questData, signature)
 }
 
-// CreateQuest is a paid mutator transaction binding the contract method 0x7fac8ce4.
+// CreateQuest is a paid mutator transaction binding the contract method 0x7a1d3f44.
 //
-// Solidity: function createQuest((uint32,uint32,uint192,string,string) questData, bytes signature) returns()
+// Solidity: function createQuest((uint32,uint32,string,string) questData, bytes signature) returns()
 func (_QuestMinter *QuestMinterSession) CreateQuest(questData IQuestQuestData, signature []byte) (*types.Transaction, error) {
 	return _QuestMinter.Contract.CreateQuest(&_QuestMinter.TransactOpts, questData, signature)
 }
 
-// CreateQuest is a paid mutator transaction binding the contract method 0x7fac8ce4.
+// CreateQuest is a paid mutator transaction binding the contract method 0x7a1d3f44.
 //
-// Solidity: function createQuest((uint32,uint32,uint192,string,string) questData, bytes signature) returns()
+// Solidity: function createQuest((uint32,uint32,string,string) questData, bytes signature) returns()
 func (_QuestMinter *QuestMinterTransactorSession) CreateQuest(questData IQuestQuestData, signature []byte) (*types.Transaction, error) {
 	return _QuestMinter.Contract.CreateQuest(&_QuestMinter.TransactOpts, questData, signature)
 }
 
-// ModifyQuest is a paid mutator transaction binding the contract method 0xe33adcc3.
+// ModifyQuest is a paid mutator transaction binding the contract method 0xec093d64.
 //
-// Solidity: function modifyQuest(uint256 tokenId, (uint32,uint32,uint192,string,string) questData, bytes signature) returns()
+// Solidity: function modifyQuest(uint256 tokenId, (uint32,uint32,string,string) questData, bytes signature) returns()
 func (_QuestMinter *QuestMinterTransactor) ModifyQuest(opts *bind.TransactOpts, tokenId *big.Int, questData IQuestQuestData, signature []byte) (*types.Transaction, error) {
 	return _QuestMinter.contract.Transact(opts, "modifyQuest", tokenId, questData, signature)
 }
 
-// ModifyQuest is a paid mutator transaction binding the contract method 0xe33adcc3.
+// ModifyQuest is a paid mutator transaction binding the contract method 0xec093d64.
 //
-// Solidity: function modifyQuest(uint256 tokenId, (uint32,uint32,uint192,string,string) questData, bytes signature) returns()
+// Solidity: function modifyQuest(uint256 tokenId, (uint32,uint32,string,string) questData, bytes signature) returns()
 func (_QuestMinter *QuestMinterSession) ModifyQuest(tokenId *big.Int, questData IQuestQuestData, signature []byte) (*types.Transaction, error) {
 	return _QuestMinter.Contract.ModifyQuest(&_QuestMinter.TransactOpts, tokenId, questData, signature)
 }
 
-// ModifyQuest is a paid mutator transaction binding the contract method 0xe33adcc3.
+// ModifyQuest is a paid mutator transaction binding the contract method 0xec093d64.
 //
-// Solidity: function modifyQuest(uint256 tokenId, (uint32,uint32,uint192,string,string) questData, bytes signature) returns()
+// Solidity: function modifyQuest(uint256 tokenId, (uint32,uint32,string,string) questData, bytes signature) returns()
 func (_QuestMinter *QuestMinterTransactorSession) ModifyQuest(tokenId *big.Int, questData IQuestQuestData, signature []byte) (*types.Transaction, error) {
 	return _QuestMinter.Contract.ModifyQuest(&_QuestMinter.TransactOpts, tokenId, questData, signature)
 }
@@ -438,27 +372,6 @@ func (_QuestMinter *QuestMinterSession) RenounceOwnership() (*types.Transaction,
 // Solidity: function renounceOwnership() returns()
 func (_QuestMinter *QuestMinterTransactorSession) RenounceOwnership() (*types.Transaction, error) {
 	return _QuestMinter.Contract.RenounceOwnership(&_QuestMinter.TransactOpts)
-}
-
-// SetBadgeURI is a paid mutator transaction binding the contract method 0x70069010.
-//
-// Solidity: function setBadgeURI(uint256 tokenId, string uri, bytes signature) returns()
-func (_QuestMinter *QuestMinterTransactor) SetBadgeURI(opts *bind.TransactOpts, tokenId *big.Int, uri string, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.contract.Transact(opts, "setBadgeURI", tokenId, uri, signature)
-}
-
-// SetBadgeURI is a paid mutator transaction binding the contract method 0x70069010.
-//
-// Solidity: function setBadgeURI(uint256 tokenId, string uri, bytes signature) returns()
-func (_QuestMinter *QuestMinterSession) SetBadgeURI(tokenId *big.Int, uri string, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.Contract.SetBadgeURI(&_QuestMinter.TransactOpts, tokenId, uri, signature)
-}
-
-// SetBadgeURI is a paid mutator transaction binding the contract method 0x70069010.
-//
-// Solidity: function setBadgeURI(uint256 tokenId, string uri, bytes signature) returns()
-func (_QuestMinter *QuestMinterTransactorSession) SetBadgeURI(tokenId *big.Int, uri string, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.Contract.SetBadgeURI(&_QuestMinter.TransactOpts, tokenId, uri, signature)
 }
 
 // SetSigner is a paid mutator transaction binding the contract method 0x6c19e783.
@@ -503,467 +416,25 @@ func (_QuestMinter *QuestMinterTransactorSession) TransferOwnership(newOwner com
 	return _QuestMinter.Contract.TransferOwnership(&_QuestMinter.TransactOpts, newOwner)
 }
 
-// UpdateScore is a paid mutator transaction binding the contract method 0x385aa0d7.
+// UpdateQuestBadgeNum is a paid mutator transaction binding the contract method 0x1138400e.
 //
-// Solidity: function updateScore(uint256 tokenId, uint256 score, bytes signature) returns()
-func (_QuestMinter *QuestMinterTransactor) UpdateScore(opts *bind.TransactOpts, tokenId *big.Int, score *big.Int, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.contract.Transact(opts, "updateScore", tokenId, score, signature)
+// Solidity: function updateQuestBadgeNum(uint256 questId, uint256 badgeNum, bytes signature) returns()
+func (_QuestMinter *QuestMinterTransactor) UpdateQuestBadgeNum(opts *bind.TransactOpts, questId *big.Int, badgeNum *big.Int, signature []byte) (*types.Transaction, error) {
+	return _QuestMinter.contract.Transact(opts, "updateQuestBadgeNum", questId, badgeNum, signature)
 }
 
-// UpdateScore is a paid mutator transaction binding the contract method 0x385aa0d7.
+// UpdateQuestBadgeNum is a paid mutator transaction binding the contract method 0x1138400e.
 //
-// Solidity: function updateScore(uint256 tokenId, uint256 score, bytes signature) returns()
-func (_QuestMinter *QuestMinterSession) UpdateScore(tokenId *big.Int, score *big.Int, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.Contract.UpdateScore(&_QuestMinter.TransactOpts, tokenId, score, signature)
+// Solidity: function updateQuestBadgeNum(uint256 questId, uint256 badgeNum, bytes signature) returns()
+func (_QuestMinter *QuestMinterSession) UpdateQuestBadgeNum(questId *big.Int, badgeNum *big.Int, signature []byte) (*types.Transaction, error) {
+	return _QuestMinter.Contract.UpdateQuestBadgeNum(&_QuestMinter.TransactOpts, questId, badgeNum, signature)
 }
 
-// UpdateScore is a paid mutator transaction binding the contract method 0x385aa0d7.
+// UpdateQuestBadgeNum is a paid mutator transaction binding the contract method 0x1138400e.
 //
-// Solidity: function updateScore(uint256 tokenId, uint256 score, bytes signature) returns()
-func (_QuestMinter *QuestMinterTransactorSession) UpdateScore(tokenId *big.Int, score *big.Int, signature []byte) (*types.Transaction, error) {
-	return _QuestMinter.Contract.UpdateScore(&_QuestMinter.TransactOpts, tokenId, score, signature)
-}
-
-// QuestMinterAirdropedIterator is returned from FilterAirdroped and is used to iterate over the raw logs and unpacked data for Airdroped events raised by the QuestMinter contract.
-type QuestMinterAirdropedIterator struct {
-	Event *QuestMinterAirdroped // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *QuestMinterAirdropedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(QuestMinterAirdroped)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(QuestMinterAirdroped)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *QuestMinterAirdropedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *QuestMinterAirdropedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// QuestMinterAirdroped represents a Airdroped event raised by the QuestMinter contract.
-type QuestMinterAirdroped struct {
-	TokenId *big.Int
-	To      common.Address
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterAirdroped is a free log retrieval operation binding the contract event 0x9842c965759b69b9e1a1576443934aa11f303635dd908a3176f22df019fa6092.
-//
-// Solidity: event Airdroped(uint256 indexed tokenId, address indexed to)
-func (_QuestMinter *QuestMinterFilterer) FilterAirdroped(opts *bind.FilterOpts, tokenId []*big.Int, to []common.Address) (*QuestMinterAirdropedIterator, error) {
-
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var toRule []interface{}
-	for _, toItem := range to {
-		toRule = append(toRule, toItem)
-	}
-
-	logs, sub, err := _QuestMinter.contract.FilterLogs(opts, "Airdroped", tokenIdRule, toRule)
-	if err != nil {
-		return nil, err
-	}
-	return &QuestMinterAirdropedIterator{contract: _QuestMinter.contract, event: "Airdroped", logs: logs, sub: sub}, nil
-}
-
-// WatchAirdroped is a free log subscription operation binding the contract event 0x9842c965759b69b9e1a1576443934aa11f303635dd908a3176f22df019fa6092.
-//
-// Solidity: event Airdroped(uint256 indexed tokenId, address indexed to)
-func (_QuestMinter *QuestMinterFilterer) WatchAirdroped(opts *bind.WatchOpts, sink chan<- *QuestMinterAirdroped, tokenId []*big.Int, to []common.Address) (event.Subscription, error) {
-
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var toRule []interface{}
-	for _, toItem := range to {
-		toRule = append(toRule, toItem)
-	}
-
-	logs, sub, err := _QuestMinter.contract.WatchLogs(opts, "Airdroped", tokenIdRule, toRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(QuestMinterAirdroped)
-				if err := _QuestMinter.contract.UnpackLog(event, "Airdroped", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseAirdroped is a log parse operation binding the contract event 0x9842c965759b69b9e1a1576443934aa11f303635dd908a3176f22df019fa6092.
-//
-// Solidity: event Airdroped(uint256 indexed tokenId, address indexed to)
-func (_QuestMinter *QuestMinterFilterer) ParseAirdroped(log types.Log) (*QuestMinterAirdroped, error) {
-	event := new(QuestMinterAirdroped)
-	if err := _QuestMinter.contract.UnpackLog(event, "Airdroped", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// QuestMinterClaimedIterator is returned from FilterClaimed and is used to iterate over the raw logs and unpacked data for Claimed events raised by the QuestMinter contract.
-type QuestMinterClaimedIterator struct {
-	Event *QuestMinterClaimed // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *QuestMinterClaimedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(QuestMinterClaimed)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(QuestMinterClaimed)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *QuestMinterClaimedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *QuestMinterClaimedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// QuestMinterClaimed represents a Claimed event raised by the QuestMinter contract.
-type QuestMinterClaimed struct {
-	TokenId *big.Int
-	Sender  common.Address
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterClaimed is a free log retrieval operation binding the contract event 0x6aa3eac93d079e5e100b1029be716caa33586c96aa4baac390669fb5c2a21212.
-//
-// Solidity: event Claimed(uint256 indexed tokenId, address indexed sender)
-func (_QuestMinter *QuestMinterFilterer) FilterClaimed(opts *bind.FilterOpts, tokenId []*big.Int, sender []common.Address) (*QuestMinterClaimedIterator, error) {
-
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var senderRule []interface{}
-	for _, senderItem := range sender {
-		senderRule = append(senderRule, senderItem)
-	}
-
-	logs, sub, err := _QuestMinter.contract.FilterLogs(opts, "Claimed", tokenIdRule, senderRule)
-	if err != nil {
-		return nil, err
-	}
-	return &QuestMinterClaimedIterator{contract: _QuestMinter.contract, event: "Claimed", logs: logs, sub: sub}, nil
-}
-
-// WatchClaimed is a free log subscription operation binding the contract event 0x6aa3eac93d079e5e100b1029be716caa33586c96aa4baac390669fb5c2a21212.
-//
-// Solidity: event Claimed(uint256 indexed tokenId, address indexed sender)
-func (_QuestMinter *QuestMinterFilterer) WatchClaimed(opts *bind.WatchOpts, sink chan<- *QuestMinterClaimed, tokenId []*big.Int, sender []common.Address) (event.Subscription, error) {
-
-	var tokenIdRule []interface{}
-	for _, tokenIdItem := range tokenId {
-		tokenIdRule = append(tokenIdRule, tokenIdItem)
-	}
-	var senderRule []interface{}
-	for _, senderItem := range sender {
-		senderRule = append(senderRule, senderItem)
-	}
-
-	logs, sub, err := _QuestMinter.contract.WatchLogs(opts, "Claimed", tokenIdRule, senderRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(QuestMinterClaimed)
-				if err := _QuestMinter.contract.UnpackLog(event, "Claimed", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseClaimed is a log parse operation binding the contract event 0x6aa3eac93d079e5e100b1029be716caa33586c96aa4baac390669fb5c2a21212.
-//
-// Solidity: event Claimed(uint256 indexed tokenId, address indexed sender)
-func (_QuestMinter *QuestMinterFilterer) ParseClaimed(log types.Log) (*QuestMinterClaimed, error) {
-	event := new(QuestMinterClaimed)
-	if err := _QuestMinter.contract.UnpackLog(event, "Claimed", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// QuestMinterDonationIterator is returned from FilterDonation and is used to iterate over the raw logs and unpacked data for Donation events raised by the QuestMinter contract.
-type QuestMinterDonationIterator struct {
-	Event *QuestMinterDonation // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *QuestMinterDonationIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(QuestMinterDonation)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(QuestMinterDonation)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *QuestMinterDonationIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *QuestMinterDonationIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// QuestMinterDonation represents a Donation event raised by the QuestMinter contract.
-type QuestMinterDonation struct {
-	From   common.Address
-	To     common.Address
-	Amount *big.Int
-	Raw    types.Log // Blockchain specific contextual infos
-}
-
-// FilterDonation is a free log retrieval operation binding the contract event 0x597440e65d8cdea1298e19df50e115bda25508180452d87a7f4f99195fb843a4.
-//
-// Solidity: event Donation(address from, address to, uint256 amount)
-func (_QuestMinter *QuestMinterFilterer) FilterDonation(opts *bind.FilterOpts) (*QuestMinterDonationIterator, error) {
-
-	logs, sub, err := _QuestMinter.contract.FilterLogs(opts, "Donation")
-	if err != nil {
-		return nil, err
-	}
-	return &QuestMinterDonationIterator{contract: _QuestMinter.contract, event: "Donation", logs: logs, sub: sub}, nil
-}
-
-// WatchDonation is a free log subscription operation binding the contract event 0x597440e65d8cdea1298e19df50e115bda25508180452d87a7f4f99195fb843a4.
-//
-// Solidity: event Donation(address from, address to, uint256 amount)
-func (_QuestMinter *QuestMinterFilterer) WatchDonation(opts *bind.WatchOpts, sink chan<- *QuestMinterDonation) (event.Subscription, error) {
-
-	logs, sub, err := _QuestMinter.contract.WatchLogs(opts, "Donation")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(QuestMinterDonation)
-				if err := _QuestMinter.contract.UnpackLog(event, "Donation", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseDonation is a log parse operation binding the contract event 0x597440e65d8cdea1298e19df50e115bda25508180452d87a7f4f99195fb843a4.
-//
-// Solidity: event Donation(address from, address to, uint256 amount)
-func (_QuestMinter *QuestMinterFilterer) ParseDonation(log types.Log) (*QuestMinterDonation, error) {
-	event := new(QuestMinterDonation)
-	if err := _QuestMinter.contract.UnpackLog(event, "Donation", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
+// Solidity: function updateQuestBadgeNum(uint256 questId, uint256 badgeNum, bytes signature) returns()
+func (_QuestMinter *QuestMinterTransactorSession) UpdateQuestBadgeNum(questId *big.Int, badgeNum *big.Int, signature []byte) (*types.Transaction, error) {
+	return _QuestMinter.Contract.UpdateQuestBadgeNum(&_QuestMinter.TransactOpts, questId, badgeNum, signature)
 }
 
 // QuestMinterOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the QuestMinter contract.
