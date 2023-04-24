@@ -20,6 +20,7 @@ type Service struct {
 	w             *balancer.SmoothRoundrobin
 	TaskChain     chan taskTx
 	contractEvent map[common.Hash]string // 合约事件
+	providerMap   map[int]string         // RPC
 }
 
 // New init.
@@ -29,10 +30,8 @@ func New(c *config.Config) (s *Service) {
 		dao:           dao.New(c),
 		TaskChain:     make(chan taskTx, 100),
 		contractEvent: initialize.NewContractEvent(),
+		providerMap:   initialize.InitProvider(c),
 	}
-	s.w = initialize.InitProvider(c)
-	go s.consumeTransaction() // 消费
-	go s.StartTransaction()   // 任务
 	if s.c.Scheduler.Active {
 		s.cron = cron.New()
 		if _, err := s.cron.AddFunc(c.Scheduler.AirdropBadge, func() { s.AirdropBadge() }); err != nil {

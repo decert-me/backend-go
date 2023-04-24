@@ -4,21 +4,17 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/pkg/log"
 	"context"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
-	"math"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
-var traversed atomic.Bool // 任务运行状态
+var Traversed sync.Map // 任务运行状态
 
 type taskTx struct {
 	task     *model.Transaction
@@ -26,21 +22,26 @@ type taskTx struct {
 	countMap *sync.Map
 }
 
-func (s *Service) StartTransaction() {
+func (s *Service) HandleTransaction(chainID int) {
+	_, ok := Traversed.Load(chainID)
+	if ok {
+		return
+	}
+	Traversed.Store(chainID, true)
 	// 错误处理
 	defer func() {
 		if err := recover(); err != nil {
-			traversed.Store(false)
+			Traversed.Delete(chainID)
 			log.Errorv("HandleTransaction error", zap.Any("error", err))
 			time.Sleep(time.Second * 1)
-			go s.StartTransaction()
+			go s.HandleTransaction(chainID)
 		}
 	}()
 
-	if traversed.Load() {
-		return
+	client, err := ethclient.Dial(s.providerMap[chainID])
+	if err != nil {
+		panic("Error dial")
 	}
-	traversed.Store(true)
 
 	var txMap sync.Map
 	var countMap sync.Map
@@ -50,7 +51,8 @@ func (s *Service) StartTransaction() {
 		// 超出扫描次数删除
 		countMap.Range(func(key, value interface{}) bool {
 			v, ok := value.(int)
-			if ok && v > 10 {
+			if ok && v > 100 {
+				fmt.Println("超出扫描次数删除")
 				s.handleTraverseStatus(key.(string), 3, "")
 				countMap.Delete(key)
 			}
@@ -63,95 +65,86 @@ func (s *Service) StartTransaction() {
 			time.Sleep(time.Second * 3)
 			continue
 		}
+		var haveBool bool // 是否空map
+		txMap.Range(func(key, value interface{}) bool {
+			haveBool = true
+			return false
+		})
+		// 无任务
+		if len(transHashList) == 0 && !haveBool {
+			Traversed.Delete(chainID)
+			return
+		}
 		// 任务列表
 		for _, trans := range transHashList {
 			trans.Hash = strings.TrimSpace(trans.Hash)
 			_, loaded := txMap.LoadOrStore(trans.Hash, trans)
 			if loaded == false {
-				s.TaskChain <- taskTx{task: &trans, txMap: &txMap, countMap: &countMap}
+				go s.handleTransactionReceipt(client, chainID, &txMap, &countMap, trans.Hash)
+				//s.TaskChain <- taskTx{task: &trans, txMap: &txMap, countMap: &countMap}
 			}
 		}
 		time.Sleep(time.Second * 3)
 	}
 }
 
-func (s *Service) consumeTransaction() {
-	for {
-		go s.handleTransactionReceipt(<-s.TaskChain)
-	}
-}
-
-func (s *Service) handleTransactionReceipt(task taskTx) {
-	provider := s.w.Next()
-	hash := task.task.Hash
+func (s *Service) handleTransactionReceipt(client *ethclient.Client, chainID int, txMap *sync.Map, countMap *sync.Map, hash string) {
 	// 错误处理
 	defer func() {
 		if err := recover(); err != nil {
-			provider.OnInvokeFault()
-			log.Errorv("HandleTransactionReceipt", zap.Any("err ", err))
-			time.Sleep(time.Second * 3)
-			//  控制尝试次数
-			times, exist := task.countMap.LoadOrStore(hash, 1)
-			if exist {
-				v, ok := times.(int)
-				if ok {
-					task.countMap.Store(hash, v+1)
-				}
-			}
-			s.handleTransactionReceipt(task)
+			txMap.Delete(hash)
+			log.Error("HandleTransactionReceipt致命错误", zap.Any("err ", err))
 		}
 	}()
-	client, err := ethclient.Dial(provider.Item)
+	// 是否在处理列表
+	transHashAny, ok := txMap.Load(hash)
+	if !ok {
+		return
+	}
+	transHash, ok := transHashAny.(model.Transaction)
+	if !ok {
+		log.Error("HandleTransactionReceipt Reflect Error")
+		return
+	}
+	fmt.Println(hash)
+	// 解析交易Hash
+	res, err := client.TransactionReceipt(context.Background(), common.HexToHash(hash))
+	// 待交易
 	if err != nil {
-		log.Errorv("dial error", zap.Any("error", err))
-		panic("Error dial")
-	}
-	defer client.Close()
-
-	var delay time.Duration
-	for i := 0; i < s.c.BlockChain.Attempt; i++ {
-		delay = time.Duration(math.Floor(float64(i)/50)*0.5 + 1)
-		// 解析 Hash
-		//fmt.Println(transHash)
-		ctx, _ := context.WithTimeout(context.Background(), time.Second*15)
-		res, err := client.TransactionReceipt(ctx, common.HexToHash(hash))
-		provider.OnInvokeSuccess()
-		// 待交易
-		if err != nil {
-			fmt.Println("wait for transaction", hash)
-			time.Sleep(time.Second)
-			continue
-		}
-
-		// 交易失败
-		if res.Status == 0 {
-			fmt.Println("fail for transaction", hash)
-			s.handleTraverseStatus(hash, 2, "")
-			task.txMap.Delete(hash)
-			task.countMap.Delete(hash)
-			return
-		}
-		// 交易成功
-		if res.Status == 1 {
-			fmt.Println("success for transaction", hash)
-			if err = s.eventsParser(hash, res.Logs); err != nil {
-				log.Errorv("EventsParser", zap.Any("err", err))
+		fmt.Println("待交易", err)
+		txMap.Delete(hash)
+		times, exist := countMap.LoadOrStore(hash, 1)
+		if exist {
+			v, ok := times.(int)
+			if ok {
+				countMap.Store(hash, v+1)
 			}
-			task.txMap.Delete(hash)
-			task.countMap.Delete(hash)
-			return
 		}
-
-		time.Sleep(delay * time.Second)
+		return
 	}
-	task.txMap.Delete(hash)
-	task.countMap.Delete(hash)
-	// 超出尝试次数
-	s.handleTraverseStatus(hash, 3, "")
+	// 交易失败
+	if res.Status == 0 {
+		fmt.Println("交易失败")
+		txMap.Delete(hash)
+		countMap.Delete(hash)
+		s.handleTraverseStatus(transHash.Hash, 3, "")
+		return
+	}
+	// 交易成功
+	if res.Status == 1 {
+		fmt.Println("交易成功")
+		if err := s.eventsParser(transHash.Hash, res.Logs); err != nil {
+			fmt.Println(err)
+			txMap.Delete(hash)
+		} else {
+			fmt.Println("交易成功--删除")
+			txMap.Delete(hash)
+			countMap.Delete(hash)
+		}
+	}
 }
 
 func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
-	var logEvent bool
 	for _, vLog := range Logs {
 		name, ok := s.contractEvent[vLog.Topics[0]]
 		if !ok {
@@ -160,21 +153,18 @@ func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
 		fmt.Println(name)
 		switch name {
 		case "QuestCreated":
-			logEvent = true
 			if err := s.handleQuestCreated(hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
 				continue
 			}
 			return nil
 		case "Claimed":
-			logEvent = true
 			if err := s.handleClaimed(hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
 				continue
 			}
 			return nil
 		case "URI":
-			logEvent = true
 			if err := s.handleURI(hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
 				continue
@@ -183,15 +173,6 @@ func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
 		}
 
 	}
-	if logEvent {
-		return
-	}
-	if err = s.handleDefaultEvent(hash); err != nil {
-		log.Errorv("handleDefaultEvent", zap.Error(err))
-		s.handleTraverseStatus(hash, 5, err.Error())
-		return err
-	}
-	//s.handleTraverseStatus(hash, 4, "")
 	return nil
 }
 
@@ -200,50 +181,4 @@ func (s *Service) handleTraverseStatus(hash string, status uint8, msg string) {
 	if err != nil {
 		log.Errorv("UpdateTransactionStatus error", zap.Error(err))
 	}
-}
-
-func (s *Service) handleDefaultEvent(hash string) (err error) {
-	provider := s.w.Next()
-	client, err := ethclient.Dial(provider.Item)
-	if err != nil {
-		log.Errorv("dial error", zap.Any("error", err))
-		panic("Error dial")
-	}
-	res, _, err := client.TransactionByHash(context.Background(), common.HexToHash(hash))
-	if err != nil {
-		log.Errorv("TransactionReceipt error", zap.Error(err))
-		return
-	}
-	stringData := hex.EncodeToString(res.Data())
-	if err != nil {
-		return
-	}
-	methodData, err := hex.DecodeString(stringData[:8])
-	if err != nil {
-		return
-	}
-	inPutData, err := hex.DecodeString(stringData[8:])
-	if err != nil {
-		return
-	}
-	method, err := questMinterAbi.MethodById(methodData)
-	if err != nil {
-		log.Errorv("MethodById error", zap.Error(err))
-		return
-	}
-	resMap := make(map[string]interface{})
-	err = method.Inputs.UnpackIntoMap(resMap, inPutData)
-	if err != nil {
-		log.Errorv("UnpackIntoMap error", zap.Error(err))
-		return
-	}
-	resJson, err := json.Marshal(resMap)
-	if err != nil {
-		return
-	}
-	switch method.Name {
-	case "modifyQuest":
-		s.handleModifyQuest(hash, resJson)
-	}
-	return nil
 }
