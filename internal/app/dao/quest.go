@@ -63,8 +63,7 @@ func (d *Dao) GetQuest(req *model.Quest) (quest model.Quest, err error) {
 func (d *Dao) GetQuestWithClaimStatus(req *model.Quest, address string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).
 		Select("quest.*,b.claimed").
-		Joins("left join user_challenges b ON quest.token_id=b.token_id").
-		Where("b.address", address).
+		Joins("left join user_challenges b ON quest.token_id=b.token_id AND b.address= ?", address).
 		Where("quest.token_id", req.TokenId).
 		First(&quest).Error
 	return
