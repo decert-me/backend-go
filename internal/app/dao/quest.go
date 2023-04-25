@@ -60,6 +60,16 @@ func (d *Dao) GetQuest(req *model.Quest) (quest model.Quest, err error) {
 	return
 }
 
+func (d *Dao) GetQuestWithClaimStatus(req *model.Quest, address string) (quest response.GetQuestRes, err error) {
+	err = d.db.Model(&model.Quest{}).
+		Select("quest.*,b.claimed").
+		Joins("left join user_challenges b ON quest.token_id=b.token_id").
+		Where("b.address", address).
+		Where("quest.token_id", req.TokenId).
+		First(&quest).Error
+	return
+}
+
 func (d *Dao) GetUserQuestList(req *request.GetUserQuestListRequest) (questList []response.GetUserQuestListRes, total int64, err error) {
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
