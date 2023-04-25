@@ -2,13 +2,12 @@ package initialize
 
 import (
 	"backend-go/internal/job/config"
-	"backend-go/pkg/balancer"
 )
 
-func InitProvider(c *config.Config) *balancer.SmoothRoundrobin {
-	w := balancer.NewSmoothRoundrobin()
-	for _, provider := range c.BlockChain.Provider {
-		w.Add(provider.Url, provider.Weight)
+func InitProvider(c *config.Config) map[int]string {
+	temp := make(map[int]string)
+	for _, v := range c.BlockChain.Provider {
+		temp[v.ChainID] = v.Url[0]
 	}
-	return w
+	return temp
 }

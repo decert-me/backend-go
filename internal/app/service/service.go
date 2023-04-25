@@ -20,7 +20,6 @@ func New(c *config.Config) (s *Service) {
 		c:   c,
 		dao: dao.New(c),
 	}
-
 	return
 }
 

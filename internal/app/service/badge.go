@@ -3,8 +3,10 @@ package service
 import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
+	"backend-go/internal/app/model/response"
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
+	"encoding/json"
 	"errors"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -14,7 +16,7 @@ import (
 	"time"
 )
 
-func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeReq) (res string, err error) {
+func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeReq) (res response.PermitClaimBadgeRes, err error) {
 	// 校验分数正确性
 	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenId})
 	if err != nil {
@@ -32,16 +34,46 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 	if err != nil {
 		return
 	}
-	hash := solsha3.SoliditySHA3(
-		[]string{"string", "uint256", "uint256", "address", "address"},
-		[]interface{}{
-			"claim", big.NewInt(req.TokenId), big.NewInt(req.Score), s.c.Contract.Badge, address,
-		},
-	)
+	badgeAddress := s.c.Contract.MultiChain[req.ChainID].Badge
+	if badgeAddress == "" {
+		return res, errors.New("UnSupportChain")
+	}
+	// TODO: 判断状态
+	status, err := s.dao.GetMultiChainStatus(req.TokenId, req.ChainID)
+	if err != nil {
+		return res, errors.New("UnSupportChain")
+	}
+	var hash []byte
+	if status == 0 {
+		// TODO: 从链上获取quest是否更改
+		var questData model.Extradata
+		err = json.Unmarshal(quest.ExtraData, &questData)
+		if err != nil {
+			log.Errorv("Unmarshal error", zap.Error(err))
+			return res, errors.New("UnexpectedError")
+		}
+		hash = solsha3.SoliditySHA3(
+			[]string{"address", "uint256", "uint32", "uint32", "string", "string", "uint256", "string", "address", "address"},
+			[]interface{}{
+				questData.Creator, big.NewInt(req.TokenId), questData.StartTs, questData.EndTs, questData.Title, questData.Uri, big.NewInt(req.Score), "uri", badgeAddress, address,
+			},
+		)
+		res.Func = "claimWithCreate"
+	} else {
+		hash = solsha3.SoliditySHA3(
+			[]string{"address", "uint256", "uint256", "string", "address", "address"},
+			[]interface{}{
+				req.To, big.NewInt(req.TokenId), big.NewInt(req.Score), "uri", badgeAddress, address,
+			},
+		)
+		res.Func = "claimWithScore"
+	}
+
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
 	signature, err := crypto.Sign(prefixedHash, privateKey)
 	signature[64] += 27
-	return hexutil.Encode(signature), err
+	res.Sign = hexutil.Encode(signature)
+	return res, err
 }
 
 func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetReq) (err error) {
@@ -98,23 +130,4 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 		return errors.New("AlreadyHoldsBadge")
 	}
 	return nil
-}
-
-func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURIRequest) (res string, err error) {
-	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
-	if err != nil {
-		return
-	}
-	hash := solsha3.SoliditySHA3(
-		// types
-		[]string{"uint256", "string", "address", "address"},
-		// values
-		[]interface{}{
-			big.NewInt(badgeURI.TokenId), badgeURI.Uri, s.c.Contract.Badge, address,
-		},
-	)
-	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
-	signature, err := crypto.Sign(prefixedHash, privateKey)
-	signature[64] += 27
-	return hexutil.Encode(signature), err
 }

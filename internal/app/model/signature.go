@@ -1,16 +1,14 @@
 package model
 
+import ABI "backend-go/abi"
+
 type Signature struct {
 	MessageId string `json:"messageId"`
 	Address   string `json:"address"`
 	Uri       string `json:"uri"`
 }
 
-type Extradata struct {
-	StartTs uint32 `json:"startTs"`
-	EndTs   uint32 `json:"endTs"`
-	Supply  uint64 `json:"supply"`
-}
+type Extradata ABI.IBadgeQuestData
 
 type QuestData struct {
 	Title              string    `json:"title"`

@@ -5,7 +5,6 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/pkg/log"
 	"encoding/json"
-	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -38,7 +37,16 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		return err
 	}
 	questData := created.QuestData
-	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs, Supply: questData.Supply.Uint64()})
+	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs,
+		EndTs:   questData.EndTs,
+		Title:   questData.Title,
+		Creator: common.HexToAddress(vLog.Topics[1].Hex()),
+	})
+	// TODO: 多链状态
+	for _, v := range s.c.Contract.MultiChain {
+		v.
+	}
+	multiChainStatus
 	quest := model.Quest{
 		Title:       questData.Title,
 		Description: gjson.Get(metadata, "description").String(),
@@ -60,30 +68,35 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	return
 }
 
-func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
+func (s *Service) handleModifyQuest(hash string, vLog *types.Log) (err error) {
+	var modify ABI.QuestQuestModify
+	if err = questAbi.UnpackIntoInterface(&modify, "QuestModify", vLog.Data); err != nil {
+		return
+	}
+	metadata, err := s.GetDataFromCid(strings.Replace(modify.QuestData.Uri, "ipfs://", "", 1))
+	if err != nil {
+		return
+	}
 	tr, err := s.dao.QueryTransactionByHash(hash)
 	if err != nil {
 		return err
 	}
-	var questData ABI.IQuestQuestData
-	err = json.Unmarshal([]byte(gjson.Get(string(resJson), "questData").String()), &questData)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	metadata, err := s.GetDataFromCid(strings.Replace(questData.Uri, "ipfs://", "", 1))
-	if err != nil {
-		return
-	}
-	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs, Supply: questData.Supply.Uint64()})
+	questData := modify.QuestData
+	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs,
+		EndTs:   questData.EndTs,
+		Title:   questData.Title,
+		Creator: common.HexToAddress(vLog.Topics[1].Hex()),
+	})
 	quest := model.Quest{
 		Title:       questData.Title,
 		Description: gjson.Get(metadata, "description").String(),
-		TokenId:     gjson.Get(string(resJson), "tokenId").Int(),
+		TokenId:     vLog.Topics[2].Big().Int64(),
 		Uri:         questData.Uri,
 		Type:        0, // TODO
+		Creator:     common.HexToAddress(vLog.Topics[1].Hex()).String(),
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
+		IsDraft:     false, // 当前发布不审核
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").Raw,
 	}
 	if err = s.dao.UpdateQuest(&quest); err != nil {

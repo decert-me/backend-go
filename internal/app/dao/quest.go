@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -72,4 +73,12 @@ func (d *Dao) GetUserQuestList(req *request.GetUserQuestListRequest) (questList 
 	err = db.Limit(limit).Offset(offset).Order("add_ts desc").Find(&questList).Error
 
 	return questList, total, err
+}
+
+func (d *Dao) GetMultiChainStatus(tokenID int64, chainID int) (status int8, err error) {
+	err = d.db.Model(&model.Quest{}).Select(fmt.Sprintf("multi_chain_status ->>'%d' AS status", chainID)).Where("token_id", tokenID).First(&status).Error
+	if err != nil {
+		return
+	}
+	return
 }

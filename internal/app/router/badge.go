@@ -11,6 +11,5 @@ func InitBadgeRouter(Router *gin.RouterGroup) {
 	{
 		badgeRouter.POST("submitClaimTweet", v1.SubmitClaimTweet)
 		badgeRouter.POST("claim", v1.PermitClaimBadge)
-		badgeRouter.PUT("uri", v1.UpdateBadgeURI)
 	}
 }
