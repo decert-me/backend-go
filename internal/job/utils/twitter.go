@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/job/config"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -50,12 +51,15 @@ func GetTweetById(c *config.Config, tweetId string) (string, error) {
 // @param: tokenId uint64, tweet string
 // @return: bool
 func CheckIfMatchClaimTweet(c *config.Config, tokenId int64, tweet string) bool {
-	actual := strings.Split(tweet, "\n")
-	var expect []string
+	pattern := regexp.MustCompile(`((https?|http)://[^\s/$.?#].[^\s]*)`)
+	matches := strings.Replace(pattern.FindString(tweet), "\\n", "", -1)
+	tweetContent := strings.Replace(strings.Replace(tweet, matches, "", -1), " ", "", -1)
 	var contentMatch bool
+	var matchesConfig string
 	for _, v := range c.Twitter.ClaimContent {
-		expect = strings.Split(v, "\n")
-		if len(actual) == len(expect) && strings.TrimSpace(actual[0]) == expect[0] && strings.TrimSpace(actual[2]) == expect[2] {
+		matchesConfig = strings.Replace(pattern.FindString(v), "\\n", "", -1)
+		configContent := strings.Replace(strings.Replace(v, matchesConfig, "", -1), " ", "", -1)
+		if configContent == tweetContent {
 			contentMatch = true
 			break
 		}
@@ -63,9 +67,9 @@ func CheckIfMatchClaimTweet(c *config.Config, tokenId int64, tweet string) bool 
 	if !contentMatch {
 		return false
 	}
-	expectURL := strings.TrimSpace(expect[1]) + strconv.FormatInt(tokenId, 10)
+	expectURL := strings.TrimSpace(matchesConfig) + strconv.FormatInt(tokenId, 10)
 	client := GetTwitterClient(c)
-	res, err := client.clientReq.R().Get(strings.TrimSpace(actual[1]))
+	res, err := client.clientReq.R().Get(strings.TrimSpace(matches))
 	if err != nil {
 		return false
 	}
