@@ -73,3 +73,16 @@ func (d *Dao) GetUserQuestList(req *request.GetUserQuestListRequest) (questList 
 
 	return questList, total, err
 }
+
+func (d *Dao) GetQuestChallengeUser(tokenId int64) (res response.GetQuestChallengeUserRes, err error) {
+	err = d.db.Model(&model.UserChallenges{}).Where("token_id", tokenId).Count(&res.Times).Error
+	if err != nil {
+		return res, err
+	}
+	err = d.db.Model(&model.UserChallenges{}).
+		Select("users.*").
+		Joins("LEFT JOIN users ON user_challenges.address=users.address").
+		Where("user_challenges.token_id", tokenId).
+		Find(&res.Users).Error
+	return res, err
+}

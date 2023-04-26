@@ -56,3 +56,11 @@ func UpdateQuest(c *gin.Context) {
 		OkWithData(list, c)
 	}
 }
+
+func GetQuestChallengeUser(c *gin.Context) {
+	if data, err := srv.GetQuestChallengeUser(c.Param("id")); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithData(data, c)
+	}
+}
