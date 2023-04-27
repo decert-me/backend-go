@@ -21,3 +21,8 @@ type GetQuestChallengeUserRes struct {
 	Users []ChallengeUsers `gorm:"users" json:"users"`
 	Times int64
 }
+
+type GetQuestRes struct {
+	model.Quest
+	Claimed bool `gorm:"claimed" json:"claimed"`
+}

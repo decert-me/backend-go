@@ -22,12 +22,16 @@ func (s *Service) GetUserQuestList(searchInfo request.GetUserQuestListRequest) (
 	return
 }
 
-func (s *Service) GetQuest(id string) (quest model.Quest, err error) {
+func (s *Service) GetQuest(id string, address string) (quest response.GetQuestRes, err error) {
 	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return
 	}
-	quest, err = s.dao.GetQuest(&model.Quest{TokenId: tokenId})
+	if address == "" {
+		quest.Quest, err = s.dao.GetQuest(&model.Quest{TokenId: tokenId})
+		return
+	}
+	quest, err = s.dao.GetQuestWithClaimStatus(&model.Quest{TokenId: tokenId}, address)
 	return
 }
 
