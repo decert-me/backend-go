@@ -1,22 +1,26 @@
 package dao
 
 import (
-	"context"
-	"fmt"
-	"time"
+	"backend-go/internal/app/model"
+	"gorm.io/gorm/clause"
 )
 
-func (d *Dao) ensKeyRedis(key string) string {
-	return fmt.Sprintf("%sens_%s", d.c.Redis.Prefix, key)
-}
-
 // SetEns 保存Ens信息
-func (d *Dao) SetEns(c context.Context, key, value string, expiration time.Duration) (err error) {
-	return d.redis.Set(c, d.ensKeyRedis(key), value, expiration).Err()
+func (d *Dao) SetEns(ens model.Ens) (err error) {
+	return d.db.Model(&model.Ens{}).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "address"}, {Name: "domain"}},
+		UpdateAll: true,
+	}).Create(&ens).Error
 }
 
-// GetEns 获取Ens信息
-func (d *Dao) GetEns(c context.Context, key string) (value string, err error) {
-	value, err = d.redis.Get(c, d.ensKeyRedis(key)).Result()
+// GetEnsByAddress 获取Ens信息
+func (d *Dao) GetEnsByAddress(address string) (value model.Ens, err error) {
+	err = d.db.Model(&model.Ens{}).Where("address", address).First(&value).Error
+	return
+}
+
+// GetEnsByAddress 获取Ens信息
+func (d *Dao) GetAddressByEns(domain string) (value model.Ens, err error) {
+	err = d.db.Model(&model.Ens{}).Where("domain", domain).First(&value).Error
 	return
 }
