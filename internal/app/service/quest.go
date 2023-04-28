@@ -74,3 +74,12 @@ func (s *Service) UpdateQuest(address string, modify request.UpdateQuestRequest)
 	signature[64] += 27
 	return hexutil.Encode(signature), err
 }
+
+func (s *Service) GetQuestChallengeUser(id string) (res response.GetQuestChallengeUserRes, err error) {
+	tokenId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return
+	}
+	res, err = s.dao.GetQuestChallengeUser(tokenId)
+	return
+}
