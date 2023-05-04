@@ -49,7 +49,7 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
 		IsDraft:     false, // 当前发布不审核
-		Recommend:   gjson.Get(tr.Params.String(), "recommend").Raw,
+		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
 	}
 	if err = s.dao.CreateQuest(&quest); err != nil {
 		log.Errorv("CreateQuest error", zap.Error(err), zap.Any("quest", quest))
