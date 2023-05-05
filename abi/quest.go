@@ -28,9 +28,17 @@ var (
 	_ = event.NewSubscription
 )
 
+// IQuestQuestData is an auto generated low-level Go binding around an user-defined struct.
+type IQuestQuestData struct {
+	StartTs uint32
+	EndTs   uint32
+	Title   string
+	Uri     string
+}
+
 // QuestMetaData contains all meta data concerning the Quest contract.
 var QuestMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ClaimedCannotModify\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidMinter\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NonexistentToken\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OnlyMinter\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Locked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"badgeNum\",\"type\":\"uint256\"}],\"name\":\"QuestBadgeNumUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"indexed\":false,\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"}],\"name\":\"QuestCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"indexed\":false,\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"}],\"name\":\"QuestModify\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"minter\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\"}],\"name\":\"SetMinter\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Unlocked\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"exists\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getQuest\",\"outputs\":[{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"}],\"name\":\"getQuestBadgeNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"locked\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"meta\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"minters\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"}],\"name\":\"modifyQuest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"questBadgeNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"quests\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_meta\",\"type\":\"address\"}],\"name\":\"setMetaContract\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"minter\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\"}],\"name\":\"setMinter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"badgeNum\",\"type\":\"uint256\"}],\"name\":\"updateQuestBadgeNum\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ClaimedCannotModify\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidMinter\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NonexistentToken\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OnlyMinter\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroAddress\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"badgeNum\",\"type\":\"uint256\"}],\"name\":\"BadgeNumUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Donation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Locked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"minter\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\"}],\"name\":\"MinterSet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"indexed\":false,\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"}],\"name\":\"QuestCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"indexed\":false,\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"}],\"name\":\"QuestModified\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Unlocked\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"}],\"name\":\"donate\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"exists\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"}],\"name\":\"getBadgeNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getQuest\",\"outputs\":[{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"locked\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"meta\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"minters\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIQuest.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"}],\"name\":\"modifyQuest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"questBadgeNum\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"quests\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_meta\",\"type\":\"address\"}],\"name\":\"setMetaContract\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"minter\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"enabled\",\"type\":\"bool\"}],\"name\":\"setMinter\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"badgeNum\",\"type\":\"uint256\"}],\"name\":\"updateBadgeNum\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // QuestABI is the input ABI used to generate the binding from.
@@ -272,6 +280,37 @@ func (_Quest *QuestCallerSession) GetApproved(arg0 *big.Int) (common.Address, er
 	return _Quest.Contract.GetApproved(&_Quest.CallOpts, arg0)
 }
 
+// GetBadgeNum is a free data retrieval call binding the contract method 0x938a00d6.
+//
+// Solidity: function getBadgeNum(uint256 questId) view returns(uint256)
+func (_Quest *QuestCaller) GetBadgeNum(opts *bind.CallOpts, questId *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _Quest.contract.Call(opts, &out, "getBadgeNum", questId)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetBadgeNum is a free data retrieval call binding the contract method 0x938a00d6.
+//
+// Solidity: function getBadgeNum(uint256 questId) view returns(uint256)
+func (_Quest *QuestSession) GetBadgeNum(questId *big.Int) (*big.Int, error) {
+	return _Quest.Contract.GetBadgeNum(&_Quest.CallOpts, questId)
+}
+
+// GetBadgeNum is a free data retrieval call binding the contract method 0x938a00d6.
+//
+// Solidity: function getBadgeNum(uint256 questId) view returns(uint256)
+func (_Quest *QuestCallerSession) GetBadgeNum(questId *big.Int) (*big.Int, error) {
+	return _Quest.Contract.GetBadgeNum(&_Quest.CallOpts, questId)
+}
+
 // GetQuest is a free data retrieval call binding the contract method 0x49f86f34.
 //
 // Solidity: function getQuest(uint256 tokenId) view returns((uint32,uint32,string,string) questData)
@@ -301,37 +340,6 @@ func (_Quest *QuestSession) GetQuest(tokenId *big.Int) (IQuestQuestData, error) 
 // Solidity: function getQuest(uint256 tokenId) view returns((uint32,uint32,string,string) questData)
 func (_Quest *QuestCallerSession) GetQuest(tokenId *big.Int) (IQuestQuestData, error) {
 	return _Quest.Contract.GetQuest(&_Quest.CallOpts, tokenId)
-}
-
-// GetQuestBadgeNum is a free data retrieval call binding the contract method 0xf45bf674.
-//
-// Solidity: function getQuestBadgeNum(uint256 questId) view returns(uint256)
-func (_Quest *QuestCaller) GetQuestBadgeNum(opts *bind.CallOpts, questId *big.Int) (*big.Int, error) {
-	var out []interface{}
-	err := _Quest.contract.Call(opts, &out, "getQuestBadgeNum", questId)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetQuestBadgeNum is a free data retrieval call binding the contract method 0xf45bf674.
-//
-// Solidity: function getQuestBadgeNum(uint256 questId) view returns(uint256)
-func (_Quest *QuestSession) GetQuestBadgeNum(questId *big.Int) (*big.Int, error) {
-	return _Quest.Contract.GetQuestBadgeNum(&_Quest.CallOpts, questId)
-}
-
-// GetQuestBadgeNum is a free data retrieval call binding the contract method 0xf45bf674.
-//
-// Solidity: function getQuestBadgeNum(uint256 questId) view returns(uint256)
-func (_Quest *QuestCallerSession) GetQuestBadgeNum(questId *big.Int) (*big.Int, error) {
-	return _Quest.Contract.GetQuestBadgeNum(&_Quest.CallOpts, questId)
 }
 
 // IsApprovedForAll is a free data retrieval call binding the contract method 0xe985e9c5.
@@ -782,6 +790,27 @@ func (_Quest *QuestTransactorSession) Approve(arg0 common.Address, arg1 *big.Int
 	return _Quest.Contract.Approve(&_Quest.TransactOpts, arg0, arg1)
 }
 
+// Donate is a paid mutator transaction binding the contract method 0xf14faf6f.
+//
+// Solidity: function donate(uint256 questId) payable returns()
+func (_Quest *QuestTransactor) Donate(opts *bind.TransactOpts, questId *big.Int) (*types.Transaction, error) {
+	return _Quest.contract.Transact(opts, "donate", questId)
+}
+
+// Donate is a paid mutator transaction binding the contract method 0xf14faf6f.
+//
+// Solidity: function donate(uint256 questId) payable returns()
+func (_Quest *QuestSession) Donate(questId *big.Int) (*types.Transaction, error) {
+	return _Quest.Contract.Donate(&_Quest.TransactOpts, questId)
+}
+
+// Donate is a paid mutator transaction binding the contract method 0xf14faf6f.
+//
+// Solidity: function donate(uint256 questId) payable returns()
+func (_Quest *QuestTransactorSession) Donate(questId *big.Int) (*types.Transaction, error) {
+	return _Quest.Contract.Donate(&_Quest.TransactOpts, questId)
+}
+
 // Mint is a paid mutator transaction binding the contract method 0x78a82014.
 //
 // Solidity: function mint(address to, uint256 tokenId, (uint32,uint32,string,string) questData, bytes data) returns()
@@ -992,25 +1021,25 @@ func (_Quest *QuestTransactorSession) TransferOwnership(newOwner common.Address)
 	return _Quest.Contract.TransferOwnership(&_Quest.TransactOpts, newOwner)
 }
 
-// UpdateQuestBadgeNum is a paid mutator transaction binding the contract method 0x47478729.
+// UpdateBadgeNum is a paid mutator transaction binding the contract method 0x9edcf1c3.
 //
-// Solidity: function updateQuestBadgeNum(uint256 questId, uint256 badgeNum) returns()
-func (_Quest *QuestTransactor) UpdateQuestBadgeNum(opts *bind.TransactOpts, questId *big.Int, badgeNum *big.Int) (*types.Transaction, error) {
-	return _Quest.contract.Transact(opts, "updateQuestBadgeNum", questId, badgeNum)
+// Solidity: function updateBadgeNum(uint256 questId, uint256 badgeNum) returns()
+func (_Quest *QuestTransactor) UpdateBadgeNum(opts *bind.TransactOpts, questId *big.Int, badgeNum *big.Int) (*types.Transaction, error) {
+	return _Quest.contract.Transact(opts, "updateBadgeNum", questId, badgeNum)
 }
 
-// UpdateQuestBadgeNum is a paid mutator transaction binding the contract method 0x47478729.
+// UpdateBadgeNum is a paid mutator transaction binding the contract method 0x9edcf1c3.
 //
-// Solidity: function updateQuestBadgeNum(uint256 questId, uint256 badgeNum) returns()
-func (_Quest *QuestSession) UpdateQuestBadgeNum(questId *big.Int, badgeNum *big.Int) (*types.Transaction, error) {
-	return _Quest.Contract.UpdateQuestBadgeNum(&_Quest.TransactOpts, questId, badgeNum)
+// Solidity: function updateBadgeNum(uint256 questId, uint256 badgeNum) returns()
+func (_Quest *QuestSession) UpdateBadgeNum(questId *big.Int, badgeNum *big.Int) (*types.Transaction, error) {
+	return _Quest.Contract.UpdateBadgeNum(&_Quest.TransactOpts, questId, badgeNum)
 }
 
-// UpdateQuestBadgeNum is a paid mutator transaction binding the contract method 0x47478729.
+// UpdateBadgeNum is a paid mutator transaction binding the contract method 0x9edcf1c3.
 //
-// Solidity: function updateQuestBadgeNum(uint256 questId, uint256 badgeNum) returns()
-func (_Quest *QuestTransactorSession) UpdateQuestBadgeNum(questId *big.Int, badgeNum *big.Int) (*types.Transaction, error) {
-	return _Quest.Contract.UpdateQuestBadgeNum(&_Quest.TransactOpts, questId, badgeNum)
+// Solidity: function updateBadgeNum(uint256 questId, uint256 badgeNum) returns()
+func (_Quest *QuestTransactorSession) UpdateBadgeNum(questId *big.Int, badgeNum *big.Int) (*types.Transaction, error) {
+	return _Quest.Contract.UpdateBadgeNum(&_Quest.TransactOpts, questId, badgeNum)
 }
 
 // QuestApprovalIterator is returned from FilterApproval and is used to iterate over the raw logs and unpacked data for Approval events raised by the Quest contract.
@@ -1329,6 +1358,287 @@ func (_Quest *QuestFilterer) ParseApprovalForAll(log types.Log) (*QuestApprovalF
 	return event, nil
 }
 
+// QuestBadgeNumUpdatedIterator is returned from FilterBadgeNumUpdated and is used to iterate over the raw logs and unpacked data for BadgeNumUpdated events raised by the Quest contract.
+type QuestBadgeNumUpdatedIterator struct {
+	Event *QuestBadgeNumUpdated // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *QuestBadgeNumUpdatedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(QuestBadgeNumUpdated)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(QuestBadgeNumUpdated)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *QuestBadgeNumUpdatedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *QuestBadgeNumUpdatedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// QuestBadgeNumUpdated represents a BadgeNumUpdated event raised by the Quest contract.
+type QuestBadgeNumUpdated struct {
+	QuestId  *big.Int
+	BadgeNum *big.Int
+	Raw      types.Log // Blockchain specific contextual infos
+}
+
+// FilterBadgeNumUpdated is a free log retrieval operation binding the contract event 0x359e70231d793fa1d2bdbe036ae9239433156b1cb828cf2c8af77b7c48bc9257.
+//
+// Solidity: event BadgeNumUpdated(uint256 indexed questId, uint256 badgeNum)
+func (_Quest *QuestFilterer) FilterBadgeNumUpdated(opts *bind.FilterOpts, questId []*big.Int) (*QuestBadgeNumUpdatedIterator, error) {
+
+	var questIdRule []interface{}
+	for _, questIdItem := range questId {
+		questIdRule = append(questIdRule, questIdItem)
+	}
+
+	logs, sub, err := _Quest.contract.FilterLogs(opts, "BadgeNumUpdated", questIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return &QuestBadgeNumUpdatedIterator{contract: _Quest.contract, event: "BadgeNumUpdated", logs: logs, sub: sub}, nil
+}
+
+// WatchBadgeNumUpdated is a free log subscription operation binding the contract event 0x359e70231d793fa1d2bdbe036ae9239433156b1cb828cf2c8af77b7c48bc9257.
+//
+// Solidity: event BadgeNumUpdated(uint256 indexed questId, uint256 badgeNum)
+func (_Quest *QuestFilterer) WatchBadgeNumUpdated(opts *bind.WatchOpts, sink chan<- *QuestBadgeNumUpdated, questId []*big.Int) (event.Subscription, error) {
+
+	var questIdRule []interface{}
+	for _, questIdItem := range questId {
+		questIdRule = append(questIdRule, questIdItem)
+	}
+
+	logs, sub, err := _Quest.contract.WatchLogs(opts, "BadgeNumUpdated", questIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(QuestBadgeNumUpdated)
+				if err := _Quest.contract.UnpackLog(event, "BadgeNumUpdated", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseBadgeNumUpdated is a log parse operation binding the contract event 0x359e70231d793fa1d2bdbe036ae9239433156b1cb828cf2c8af77b7c48bc9257.
+//
+// Solidity: event BadgeNumUpdated(uint256 indexed questId, uint256 badgeNum)
+func (_Quest *QuestFilterer) ParseBadgeNumUpdated(log types.Log) (*QuestBadgeNumUpdated, error) {
+	event := new(QuestBadgeNumUpdated)
+	if err := _Quest.contract.UnpackLog(event, "BadgeNumUpdated", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// QuestDonationIterator is returned from FilterDonation and is used to iterate over the raw logs and unpacked data for Donation events raised by the Quest contract.
+type QuestDonationIterator struct {
+	Event *QuestDonation // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *QuestDonationIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(QuestDonation)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(QuestDonation)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *QuestDonationIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *QuestDonationIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// QuestDonation represents a Donation event raised by the Quest contract.
+type QuestDonation struct {
+	From   common.Address
+	To     common.Address
+	Amount *big.Int
+	Raw    types.Log // Blockchain specific contextual infos
+}
+
+// FilterDonation is a free log retrieval operation binding the contract event 0x597440e65d8cdea1298e19df50e115bda25508180452d87a7f4f99195fb843a4.
+//
+// Solidity: event Donation(address from, address to, uint256 amount)
+func (_Quest *QuestFilterer) FilterDonation(opts *bind.FilterOpts) (*QuestDonationIterator, error) {
+
+	logs, sub, err := _Quest.contract.FilterLogs(opts, "Donation")
+	if err != nil {
+		return nil, err
+	}
+	return &QuestDonationIterator{contract: _Quest.contract, event: "Donation", logs: logs, sub: sub}, nil
+}
+
+// WatchDonation is a free log subscription operation binding the contract event 0x597440e65d8cdea1298e19df50e115bda25508180452d87a7f4f99195fb843a4.
+//
+// Solidity: event Donation(address from, address to, uint256 amount)
+func (_Quest *QuestFilterer) WatchDonation(opts *bind.WatchOpts, sink chan<- *QuestDonation) (event.Subscription, error) {
+
+	logs, sub, err := _Quest.contract.WatchLogs(opts, "Donation")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(QuestDonation)
+				if err := _Quest.contract.UnpackLog(event, "Donation", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseDonation is a log parse operation binding the contract event 0x597440e65d8cdea1298e19df50e115bda25508180452d87a7f4f99195fb843a4.
+//
+// Solidity: event Donation(address from, address to, uint256 amount)
+func (_Quest *QuestFilterer) ParseDonation(log types.Log) (*QuestDonation, error) {
+	event := new(QuestDonation)
+	if err := _Quest.contract.UnpackLog(event, "Donation", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
 // QuestLockedIterator is returned from FilterLocked and is used to iterate over the raw logs and unpacked data for Locked events raised by the Quest contract.
 type QuestLockedIterator struct {
 	Event *QuestLocked // Event containing the contract specifics and raw log
@@ -1457,6 +1767,141 @@ func (_Quest *QuestFilterer) WatchLocked(opts *bind.WatchOpts, sink chan<- *Ques
 func (_Quest *QuestFilterer) ParseLocked(log types.Log) (*QuestLocked, error) {
 	event := new(QuestLocked)
 	if err := _Quest.contract.UnpackLog(event, "Locked", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// QuestMinterSetIterator is returned from FilterMinterSet and is used to iterate over the raw logs and unpacked data for MinterSet events raised by the Quest contract.
+type QuestMinterSetIterator struct {
+	Event *QuestMinterSet // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *QuestMinterSetIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(QuestMinterSet)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(QuestMinterSet)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *QuestMinterSetIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *QuestMinterSetIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// QuestMinterSet represents a MinterSet event raised by the Quest contract.
+type QuestMinterSet struct {
+	Minter  common.Address
+	Enabled bool
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterMinterSet is a free log retrieval operation binding the contract event 0x583b0aa0e528532caf4b907c11d7a8158a122fe2a6fb80cd9b09776ebea8d92d.
+//
+// Solidity: event MinterSet(address minter, bool enabled)
+func (_Quest *QuestFilterer) FilterMinterSet(opts *bind.FilterOpts) (*QuestMinterSetIterator, error) {
+
+	logs, sub, err := _Quest.contract.FilterLogs(opts, "MinterSet")
+	if err != nil {
+		return nil, err
+	}
+	return &QuestMinterSetIterator{contract: _Quest.contract, event: "MinterSet", logs: logs, sub: sub}, nil
+}
+
+// WatchMinterSet is a free log subscription operation binding the contract event 0x583b0aa0e528532caf4b907c11d7a8158a122fe2a6fb80cd9b09776ebea8d92d.
+//
+// Solidity: event MinterSet(address minter, bool enabled)
+func (_Quest *QuestFilterer) WatchMinterSet(opts *bind.WatchOpts, sink chan<- *QuestMinterSet) (event.Subscription, error) {
+
+	logs, sub, err := _Quest.contract.WatchLogs(opts, "MinterSet")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(QuestMinterSet)
+				if err := _Quest.contract.UnpackLog(event, "MinterSet", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseMinterSet is a log parse operation binding the contract event 0x583b0aa0e528532caf4b907c11d7a8158a122fe2a6fb80cd9b09776ebea8d92d.
+//
+// Solidity: event MinterSet(address minter, bool enabled)
+func (_Quest *QuestFilterer) ParseMinterSet(log types.Log) (*QuestMinterSet, error) {
+	event := new(QuestMinterSet)
+	if err := _Quest.contract.UnpackLog(event, "MinterSet", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -1610,151 +2055,6 @@ func (_Quest *QuestFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sin
 func (_Quest *QuestFilterer) ParseOwnershipTransferred(log types.Log) (*QuestOwnershipTransferred, error) {
 	event := new(QuestOwnershipTransferred)
 	if err := _Quest.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// QuestQuestBadgeNumUpdateIterator is returned from FilterQuestBadgeNumUpdate and is used to iterate over the raw logs and unpacked data for QuestBadgeNumUpdate events raised by the Quest contract.
-type QuestQuestBadgeNumUpdateIterator struct {
-	Event *QuestQuestBadgeNumUpdate // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *QuestQuestBadgeNumUpdateIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(QuestQuestBadgeNumUpdate)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(QuestQuestBadgeNumUpdate)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *QuestQuestBadgeNumUpdateIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *QuestQuestBadgeNumUpdateIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// QuestQuestBadgeNumUpdate represents a QuestBadgeNumUpdate event raised by the Quest contract.
-type QuestQuestBadgeNumUpdate struct {
-	QuestId  *big.Int
-	BadgeNum *big.Int
-	Raw      types.Log // Blockchain specific contextual infos
-}
-
-// FilterQuestBadgeNumUpdate is a free log retrieval operation binding the contract event 0xc4dc31b5c80f6a178f5aa4184375e52c4aaef3179daf27a21bbda907c5b5036c.
-//
-// Solidity: event QuestBadgeNumUpdate(uint256 indexed questId, uint256 badgeNum)
-func (_Quest *QuestFilterer) FilterQuestBadgeNumUpdate(opts *bind.FilterOpts, questId []*big.Int) (*QuestQuestBadgeNumUpdateIterator, error) {
-
-	var questIdRule []interface{}
-	for _, questIdItem := range questId {
-		questIdRule = append(questIdRule, questIdItem)
-	}
-
-	logs, sub, err := _Quest.contract.FilterLogs(opts, "QuestBadgeNumUpdate", questIdRule)
-	if err != nil {
-		return nil, err
-	}
-	return &QuestQuestBadgeNumUpdateIterator{contract: _Quest.contract, event: "QuestBadgeNumUpdate", logs: logs, sub: sub}, nil
-}
-
-// WatchQuestBadgeNumUpdate is a free log subscription operation binding the contract event 0xc4dc31b5c80f6a178f5aa4184375e52c4aaef3179daf27a21bbda907c5b5036c.
-//
-// Solidity: event QuestBadgeNumUpdate(uint256 indexed questId, uint256 badgeNum)
-func (_Quest *QuestFilterer) WatchQuestBadgeNumUpdate(opts *bind.WatchOpts, sink chan<- *QuestQuestBadgeNumUpdate, questId []*big.Int) (event.Subscription, error) {
-
-	var questIdRule []interface{}
-	for _, questIdItem := range questId {
-		questIdRule = append(questIdRule, questIdItem)
-	}
-
-	logs, sub, err := _Quest.contract.WatchLogs(opts, "QuestBadgeNumUpdate", questIdRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(QuestQuestBadgeNumUpdate)
-				if err := _Quest.contract.UnpackLog(event, "QuestBadgeNumUpdate", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseQuestBadgeNumUpdate is a log parse operation binding the contract event 0xc4dc31b5c80f6a178f5aa4184375e52c4aaef3179daf27a21bbda907c5b5036c.
-//
-// Solidity: event QuestBadgeNumUpdate(uint256 indexed questId, uint256 badgeNum)
-func (_Quest *QuestFilterer) ParseQuestBadgeNumUpdate(log types.Log) (*QuestQuestBadgeNumUpdate, error) {
-	event := new(QuestQuestBadgeNumUpdate)
-	if err := _Quest.contract.UnpackLog(event, "QuestBadgeNumUpdate", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -1915,9 +2215,9 @@ func (_Quest *QuestFilterer) ParseQuestCreated(log types.Log) (*QuestQuestCreate
 	return event, nil
 }
 
-// QuestQuestModifyIterator is returned from FilterQuestModify and is used to iterate over the raw logs and unpacked data for QuestModify events raised by the Quest contract.
-type QuestQuestModifyIterator struct {
-	Event *QuestQuestModify // Event containing the contract specifics and raw log
+// QuestQuestModifiedIterator is returned from FilterQuestModified and is used to iterate over the raw logs and unpacked data for QuestModified events raised by the Quest contract.
+type QuestQuestModifiedIterator struct {
+	Event *QuestQuestModified // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1931,7 +2231,7 @@ type QuestQuestModifyIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *QuestQuestModifyIterator) Next() bool {
+func (it *QuestQuestModifiedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1940,7 +2240,7 @@ func (it *QuestQuestModifyIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(QuestQuestModify)
+			it.Event = new(QuestQuestModified)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1955,7 +2255,7 @@ func (it *QuestQuestModifyIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(QuestQuestModify)
+		it.Event = new(QuestQuestModified)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1971,29 +2271,29 @@ func (it *QuestQuestModifyIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *QuestQuestModifyIterator) Error() error {
+func (it *QuestQuestModifiedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *QuestQuestModifyIterator) Close() error {
+func (it *QuestQuestModifiedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// QuestQuestModify represents a QuestModify event raised by the Quest contract.
-type QuestQuestModify struct {
+// QuestQuestModified represents a QuestModified event raised by the Quest contract.
+type QuestQuestModified struct {
 	Creator   common.Address
 	TokenId   *big.Int
 	QuestData IQuestQuestData
 	Raw       types.Log // Blockchain specific contextual infos
 }
 
-// FilterQuestModify is a free log retrieval operation binding the contract event 0x98385f241ff70ee0891c6f6f4a9804208a6b23df55da979ffb2631dea8474ac5.
+// FilterQuestModified is a free log retrieval operation binding the contract event 0xe92e573a75c7a5704b449c144ebf2fd928bf6a33142daeaefacac81b7d8862e5.
 //
-// Solidity: event QuestModify(address indexed creator, uint256 indexed tokenId, (uint32,uint32,string,string) questData)
-func (_Quest *QuestFilterer) FilterQuestModify(opts *bind.FilterOpts, creator []common.Address, tokenId []*big.Int) (*QuestQuestModifyIterator, error) {
+// Solidity: event QuestModified(address indexed creator, uint256 indexed tokenId, (uint32,uint32,string,string) questData)
+func (_Quest *QuestFilterer) FilterQuestModified(opts *bind.FilterOpts, creator []common.Address, tokenId []*big.Int) (*QuestQuestModifiedIterator, error) {
 
 	var creatorRule []interface{}
 	for _, creatorItem := range creator {
@@ -2004,17 +2304,17 @@ func (_Quest *QuestFilterer) FilterQuestModify(opts *bind.FilterOpts, creator []
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
 	}
 
-	logs, sub, err := _Quest.contract.FilterLogs(opts, "QuestModify", creatorRule, tokenIdRule)
+	logs, sub, err := _Quest.contract.FilterLogs(opts, "QuestModified", creatorRule, tokenIdRule)
 	if err != nil {
 		return nil, err
 	}
-	return &QuestQuestModifyIterator{contract: _Quest.contract, event: "QuestModify", logs: logs, sub: sub}, nil
+	return &QuestQuestModifiedIterator{contract: _Quest.contract, event: "QuestModified", logs: logs, sub: sub}, nil
 }
 
-// WatchQuestModify is a free log subscription operation binding the contract event 0x98385f241ff70ee0891c6f6f4a9804208a6b23df55da979ffb2631dea8474ac5.
+// WatchQuestModified is a free log subscription operation binding the contract event 0xe92e573a75c7a5704b449c144ebf2fd928bf6a33142daeaefacac81b7d8862e5.
 //
-// Solidity: event QuestModify(address indexed creator, uint256 indexed tokenId, (uint32,uint32,string,string) questData)
-func (_Quest *QuestFilterer) WatchQuestModify(opts *bind.WatchOpts, sink chan<- *QuestQuestModify, creator []common.Address, tokenId []*big.Int) (event.Subscription, error) {
+// Solidity: event QuestModified(address indexed creator, uint256 indexed tokenId, (uint32,uint32,string,string) questData)
+func (_Quest *QuestFilterer) WatchQuestModified(opts *bind.WatchOpts, sink chan<- *QuestQuestModified, creator []common.Address, tokenId []*big.Int) (event.Subscription, error) {
 
 	var creatorRule []interface{}
 	for _, creatorItem := range creator {
@@ -2025,7 +2325,7 @@ func (_Quest *QuestFilterer) WatchQuestModify(opts *bind.WatchOpts, sink chan<- 
 		tokenIdRule = append(tokenIdRule, tokenIdItem)
 	}
 
-	logs, sub, err := _Quest.contract.WatchLogs(opts, "QuestModify", creatorRule, tokenIdRule)
+	logs, sub, err := _Quest.contract.WatchLogs(opts, "QuestModified", creatorRule, tokenIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2035,8 +2335,8 @@ func (_Quest *QuestFilterer) WatchQuestModify(opts *bind.WatchOpts, sink chan<- 
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(QuestQuestModify)
-				if err := _Quest.contract.UnpackLog(event, "QuestModify", log); err != nil {
+				event := new(QuestQuestModified)
+				if err := _Quest.contract.UnpackLog(event, "QuestModified", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -2057,147 +2357,12 @@ func (_Quest *QuestFilterer) WatchQuestModify(opts *bind.WatchOpts, sink chan<- 
 	}), nil
 }
 
-// ParseQuestModify is a log parse operation binding the contract event 0x98385f241ff70ee0891c6f6f4a9804208a6b23df55da979ffb2631dea8474ac5.
+// ParseQuestModified is a log parse operation binding the contract event 0xe92e573a75c7a5704b449c144ebf2fd928bf6a33142daeaefacac81b7d8862e5.
 //
-// Solidity: event QuestModify(address indexed creator, uint256 indexed tokenId, (uint32,uint32,string,string) questData)
-func (_Quest *QuestFilterer) ParseQuestModify(log types.Log) (*QuestQuestModify, error) {
-	event := new(QuestQuestModify)
-	if err := _Quest.contract.UnpackLog(event, "QuestModify", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// QuestSetMinterIterator is returned from FilterSetMinter and is used to iterate over the raw logs and unpacked data for SetMinter events raised by the Quest contract.
-type QuestSetMinterIterator struct {
-	Event *QuestSetMinter // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *QuestSetMinterIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(QuestSetMinter)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(QuestSetMinter)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *QuestSetMinterIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *QuestSetMinterIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// QuestSetMinter represents a SetMinter event raised by the Quest contract.
-type QuestSetMinter struct {
-	Minter  common.Address
-	Enabled bool
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterSetMinter is a free log retrieval operation binding the contract event 0x1f96bc657d385fd83da973a43f2ad969e6d96b6779b779571a7306db7ca1cd00.
-//
-// Solidity: event SetMinter(address minter, bool enabled)
-func (_Quest *QuestFilterer) FilterSetMinter(opts *bind.FilterOpts) (*QuestSetMinterIterator, error) {
-
-	logs, sub, err := _Quest.contract.FilterLogs(opts, "SetMinter")
-	if err != nil {
-		return nil, err
-	}
-	return &QuestSetMinterIterator{contract: _Quest.contract, event: "SetMinter", logs: logs, sub: sub}, nil
-}
-
-// WatchSetMinter is a free log subscription operation binding the contract event 0x1f96bc657d385fd83da973a43f2ad969e6d96b6779b779571a7306db7ca1cd00.
-//
-// Solidity: event SetMinter(address minter, bool enabled)
-func (_Quest *QuestFilterer) WatchSetMinter(opts *bind.WatchOpts, sink chan<- *QuestSetMinter) (event.Subscription, error) {
-
-	logs, sub, err := _Quest.contract.WatchLogs(opts, "SetMinter")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(QuestSetMinter)
-				if err := _Quest.contract.UnpackLog(event, "SetMinter", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseSetMinter is a log parse operation binding the contract event 0x1f96bc657d385fd83da973a43f2ad969e6d96b6779b779571a7306db7ca1cd00.
-//
-// Solidity: event SetMinter(address minter, bool enabled)
-func (_Quest *QuestFilterer) ParseSetMinter(log types.Log) (*QuestSetMinter, error) {
-	event := new(QuestSetMinter)
-	if err := _Quest.contract.UnpackLog(event, "SetMinter", log); err != nil {
+// Solidity: event QuestModified(address indexed creator, uint256 indexed tokenId, (uint32,uint32,string,string) questData)
+func (_Quest *QuestFilterer) ParseQuestModified(log types.Log) (*QuestQuestModified, error) {
+	event := new(QuestQuestModified)
+	if err := _Quest.contract.UnpackLog(event, "QuestModified", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

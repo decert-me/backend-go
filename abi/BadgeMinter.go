@@ -39,7 +39,7 @@ type IBadgeQuestData struct {
 
 // BadgeMinterMetaData contains all meta data concerning the BadgeMinter contract.
 var BadgeMinterMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"badge_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidArray\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotCreator\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInTime\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"name\":\"Airdroped\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Donation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"SignerChanged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"questIds\",\"type\":\"uint256[]\"},{\"internalType\":\"address[]\",\"name\":\"receivers\",\"type\":\"address[]\"},{\"internalType\":\"string[]\",\"name\":\"uris\",\"type\":\"string[]\"},{\"internalType\":\"uint256[]\",\"name\":\"scores\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"airdropBadge\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"badge\",\"outputs\":[{\"internalType\":\"contractIBadge\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIBadge.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"claimWithCreate\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"claimWithScore\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer_\",\"type\":\"address\"}],\"name\":\"setSigner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"signer\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"questUri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"updateQuest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"score\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"updateScore\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"badge_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidArray\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidSigner\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotCreator\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInTime\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotOwner\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"name\":\"Airdroped\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Donation\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"signer\",\"type\":\"address\"}],\"name\":\"SignerChanged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"questIds\",\"type\":\"uint256[]\"},{\"internalType\":\"address[]\",\"name\":\"receivers\",\"type\":\"address[]\"},{\"internalType\":\"string[]\",\"name\":\"uris\",\"type\":\"string[]\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"airdropBadge\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"badge\",\"outputs\":[{\"internalType\":\"contractIBadge\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"claim\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"internalType\":\"structIBadge.QuestData\",\"name\":\"questData\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"claimWithInit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"signer_\",\"type\":\"address\"}],\"name\":\"setSigner\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"signer\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"startTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"questId\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"startTs\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"endTs\",\"type\":\"uint32\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"questUri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"updateQuest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"updateURI\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // BadgeMinterABI is the input ABI used to generate the binding from.
@@ -312,67 +312,67 @@ func (_BadgeMinter *BadgeMinterCallerSession) StartTokenId() (*big.Int, error) {
 	return _BadgeMinter.Contract.StartTokenId(&_BadgeMinter.CallOpts)
 }
 
-// AirdropBadge is a paid mutator transaction binding the contract method 0x48348caf.
+// AirdropBadge is a paid mutator transaction binding the contract method 0x613fde91.
 //
-// Solidity: function airdropBadge(uint256[] questIds, address[] receivers, string[] uris, uint256[] scores, bytes signature) returns()
-func (_BadgeMinter *BadgeMinterTransactor) AirdropBadge(opts *bind.TransactOpts, questIds []*big.Int, receivers []common.Address, uris []string, scores []*big.Int, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.contract.Transact(opts, "airdropBadge", questIds, receivers, uris, scores, signature)
+// Solidity: function airdropBadge(uint256[] questIds, address[] receivers, string[] uris, bytes signature) returns()
+func (_BadgeMinter *BadgeMinterTransactor) AirdropBadge(opts *bind.TransactOpts, questIds []*big.Int, receivers []common.Address, uris []string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.contract.Transact(opts, "airdropBadge", questIds, receivers, uris, signature)
 }
 
-// AirdropBadge is a paid mutator transaction binding the contract method 0x48348caf.
+// AirdropBadge is a paid mutator transaction binding the contract method 0x613fde91.
 //
-// Solidity: function airdropBadge(uint256[] questIds, address[] receivers, string[] uris, uint256[] scores, bytes signature) returns()
-func (_BadgeMinter *BadgeMinterSession) AirdropBadge(questIds []*big.Int, receivers []common.Address, uris []string, scores []*big.Int, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.Contract.AirdropBadge(&_BadgeMinter.TransactOpts, questIds, receivers, uris, scores, signature)
+// Solidity: function airdropBadge(uint256[] questIds, address[] receivers, string[] uris, bytes signature) returns()
+func (_BadgeMinter *BadgeMinterSession) AirdropBadge(questIds []*big.Int, receivers []common.Address, uris []string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.Contract.AirdropBadge(&_BadgeMinter.TransactOpts, questIds, receivers, uris, signature)
 }
 
-// AirdropBadge is a paid mutator transaction binding the contract method 0x48348caf.
+// AirdropBadge is a paid mutator transaction binding the contract method 0x613fde91.
 //
-// Solidity: function airdropBadge(uint256[] questIds, address[] receivers, string[] uris, uint256[] scores, bytes signature) returns()
-func (_BadgeMinter *BadgeMinterTransactorSession) AirdropBadge(questIds []*big.Int, receivers []common.Address, uris []string, scores []*big.Int, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.Contract.AirdropBadge(&_BadgeMinter.TransactOpts, questIds, receivers, uris, scores, signature)
+// Solidity: function airdropBadge(uint256[] questIds, address[] receivers, string[] uris, bytes signature) returns()
+func (_BadgeMinter *BadgeMinterTransactorSession) AirdropBadge(questIds []*big.Int, receivers []common.Address, uris []string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.Contract.AirdropBadge(&_BadgeMinter.TransactOpts, questIds, receivers, uris, signature)
 }
 
-// ClaimWithCreate is a paid mutator transaction binding the contract method 0x4ccae277.
+// Claim is a paid mutator transaction binding the contract method 0xdf751012.
 //
-// Solidity: function claimWithCreate((address,uint32,uint32,string,string) questData, uint256 questId, address to, uint256 score, string uri, bytes signature) payable returns()
-func (_BadgeMinter *BadgeMinterTransactor) ClaimWithCreate(opts *bind.TransactOpts, questData IBadgeQuestData, questId *big.Int, to common.Address, score *big.Int, uri string, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.contract.Transact(opts, "claimWithCreate", questData, questId, to, score, uri, signature)
+// Solidity: function claim(address to, uint256 questId, string uri, bytes signature) payable returns()
+func (_BadgeMinter *BadgeMinterTransactor) Claim(opts *bind.TransactOpts, to common.Address, questId *big.Int, uri string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.contract.Transact(opts, "claim", to, questId, uri, signature)
 }
 
-// ClaimWithCreate is a paid mutator transaction binding the contract method 0x4ccae277.
+// Claim is a paid mutator transaction binding the contract method 0xdf751012.
 //
-// Solidity: function claimWithCreate((address,uint32,uint32,string,string) questData, uint256 questId, address to, uint256 score, string uri, bytes signature) payable returns()
-func (_BadgeMinter *BadgeMinterSession) ClaimWithCreate(questData IBadgeQuestData, questId *big.Int, to common.Address, score *big.Int, uri string, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.Contract.ClaimWithCreate(&_BadgeMinter.TransactOpts, questData, questId, to, score, uri, signature)
+// Solidity: function claim(address to, uint256 questId, string uri, bytes signature) payable returns()
+func (_BadgeMinter *BadgeMinterSession) Claim(to common.Address, questId *big.Int, uri string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.Contract.Claim(&_BadgeMinter.TransactOpts, to, questId, uri, signature)
 }
 
-// ClaimWithCreate is a paid mutator transaction binding the contract method 0x4ccae277.
+// Claim is a paid mutator transaction binding the contract method 0xdf751012.
 //
-// Solidity: function claimWithCreate((address,uint32,uint32,string,string) questData, uint256 questId, address to, uint256 score, string uri, bytes signature) payable returns()
-func (_BadgeMinter *BadgeMinterTransactorSession) ClaimWithCreate(questData IBadgeQuestData, questId *big.Int, to common.Address, score *big.Int, uri string, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.Contract.ClaimWithCreate(&_BadgeMinter.TransactOpts, questData, questId, to, score, uri, signature)
+// Solidity: function claim(address to, uint256 questId, string uri, bytes signature) payable returns()
+func (_BadgeMinter *BadgeMinterTransactorSession) Claim(to common.Address, questId *big.Int, uri string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.Contract.Claim(&_BadgeMinter.TransactOpts, to, questId, uri, signature)
 }
 
-// ClaimWithScore is a paid mutator transaction binding the contract method 0x14c0f835.
+// ClaimWithInit is a paid mutator transaction binding the contract method 0xed72aaec.
 //
-// Solidity: function claimWithScore(address to, uint256 questId, uint256 score, string uri, bytes signature) payable returns()
-func (_BadgeMinter *BadgeMinterTransactor) ClaimWithScore(opts *bind.TransactOpts, to common.Address, questId *big.Int, score *big.Int, uri string, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.contract.Transact(opts, "claimWithScore", to, questId, score, uri, signature)
+// Solidity: function claimWithInit((address,uint32,uint32,string,string) questData, uint256 questId, address to, string uri, bytes signature) payable returns()
+func (_BadgeMinter *BadgeMinterTransactor) ClaimWithInit(opts *bind.TransactOpts, questData IBadgeQuestData, questId *big.Int, to common.Address, uri string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.contract.Transact(opts, "claimWithInit", questData, questId, to, uri, signature)
 }
 
-// ClaimWithScore is a paid mutator transaction binding the contract method 0x14c0f835.
+// ClaimWithInit is a paid mutator transaction binding the contract method 0xed72aaec.
 //
-// Solidity: function claimWithScore(address to, uint256 questId, uint256 score, string uri, bytes signature) payable returns()
-func (_BadgeMinter *BadgeMinterSession) ClaimWithScore(to common.Address, questId *big.Int, score *big.Int, uri string, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.Contract.ClaimWithScore(&_BadgeMinter.TransactOpts, to, questId, score, uri, signature)
+// Solidity: function claimWithInit((address,uint32,uint32,string,string) questData, uint256 questId, address to, string uri, bytes signature) payable returns()
+func (_BadgeMinter *BadgeMinterSession) ClaimWithInit(questData IBadgeQuestData, questId *big.Int, to common.Address, uri string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.Contract.ClaimWithInit(&_BadgeMinter.TransactOpts, questData, questId, to, uri, signature)
 }
 
-// ClaimWithScore is a paid mutator transaction binding the contract method 0x14c0f835.
+// ClaimWithInit is a paid mutator transaction binding the contract method 0xed72aaec.
 //
-// Solidity: function claimWithScore(address to, uint256 questId, uint256 score, string uri, bytes signature) payable returns()
-func (_BadgeMinter *BadgeMinterTransactorSession) ClaimWithScore(to common.Address, questId *big.Int, score *big.Int, uri string, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.Contract.ClaimWithScore(&_BadgeMinter.TransactOpts, to, questId, score, uri, signature)
+// Solidity: function claimWithInit((address,uint32,uint32,string,string) questData, uint256 questId, address to, string uri, bytes signature) payable returns()
+func (_BadgeMinter *BadgeMinterTransactorSession) ClaimWithInit(questData IBadgeQuestData, questId *big.Int, to common.Address, uri string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.Contract.ClaimWithInit(&_BadgeMinter.TransactOpts, questData, questId, to, uri, signature)
 }
 
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
@@ -459,25 +459,25 @@ func (_BadgeMinter *BadgeMinterTransactorSession) UpdateQuest(questId *big.Int, 
 	return _BadgeMinter.Contract.UpdateQuest(&_BadgeMinter.TransactOpts, questId, startTs, endTs, title, questUri, signature)
 }
 
-// UpdateScore is a paid mutator transaction binding the contract method 0xa927b3c5.
+// UpdateURI is a paid mutator transaction binding the contract method 0x45a2c33b.
 //
-// Solidity: function updateScore(address to, uint256 questId, uint256 score, bytes signature) returns()
-func (_BadgeMinter *BadgeMinterTransactor) UpdateScore(opts *bind.TransactOpts, to common.Address, questId *big.Int, score *big.Int, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.contract.Transact(opts, "updateScore", to, questId, score, signature)
+// Solidity: function updateURI(uint256 tokenId, string uri, bytes signature) returns()
+func (_BadgeMinter *BadgeMinterTransactor) UpdateURI(opts *bind.TransactOpts, tokenId *big.Int, uri string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.contract.Transact(opts, "updateURI", tokenId, uri, signature)
 }
 
-// UpdateScore is a paid mutator transaction binding the contract method 0xa927b3c5.
+// UpdateURI is a paid mutator transaction binding the contract method 0x45a2c33b.
 //
-// Solidity: function updateScore(address to, uint256 questId, uint256 score, bytes signature) returns()
-func (_BadgeMinter *BadgeMinterSession) UpdateScore(to common.Address, questId *big.Int, score *big.Int, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.Contract.UpdateScore(&_BadgeMinter.TransactOpts, to, questId, score, signature)
+// Solidity: function updateURI(uint256 tokenId, string uri, bytes signature) returns()
+func (_BadgeMinter *BadgeMinterSession) UpdateURI(tokenId *big.Int, uri string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.Contract.UpdateURI(&_BadgeMinter.TransactOpts, tokenId, uri, signature)
 }
 
-// UpdateScore is a paid mutator transaction binding the contract method 0xa927b3c5.
+// UpdateURI is a paid mutator transaction binding the contract method 0x45a2c33b.
 //
-// Solidity: function updateScore(address to, uint256 questId, uint256 score, bytes signature) returns()
-func (_BadgeMinter *BadgeMinterTransactorSession) UpdateScore(to common.Address, questId *big.Int, score *big.Int, signature []byte) (*types.Transaction, error) {
-	return _BadgeMinter.Contract.UpdateScore(&_BadgeMinter.TransactOpts, to, questId, score, signature)
+// Solidity: function updateURI(uint256 tokenId, string uri, bytes signature) returns()
+func (_BadgeMinter *BadgeMinterTransactorSession) UpdateURI(tokenId *big.Int, uri string, signature []byte) (*types.Transaction, error) {
+	return _BadgeMinter.Contract.UpdateURI(&_BadgeMinter.TransactOpts, tokenId, uri, signature)
 }
 
 // BadgeMinterAirdropedIterator is returned from FilterAirdroped and is used to iterate over the raw logs and unpacked data for Airdroped events raised by the BadgeMinter contract.
@@ -551,14 +551,13 @@ func (it *BadgeMinterAirdropedIterator) Close() error {
 type BadgeMinterAirdroped struct {
 	QuestId *big.Int
 	To      common.Address
-	Score   *big.Int
 	Uri     string
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterAirdroped is a free log retrieval operation binding the contract event 0x0c2b0d8b0538a262aa122a2f77e2ebfb4a3cc2560518e5b054d37747f0b8512d.
+// FilterAirdroped is a free log retrieval operation binding the contract event 0x62487ca50a3368fcdd206510d5e64e56d008589216ded84509c941cfeef54d2b.
 //
-// Solidity: event Airdroped(uint256 indexed questId, address indexed to, uint256 score, string uri)
+// Solidity: event Airdroped(uint256 indexed questId, address indexed to, string uri)
 func (_BadgeMinter *BadgeMinterFilterer) FilterAirdroped(opts *bind.FilterOpts, questId []*big.Int, to []common.Address) (*BadgeMinterAirdropedIterator, error) {
 
 	var questIdRule []interface{}
@@ -577,9 +576,9 @@ func (_BadgeMinter *BadgeMinterFilterer) FilterAirdroped(opts *bind.FilterOpts, 
 	return &BadgeMinterAirdropedIterator{contract: _BadgeMinter.contract, event: "Airdroped", logs: logs, sub: sub}, nil
 }
 
-// WatchAirdroped is a free log subscription operation binding the contract event 0x0c2b0d8b0538a262aa122a2f77e2ebfb4a3cc2560518e5b054d37747f0b8512d.
+// WatchAirdroped is a free log subscription operation binding the contract event 0x62487ca50a3368fcdd206510d5e64e56d008589216ded84509c941cfeef54d2b.
 //
-// Solidity: event Airdroped(uint256 indexed questId, address indexed to, uint256 score, string uri)
+// Solidity: event Airdroped(uint256 indexed questId, address indexed to, string uri)
 func (_BadgeMinter *BadgeMinterFilterer) WatchAirdroped(opts *bind.WatchOpts, sink chan<- *BadgeMinterAirdroped, questId []*big.Int, to []common.Address) (event.Subscription, error) {
 
 	var questIdRule []interface{}
@@ -623,9 +622,9 @@ func (_BadgeMinter *BadgeMinterFilterer) WatchAirdroped(opts *bind.WatchOpts, si
 	}), nil
 }
 
-// ParseAirdroped is a log parse operation binding the contract event 0x0c2b0d8b0538a262aa122a2f77e2ebfb4a3cc2560518e5b054d37747f0b8512d.
+// ParseAirdroped is a log parse operation binding the contract event 0x62487ca50a3368fcdd206510d5e64e56d008589216ded84509c941cfeef54d2b.
 //
-// Solidity: event Airdroped(uint256 indexed questId, address indexed to, uint256 score, string uri)
+// Solidity: event Airdroped(uint256 indexed questId, address indexed to, string uri)
 func (_BadgeMinter *BadgeMinterFilterer) ParseAirdroped(log types.Log) (*BadgeMinterAirdroped, error) {
 	event := new(BadgeMinterAirdroped)
 	if err := _BadgeMinter.contract.UnpackLog(event, "Airdroped", log); err != nil {
