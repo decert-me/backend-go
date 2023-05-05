@@ -4,6 +4,7 @@ import "gorm.io/datatypes"
 
 type Quest struct {
 	ID           uint           `gorm:"primarykey" json:"id"`
+	UUID         string         `gorm:"column:uuid" json:"uuid"`
 	Title        string         `gorm:"column:title;comment:标题;type:varchar" json:"title" form:"title"` // 标题
 	Label        string         `gorm:"column:label;comment:标签;type:varchar" json:"-"`                  // 标签
 	Disabled     bool           `gorm:"column:disabled" json:"-"`
