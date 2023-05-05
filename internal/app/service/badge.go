@@ -1,6 +1,7 @@
 package service
 
 import (
+	ABI "backend-go/abi"
 	"backend-go/internal/app/config"
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
@@ -9,8 +10,10 @@ import (
 	"backend-go/pkg/log"
 	"encoding/json"
 	"errors"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"go.uber.org/zap"
 	"math/big"
@@ -47,6 +50,7 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 	var hash []byte
 	if status == 0 {
 		// TODO: 从链上获取quest是否更改
+
 		var questData model.Extradata
 		err = json.Unmarshal(quest.ExtraData, &questData)
 		if err != nil {
@@ -56,7 +60,7 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 		hash = solsha3.SoliditySHA3(
 			[]string{"address", "uint256", "uint32", "uint32", "string", "string", "address", "string", "address", "address"},
 			[]interface{}{
-				questData.Creator, big.NewInt(req.TokenId), questData.StartTs, questData.EndTs, questData.Title, questData.Uri, req.To, "uri", badgeAddress, address,
+				questData.Creator, big.NewInt(req.TokenId), questData.StartTs, questData.EndTs, questData.Title, questData.Uri, req.To, "uri", chain.Badge, address,
 			},
 		)
 		res.Func = "claimWithInit"
@@ -133,6 +137,19 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	return nil
 }
 
-func (s *Service) ShouldInitQuest(chain config.MultiChain) {
-
+func (s *Service) ShouldInitQuest(chain config.MultiChain, tokenID int64) (err error) {
+	client, err := ethclient.Dial(s.c.BlockChain.Rpc)
+	if err != nil {
+		log.Errorv("ethclient.Dial error", zap.Error(err))
+	}
+	instance, err := ABI.NewQuest(common.HexToAddress(s.c.Contract.Quest), client)
+	if err != nil {
+		return err
+	}
+	quest, err := instance.GetQuest(nil, big.NewInt(tokenID))
+	if err != nil {
+		return err
+	}
+	s.dao.GetQuest()
+	quest\
 }
