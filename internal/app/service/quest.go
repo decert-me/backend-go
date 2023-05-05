@@ -4,7 +4,6 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
@@ -22,12 +21,16 @@ func (s *Service) GetUserQuestList(searchInfo request.GetUserQuestListRequest) (
 	return
 }
 
-func (s *Service) GetQuest(id string) (quest model.Quest, err error) {
+func (s *Service) GetQuest(id string, address string) (quest response.GetQuestRes, err error) {
 	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return
 	}
-	quest, err = s.dao.GetQuest(&model.Quest{TokenId: tokenId})
+	if address == "" {
+		quest.Quest, err = s.dao.GetQuest(&model.Quest{TokenId: tokenId})
+		return
+	}
+	quest, err = s.dao.GetQuestWithClaimStatus(&model.Quest{TokenId: tokenId}, address)
 	return
 }
 
@@ -36,8 +39,6 @@ func (s *Service) AddQuest(address string, add request.AddQuestRequest) (res str
 	if err != nil {
 		return
 	}
-	//supply, _ := new(big.Int).SetString(add.Supply, 10)
-	fmt.Println(add.Supply)
 	hash := solsha3.SoliditySHA3(
 		// types
 		[]string{"uint32", "uint32", "string", "string", "address", "address"},
@@ -69,4 +70,13 @@ func (s *Service) UpdateQuest(address string, modify request.UpdateQuestRequest)
 	signature, err := crypto.Sign(prefixedHash, privateKey)
 	signature[64] += 27
 	return hexutil.Encode(signature), err
+}
+
+func (s *Service) GetQuestChallengeUser(id string) (res response.GetQuestChallengeUserRes, err error) {
+	tokenId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return
+	}
+	res, err = s.dao.GetQuestChallengeUser(tokenId)
+	return
 }

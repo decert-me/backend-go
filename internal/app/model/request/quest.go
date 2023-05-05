@@ -14,7 +14,6 @@ type AddQuestRequest struct {
 	Description string `json:"description"`
 	StartTs     string `json:"start_ts" binding:"required"`
 	EndTs       string `json:"end_ts" binding:"required"`
-	Supply      string `json:"supply" binding:"required"`
 }
 
 type UpdateQuestRequest struct {
@@ -24,5 +23,4 @@ type UpdateQuestRequest struct {
 	Description string `json:"description"`
 	StartTs     string `json:"start_ts" binding:"required"`
 	EndTs       string `json:"end_ts" binding:"required"`
-	Supply      string `json:"supply" binding:"required"`
 }

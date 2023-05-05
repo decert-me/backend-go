@@ -1,10 +1,10 @@
 package request
 
 type PermitClaimBadgeReq struct {
+	Score   int64  `json:"score"  binding:"required"`
 	ChainID int    `json:"chain_id" binding:"required"`
 	To      string `json:"to" binding:"required"`
 	TokenId int64  `json:"tokenId" binding:"required"`
-	Score   int64  `json:"score"`
 	Answer  string `json:"answer" binding:"required"`
 }
 type SubmitClaimTweetReq struct {

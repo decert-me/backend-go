@@ -3,22 +3,25 @@ package service
 import (
 	"backend-go/internal/app/config"
 	"backend-go/internal/app/dao"
+	"backend-go/internal/app/initialize"
 	"context"
 	"github.com/robfig/cron/v3"
 )
 
 // Service struct
 type Service struct {
-	c    *config.Config
-	dao  *dao.Dao
-	cron *cron.Cron
+	c              *config.Config
+	dao            *dao.Dao
+	cron           *cron.Cron
+	IDToMultiChain map[int]config.MultiChain
 }
 
 // New init.
 func New(c *config.Config) (s *Service) {
 	s = &Service{
-		c:   c,
-		dao: dao.New(c),
+		c:              c,
+		dao:            dao.New(c),
+		IDToMultiChain: initialize.InitIDToMultiChain(c),
 	}
 	return
 }

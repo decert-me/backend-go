@@ -12,6 +12,7 @@ func InitQuestRouter(Router *gin.RouterGroup) {
 	{
 		questRouter.GET("", v1.GetQuestList)
 		questRouter.GET("/:id", v1.GetQuest)
+		questRouter.GET("/:id/challengeUsers", v1.GetQuestChallengeUser)
 	}
 	{
 		questRouterAuth.POST("", v1.AddQuest)

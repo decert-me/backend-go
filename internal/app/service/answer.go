@@ -56,7 +56,7 @@ func (s *Service) JudgeResultCheck(uuid string, quest *model.Quest, index uint8)
 	return res.Pass
 }
 
-func (s *Service) AnswerScore(key, answerUser, uri string, quest model.Quest) (userScore int64, pass bool, err error) {
+func (s *Service) AnswerScore(key, answerUser string, quest *model.Quest) (userScore int64, pass bool, err error) {
 	res := quest.MetaData.String()
 
 	answerU := gjson.Get(utils.AnswerDecode(key, gjson.Get(res, "properties.answers").String()), "@this").Array() // 标准答案

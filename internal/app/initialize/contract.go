@@ -2,6 +2,7 @@ package initialize
 
 import (
 	ABI "backend-go/abi"
+	"backend-go/internal/app/config"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"strings"
@@ -26,4 +27,12 @@ func NewContractEvent() (contract map[common.Hash]string) {
 		}
 	}
 	return
+}
+
+func InitIDToMultiChain(c *config.Config) (res map[int]config.MultiChain) {
+	res = make(map[int]config.MultiChain)
+	for _, chain := range c.Contract.MultiChain {
+		res[chain.ChainID] = chain
+	}
+	return res
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend-go/internal/app/config"
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
@@ -34,8 +35,8 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 	if err != nil {
 		return
 	}
-	badgeAddress := s.c.Contract.MultiChain[req.ChainID].Badge
-	if badgeAddress == "" {
+	chain := s.IDToMultiChain[req.ChainID]
+	if chain.Badge == "" {
 		return res, errors.New("UnSupportChain")
 	}
 	// TODO: 判断状态
@@ -53,22 +54,22 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 			return res, errors.New("UnexpectedError")
 		}
 		hash = solsha3.SoliditySHA3(
-			[]string{"address", "uint256", "uint32", "uint32", "string", "string", "uint256", "string", "address", "address"},
+			[]string{"address", "uint256", "uint32", "uint32", "string", "string", "address", "string", "address", "address"},
 			[]interface{}{
-				questData.Creator, big.NewInt(req.TokenId), questData.StartTs, questData.EndTs, questData.Title, questData.Uri, big.NewInt(req.Score), "uri", badgeAddress, address,
+				questData.Creator, big.NewInt(req.TokenId), questData.StartTs, questData.EndTs, questData.Title, questData.Uri, req.To, "uri", badgeAddress, address,
 			},
 		)
-		res.Func = "claimWithCreate"
+		res.Func = "claimWithInit"
 	} else {
 		hash = solsha3.SoliditySHA3(
-			[]string{"address", "uint256", "uint256", "string", "address", "address"},
+			[]string{"address", "uint256", "string", "address", "address"},
 			[]interface{}{
-				req.To, big.NewInt(req.TokenId), big.NewInt(req.Score), "uri", badgeAddress, address,
+				req.To, big.NewInt(req.TokenId), "uri", chain.Badge, address,
 			},
 		)
-		res.Func = "claimWithScore"
+		res.Func = "claim"
 	}
-
+	res.Uri = "uri"
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
 	signature, err := crypto.Sign(prefixedHash, privateKey)
 	signature[64] += 27
@@ -130,4 +131,8 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 		return errors.New("AlreadyHoldsBadge")
 	}
 	return nil
+}
+
+func (s *Service) ShouldInitQuest(chain config.MultiChain) {
+
 }
