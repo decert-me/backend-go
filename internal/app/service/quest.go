@@ -1,7 +1,6 @@
 package service
 
 import (
-	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
 	"fmt"
@@ -25,13 +24,19 @@ func (s *Service) GetUserQuestList(searchInfo request.GetUserQuestListRequest) (
 func (s *Service) GetQuest(id string, address string) (quest response.GetQuestRes, err error) {
 	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		return
+		if address == "" {
+			quest.Quest, err = s.dao.GetQuestByUUID(id)
+			return
+		}
+		quest, err = s.dao.GetQuestWithClaimStatusByUUID(id, address)
+	} else {
+		if address == "" {
+			quest.Quest, err = s.dao.GetQuestByTokenID(tokenId)
+			return
+		}
+		quest, err = s.dao.GetQuestWithClaimStatusByTokenID(tokenId, address)
 	}
-	if address == "" {
-		quest.Quest, err = s.dao.GetQuest(&model.Quest{TokenId: tokenId})
-		return
-	}
-	quest, err = s.dao.GetQuestWithClaimStatus(&model.Quest{TokenId: tokenId}, address)
+
 	return
 }
 
@@ -78,8 +83,10 @@ func (s *Service) UpdateQuest(address string, modify request.UpdateQuestRequest)
 func (s *Service) GetQuestChallengeUser(id string) (res response.GetQuestChallengeUserRes, err error) {
 	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
-		return
+		res, err = s.dao.GetQuestChallengeUserByUUID(id)
+	} else {
+		res, err = s.dao.GetQuestChallengeUserByTokenID(tokenId)
 	}
-	res, err = s.dao.GetQuestChallengeUser(tokenId)
+
 	return
 }

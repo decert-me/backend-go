@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/tidwall/gjson"
 )
 
 // xorStrings ...
@@ -32,4 +33,19 @@ func AnswerDecode(key, data string) string {
 	}
 	str, _ := base64.StdEncoding.DecodeString(data)
 	return xorStrings(key, string(str))
+}
+
+func GetAnswers(version float64, key, res, questData, answerUser string) (answerU, scoreList, answerS []gjson.Result, passingScore int64) {
+	if version == 1 {
+		answerU = gjson.Get(AnswerDecode(key, gjson.Get(res, "properties.answers").String()), "@this").Array() // 标准答案
+		passingScore = gjson.Get(res, "properties.passingScore").Int()                                         // 通过分数
+		scoreList = gjson.Get(res, "properties.questions.#.score").Array()                                     // 题目分数
+		answerS = gjson.Get(answerUser, "@this").Array()                                                       // 用户答案
+	} else if version == 1.1 {
+		answerU = gjson.Get(AnswerDecode(key, gjson.Get(questData, "answers").String()), "@this").Array() // 标准答案
+		passingScore = gjson.Get(questData, "passingScore").Int()                                         // 通过分数
+		scoreList = gjson.Get(questData, "questions.#.score").Array()                                     // 题目分数
+		answerS = gjson.Get(answerUser, "@this").Array()                                                  // 用户答案
+	}
+	return
 }

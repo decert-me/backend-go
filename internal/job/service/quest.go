@@ -33,13 +33,26 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	if err != nil {
 		return
 	}
+	questDataDetail, err := s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
+	if err != nil {
+		return
+	}
+
 	tr, err := s.dao.QueryTransactionByHash(hash)
 	if err != nil {
 		return err
 	}
 	questData := created.QuestData
 	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs, Supply: questData.Supply.Uint64()})
+
+	challengeUrl := gjson.Get(metadata, "attributes.challenge_url").String()
+	var uuid string
+	if len(strings.Split(challengeUrl, "/quests/")) >= 2 {
+		uuid = strings.Split(challengeUrl, "/quests/")[1]
+	}
+
 	quest := model.Quest{
+		UUID:        uuid,
 		Title:       questData.Title,
 		Description: gjson.Get(metadata, "description").String(),
 		TokenId:     vLog.Topics[2].Big().Int64(),
@@ -48,6 +61,7 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		Creator:     common.HexToAddress(vLog.Topics[1].Hex()).String(),
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
+		QuestData:   []byte(questDataDetail),
 		IsDraft:     false, // 当前发布不审核
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
 	}
