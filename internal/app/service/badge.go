@@ -16,7 +16,7 @@ import (
 
 func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeReq) (res string, err error) {
 	// 校验分数正确性
-	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenId})
+	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
 	if err != nil {
 		return res, errors.New("TokenIDInvalid")
 	}
@@ -55,7 +55,7 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 		return errors.New("TokenIDInvalid")
 	}
 	// 校验分数正确性
-	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenId})
+	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
 	if err != nil {
 		return errors.New("TokenIDInvalid")
 	}

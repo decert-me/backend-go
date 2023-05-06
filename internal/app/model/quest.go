@@ -4,6 +4,7 @@ import "gorm.io/datatypes"
 
 type Quest struct {
 	ID           uint           `gorm:"primarykey" json:"id"`
+	UUID         string         `gorm:"column:uuid" json:"uuid"`
 	Title        string         `gorm:"column:title;comment:标题;type:varchar" json:"title" form:"title"` // 标题
 	Label        string         `gorm:"column:label;comment:标签;type:varchar" json:"-"`                  // 标签
 	Disabled     bool           `gorm:"column:disabled" json:"-"`
@@ -17,6 +18,7 @@ type Quest struct {
 	EstimateTime uint8          `gorm:"column:estimate_time" json:"-"`                             // 预估时间/min
 	Creator      string         `gorm:"column:creator;type:varchar" json:"creator" form:"creator"` // 用户 address
 	MetaData     datatypes.JSON `gorm:"column:meta_data" json:"metadata"`                          // 元数据
+	QuestData    datatypes.JSON `gorm:"column:quest_data" json:"quest_data"`                       // 元数据
 	ExtraData    datatypes.JSON `gorm:"column:extra_data" json:"-"`                                // 额外数据
 	Uri          string         `gorm:"column:uri" json:"uri"`
 	PassScore    int64          `gorm:"column:pass_score" form:"pass_score" json:"pass_score"`    // 通过分数
