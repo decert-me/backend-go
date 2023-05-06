@@ -28,13 +28,6 @@ var (
 	_ = event.NewSubscription
 )
 
-// IQuestQuestData is an auto generated low-level Go binding around an user-defined struct.
-type IQuestQuestData struct {
-	StartTs uint32
-	EndTs   uint32
-	Title   string
-	Uri     string
-}
 
 // QuestMinterMetaData contains all meta data concerning the QuestMinter contract.
 var QuestMinterMetaData = &bind.MetaData{
