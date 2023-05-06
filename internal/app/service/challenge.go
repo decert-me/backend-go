@@ -29,7 +29,7 @@ func (s *Service) GetUserChallengeList(req request.GetChallengeListRequest) (res
 
 func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err error) {
 	// 校验分数正确性
-	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenId})
+	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
 	if err != nil {
 		return errors.New("TokenIDInvalid")
 	}

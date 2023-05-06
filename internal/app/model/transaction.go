@@ -4,6 +4,7 @@ import "gorm.io/datatypes"
 
 type Transaction struct {
 	ID        uint           `gorm:"primarykey"`
+	ChainID   int            `gorm:"column:chain_id"`
 	AddTs     int64          `gorm:"column:add_ts;autoCreateTime" json:"addTs"`
 	Hash      string         `gorm:"column:hash;type:char(68);unique;not null" json:"hash" form:"hash"` // 交易hash唯一
 	EventName string         `gorm:"column:event_name;size:20" json:"event_name"`
