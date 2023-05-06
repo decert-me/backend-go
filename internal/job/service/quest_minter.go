@@ -67,14 +67,14 @@ func (s *Service) handleClaimed(hash string, vLog *types.Log) (err error) {
 }
 
 func (s *Service) AirdropBadge() error {
-	provider := s.w.Next()
+	provider := s.providerMap[s.c.BlockChain.Provider[s.c.BlockChain.DefaultNet].ChainID]
+
 	defer func() {
 		if err := recover(); err != nil {
-			provider.OnInvokeFault()
 			log.Errorv("AirdropBadge error", zap.Any("error", err), zap.Any("provider", provider))
 		}
 	}()
-	client, err := ethclient.Dial(provider.Item)
+	client, err := ethclient.Dial(provider)
 	if err != nil {
 		log.Error("ethclient dial error")
 		return errors.New("ethclient dial error")
@@ -100,7 +100,6 @@ func (s *Service) AirdropBadge() error {
 	if err := s.dao.CreateChallengesList(tokenIdRes, receivers); err != nil {
 		log.Errorv("updateAirdropStatus", zap.Any("error", err))
 	}
-	provider.OnInvokeSuccess()
 	return nil
 }
 

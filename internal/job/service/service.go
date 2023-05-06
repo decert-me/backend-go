@@ -4,7 +4,6 @@ import (
 	"backend-go/internal/job/config"
 	"backend-go/internal/job/dao"
 	"backend-go/internal/job/initialize"
-	"backend-go/pkg/balancer"
 	"backend-go/pkg/log"
 	"context"
 	"github.com/ethereum/go-ethereum/common"
@@ -17,7 +16,6 @@ type Service struct {
 	c              *config.Config
 	dao            *dao.Dao
 	cron           *cron.Cron
-	w              *balancer.SmoothRoundrobin
 	TaskChain      chan taskTx
 	contractEvent  map[common.Hash]string // 合约事件
 	providerMap    map[int]string         // RPC

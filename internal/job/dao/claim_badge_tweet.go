@@ -23,7 +23,7 @@ func (d *Dao) CreateClaimBadgeTweet(req *model.ClaimBadgeTweet) (err error) {
 	return d.db.Create(req).Error
 }
 
-func (d *Dao) GetPendingAirdrop() (tokenId []*big.Int, listAddr []string, scores []*big.Int, err error) {
+func (d *Dao) GetPendingAirdrop() (tokenId []*big.Int, listAddr []string, uris []string, err error) {
 	var pending []model.ClaimBadgeTweet
 	if err = d.db.Where("status", 0).Find(&pending).Error; err != nil {
 		return
@@ -42,13 +42,13 @@ func (d *Dao) GetPendingAirdrop() (tokenId []*big.Int, listAddr []string, scores
 		}
 		tokenId = append(tokenId, big.NewInt(v.TokenId))
 		listAddr = append(listAddr, v.Address)
-		scores = append(scores, big.NewInt(v.Score))
+		uris = append(uris, v.Uri)
 	}
 	if len(tokenId) != len(listAddr) {
 		err = errors.New("token and address len error")
 		return
 	}
-	return tokenId, listAddr, scores, nil
+	return tokenId, listAddr, uris, nil
 }
 
 func (d *Dao) UpdateAirdropped(req *model.ClaimBadgeTweet) (err error) {

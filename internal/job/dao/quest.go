@@ -63,3 +63,13 @@ func (d *Dao) GetQuest(req *model.Quest) (quest model.Quest, err error) {
 func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
 }
+
+func (d *Dao) GetQuestByTokenID(id int64) (quest model.Quest, err error) {
+	err = d.db.Model(&model.Quest{}).Where("token_id", id).First(&quest).Error
+	return
+}
+
+func (d *Dao) SetMultiChainStatus(tokenID int64, chainID int, status int8) (err error) {
+	err = d.db.Raw("UPDATE quest SET multi_chain_status = jsonb_set(multi_chain_status, '{?}', '?') WHERE token_id=?", chainID, status, tokenID).Error
+	return
+}

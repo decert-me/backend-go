@@ -133,7 +133,7 @@ func (s *Service) handleTransactionReceipt(client *ethclient.Client, chainID int
 	// 交易成功
 	if res.Status == 1 {
 		fmt.Println("交易成功")
-		if err := s.eventsParser(transHash.Hash, res.Logs); err != nil {
+		if err := s.eventsParser(transHash, res.Logs); err != nil {
 			fmt.Println(err)
 			txMap.Delete(hash)
 		} else {
@@ -144,7 +144,7 @@ func (s *Service) handleTransactionReceipt(client *ethclient.Client, chainID int
 	}
 }
 
-func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
+func (s *Service) eventsParser(trans model.Transaction, Logs []*types.Log) (err error) {
 	for _, vLog := range Logs {
 		name, ok := s.contractEvent[vLog.Topics[0]]
 		if !ok {
@@ -153,25 +153,31 @@ func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
 		fmt.Println(name)
 		switch name {
 		case "QuestCreated":
-			if err := s.handleQuestCreated(hash, vLog); err != nil {
-				s.handleTraverseStatus(hash, 5, err.Error())
+			if err := s.handleQuestCreated(trans.Hash, vLog); err != nil {
+				s.handleTraverseStatus(trans.Hash, 5, err.Error())
 				continue
 			}
-			return nil
 		case "QuestModified":
-			if err := s.handleModifyQuest(hash, vLog); err != nil {
-				s.handleTraverseStatus(hash, 5, err.Error())
+			if err := s.handleModifyQuest(trans.Hash, vLog); err != nil {
+				s.handleTraverseStatus(trans.Hash, 5, err.Error())
 				continue
 			}
-			return nil
 		case "Claimed":
-			if err := s.handleClaimed(hash, vLog); err != nil {
-				s.handleTraverseStatus(hash, 5, err.Error())
+			if err := s.handleClaimed(trans.Hash, vLog); err != nil {
+				s.handleTraverseStatus(trans.Hash, 5, err.Error())
 				continue
 			}
-			return nil
+		case "QuesteInit":
+			if err := s.handleQuestInit(trans, vLog); err != nil {
+				s.handleTraverseStatus(trans.Hash, 5, err.Error())
+				continue
+			}
+		case "QuestUpdated":
+			if err := s.handleQuestUpdated(trans, vLog); err != nil {
+				s.handleTraverseStatus(trans.Hash, 5, err.Error())
+				continue
+			}
 		}
-
 	}
 	return nil
 }

@@ -12,5 +12,6 @@ type BlockChain struct {
 	AirdropPrivateKey string              `mapstructure:"airdrop-private-key" json:"airdrop-private-key" yaml:"airdrop-private-key"` // Airdrop私钥
 	ChainID           int64               `mapstructure:"chain-id" json:"chain-id" yaml:"chain-id"`                                  // Chain ID
 	Attempt           int                 `mapstructure:"attempt" json:"attempt" yaml:"attempt"`                                     // 尝试次数
+	DefaultNet        string              `mapstructure:"default-net" json:"default-net" yaml:"default-net"`                         // 默认网络
 	Provider          map[string]Provider `mapstructure:"provider" json:"provider" yaml:"provider"`                                  // Provider
 }

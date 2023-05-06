@@ -127,7 +127,6 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	exists, err := s.dao.CreateClaimBadgeTweet(&model.ClaimBadgeTweet{
 		Address: address,
 		TokenId: req.TokenId,
-		Score:   req.Score,
 		Url:     req.TweetUrl,
 		TweetId: tweetId,
 		AddTs:   time.Now().Unix(),
