@@ -158,14 +158,14 @@ func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
 				continue
 			}
 			return nil
-		case "Claimed":
-			if err := s.handleClaimed(hash, vLog); err != nil {
+		case "QuestModified":
+			if err := s.handleModifyQuest(hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
 				continue
 			}
 			return nil
-		case "URI":
-			if err := s.handleURI(hash, vLog); err != nil {
+		case "Claimed":
+			if err := s.handleClaimed(hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
 				continue
 			}

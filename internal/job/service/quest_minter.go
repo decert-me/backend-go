@@ -31,28 +31,29 @@ func init() {
 }
 
 func (s *Service) handleClaimed(hash string, vLog *types.Log) (err error) {
-	var claimed ABI.QuestMinterClaimed
+	var claimed ABI.BadgeClaimed
 	if err = questMinterAbi.UnpackIntoInterface(&claimed, "Claimed", vLog.Data); err != nil || len(vLog.Topics) == 0 {
 		return errors.New("unpack error")
 	}
-	tokenId := vLog.Topics[1].Big().Int64()
+	badgeTokenId := vLog.Topics[1].Big().Int64()
 	// no such tokenId in quest
-	exist, err := s.dao.HasTokenId(tokenId)
+	exist, err := s.dao.HasTokenId(claimed.QuestId.Int64())
 	if err != nil {
-		log.Errorv("HasTokenId error", zap.Int64("tokenId", tokenId), zap.Error(err))
+		log.Errorv("HasTokenId error", zap.Int64("tokenId", claimed.QuestId.Int64()), zap.Error(err))
 		return
 	}
 	if !exist {
-		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", tokenId))
+		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", claimed.QuestId.Int64()))
 		return
 	}
 	//
 	challenges := model.UserChallenges{
-		Address: common.HexToAddress(vLog.Topics[2].Hex()).String(),
-		TokenId: tokenId,
-		Status:  2,
-		Claimed: true,
-		ClaimTs: time.Now().Unix(),
+		Address:      common.HexToAddress(vLog.Topics[2].Hex()).String(),
+		TokenId:      claimed.QuestId.Int64(),
+		BadgeTokenID: badgeTokenId,
+		Status:       2,
+		Claimed:      true,
+		ClaimTs:      time.Now().Unix(),
 	}
 	err = s.dao.CreateChallenges(&challenges)
 	if err != nil {
@@ -60,7 +61,7 @@ func (s *Service) handleClaimed(hash string, vLog *types.Log) (err error) {
 		return err
 	}
 	// 如果有空投记录则删除
-	s.dao.UpdateAirdroppedError(tokenId, common.HexToAddress(vLog.Topics[2].Hex()).String(), "already claimed")
+	s.dao.UpdateAirdroppedError(claimed.QuestId.Int64(), common.HexToAddress(vLog.Topics[2].Hex()).String(), "already claimed")
 	s.handleTraverseStatus(hash, 1, "")
 	return
 }
@@ -78,7 +79,7 @@ func (s *Service) AirdropBadge() error {
 		log.Error("ethclient dial error")
 		return errors.New("ethclient dial error")
 	}
-	tokenIds, listAddr, scores, err := s.dao.GetPendingAirdrop()
+	tokenIds, listAddr, uris, err := s.dao.GetPendingAirdrop()
 	if err != nil {
 		log.Error("GetPendingAirdrop error")
 		return err
@@ -86,9 +87,9 @@ func (s *Service) AirdropBadge() error {
 	if len(tokenIds) == 0 { // no task return
 		return nil
 	}
-	tokenIdRes, receivers, scores := s.receiverNotClaimList(client, tokenIds, listAddr, scores)
+	tokenIdRes, receivers, uris := s.receiverNotClaimList(client, tokenIds, listAddr, uris)
 	log.Warn("AirdropBadge Run")
-	hash, err := s._airdropBadge(client, tokenIdRes, receivers, scores)
+	hash, err := s._airdropBadge(client, tokenIdRes, receivers, uris)
 	if err != nil {
 		log.Errorv("_airdropBadge", zap.Any("error", err))
 		return nil
@@ -103,7 +104,7 @@ func (s *Service) AirdropBadge() error {
 	return nil
 }
 
-func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, receivers []common.Address, scores []*big.Int) (txHash common.Hash, err error) {
+func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, receivers []common.Address, uris []string) (txHash common.Hash, err error) {
 	signPrivateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return
@@ -118,17 +119,17 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 	}
 	hash := solsha3.SoliditySHA3(
 		// types
-		[]string{"string", "uint256[]", "address", "address"},
+		[]string{"string", "uint256[]", "address[]", "address", "address"},
 		// values
 		[]interface{}{
-			"airdropBadge", tokenIDs, s.c.Contract.Badge, airdropAddress,
+			"airdropBadge", tokenIDs, receivers, s.c.Contract.BadgeMinter, airdropAddress,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
 	signature, err := crypto.Sign(prefixedHash, signPrivateKey)
 	signature[64] += 27
 
-	questMinter, err := ABI.NewQuestMinter(common.HexToAddress(s.c.Contract.QuestMinter), client)
+	badgeMinter, err := ABI.NewBadgeMinter(common.HexToAddress(s.c.Contract.BadgeMinter), client)
 	if err != nil {
 		return
 	}
@@ -146,7 +147,7 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 		Context:  auth.Context,
 		NoSend:   false,
 	}
-	tx, err := questMinter.AirdropBadge(transactOpts, tokenIDs, receivers, scores, signature)
+	tx, err := badgeMinter.AirdropBadge(transactOpts, tokenIDs, receivers, uris, signature)
 	if err != nil {
 		log.Errorv("questMinter.AirdropBadge error", zap.Any("tokenIDs", tokenIDs), zap.Any("receivers", receivers), zap.Any("signature", signature), zap.Error(err))
 		return
@@ -155,7 +156,7 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 	return tx.Hash(), nil
 }
 
-func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.Int, receivers []string, scores []*big.Int) (tokenIdRes []*big.Int, receiversNotClaim []common.Address, scoresRes []*big.Int) {
+func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.Int, receivers []string, uris []string) (tokenIdRes []*big.Int, receiversNotClaim []common.Address, uriRes []string) {
 	badge, err := ABI.NewBadge(common.HexToAddress(s.c.Contract.Badge), client)
 	if err != nil {
 		return
@@ -164,7 +165,7 @@ func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.
 		if !utils.IsValidAddress(receivers[i]) {
 			continue
 		}
-		res, err := badge.BalanceOf(nil, common.HexToAddress(receivers[i]), tokenId[i])
+		res, err := badge.BalanceOf(nil, common.HexToAddress(receivers[i]))
 		if err != nil {
 			continue
 		}
@@ -177,7 +178,7 @@ func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.
 		}
 		tokenIdRes = append(tokenIdRes, tokenId[i])
 		receiversNotClaim = append(receiversNotClaim, common.HexToAddress(receivers[i]))
-		scoresRes = append(scoresRes, scores[i])
+		uriRes = append(uriRes, uris[i])
 	}
 	if len(tokenIdRes) != len(receiversNotClaim) {
 		err = errors.New("token and address len error")

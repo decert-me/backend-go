@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
+	"strconv"
 	"strings"
 )
 
@@ -32,6 +33,11 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	if err != nil {
 		return
 	}
+	questDataDetail, err := s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
+	if err != nil {
+		return
+	}
+
 	tr, err := s.dao.QueryTransactionByHash(hash)
 	if err != nil {
 		return err
@@ -42,22 +48,32 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		Title:   questData.Title,
 		Creator: common.HexToAddress(vLog.Topics[1].Hex()),
 	})
-	// TODO: 多链状态
+	// 多链状态
+	statusMap := make(map[string]uint8)
 	for _, v := range s.c.Contract.MultiChain {
-		v.
+		statusMap[strconv.Itoa(v.ChainID)] = 0
 	}
-	multiChainStatus
+	multiChainStatus, _ := json.Marshal(statusMap)
+
+	challengeUrl := gjson.Get(metadata, "attributes.challenge_url").String()
+	var uuid string
+	if len(strings.Split(challengeUrl, "/quests/")) >= 2 {
+		uuid = strings.Split(challengeUrl, "/quests/")[1]
+	}
 	quest := model.Quest{
-		Title:       questData.Title,
-		Description: gjson.Get(metadata, "description").String(),
-		TokenId:     vLog.Topics[2].Big().Int64(),
-		Uri:         questData.Uri,
-		Type:        0, // TODO
-		Creator:     common.HexToAddress(vLog.Topics[1].Hex()).String(),
-		MetaData:    []byte(metadata),
-		ExtraData:   extraData,
-		IsDraft:     false, // 当前发布不审核
-		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
+		UUID:             uuid,
+		Title:            questData.Title,
+		Description:      gjson.Get(metadata, "description").String(),
+		TokenId:          vLog.Topics[2].Big().Int64(),
+		Uri:              questData.Uri,
+		Type:             0, // TODO
+		Creator:          common.HexToAddress(vLog.Topics[1].Hex()).String(),
+		MetaData:         []byte(metadata),
+		ExtraData:        extraData,
+		QuestData:        []byte(questDataDetail),
+		IsDraft:          false, // 当前发布不审核
+		Recommend:        gjson.Get(tr.Params.String(), "recommend").String(),
+		MultiChainStatus: multiChainStatus,
 	}
 	if err = s.dao.CreateQuest(&quest); err != nil {
 		log.Errorv("CreateQuest error", zap.Error(err), zap.Any("quest", quest))
@@ -69,11 +85,22 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 }
 
 func (s *Service) handleModifyQuest(hash string, vLog *types.Log) (err error) {
-	var modify ABI.QuestQuestModify
-	if err = questAbi.UnpackIntoInterface(&modify, "QuestModify", vLog.Data); err != nil {
+	var modify ABI.QuestQuestModified
+	if err = questAbi.UnpackIntoInterface(&modify, "QuestModified", vLog.Data); err != nil {
 		return
 	}
 	metadata, err := s.GetDataFromCid(strings.Replace(modify.QuestData.Uri, "ipfs://", "", 1))
+	if err != nil {
+		return
+	}
+	// 多链状态
+	statusMap := make(map[string]uint8)
+	for _, v := range s.c.Contract.MultiChain {
+		statusMap[strconv.Itoa(v.ChainID)] = 0
+	}
+	multiChainStatus, _ := json.Marshal(statusMap)
+
+	questDataDetail, err := s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
 	if err != nil {
 		return
 	}
@@ -88,16 +115,18 @@ func (s *Service) handleModifyQuest(hash string, vLog *types.Log) (err error) {
 		Creator: common.HexToAddress(vLog.Topics[1].Hex()),
 	})
 	quest := model.Quest{
-		Title:       questData.Title,
-		Description: gjson.Get(metadata, "description").String(),
-		TokenId:     vLog.Topics[2].Big().Int64(),
-		Uri:         questData.Uri,
-		Type:        0, // TODO
-		Creator:     common.HexToAddress(vLog.Topics[1].Hex()).String(),
-		MetaData:    []byte(metadata),
-		ExtraData:   extraData,
-		IsDraft:     false, // 当前发布不审核
-		Recommend:   gjson.Get(tr.Params.String(), "recommend").Raw,
+		Title:            questData.Title,
+		Description:      gjson.Get(metadata, "description").String(),
+		TokenId:          vLog.Topics[2].Big().Int64(),
+		Uri:              questData.Uri,
+		Type:             0, // TODO
+		Creator:          common.HexToAddress(vLog.Topics[1].Hex()).String(),
+		MetaData:         []byte(metadata),
+		ExtraData:        extraData,
+		QuestData:        []byte(questDataDetail),
+		IsDraft:          false, // 当前发布不审核
+		Recommend:        gjson.Get(tr.Params.String(), "recommend").Raw,
+		MultiChainStatus: multiChainStatus,
 	}
 	if err = s.dao.UpdateQuest(&quest); err != nil {
 		log.Errorv("UpdateQuest error", zap.Error(err), zap.Any("quest", quest))
