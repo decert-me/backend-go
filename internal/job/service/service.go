@@ -14,23 +14,25 @@ import (
 
 // Service struct
 type Service struct {
-	c             *config.Config
-	dao           *dao.Dao
-	cron          *cron.Cron
-	w             *balancer.SmoothRoundrobin
-	TaskChain     chan taskTx
-	contractEvent map[common.Hash]string // 合约事件
-	providerMap   map[int]string         // RPC
+	c              *config.Config
+	dao            *dao.Dao
+	cron           *cron.Cron
+	w              *balancer.SmoothRoundrobin
+	TaskChain      chan taskTx
+	contractEvent  map[common.Hash]string // 合约事件
+	providerMap    map[int]string         // RPC
+	IDToMultiChain map[int]config.MultiChain
 }
 
 // New init.
 func New(c *config.Config) (s *Service) {
 	s = &Service{
-		c:             c,
-		dao:           dao.New(c),
-		TaskChain:     make(chan taskTx, 100),
-		contractEvent: initialize.NewContractEvent(),
-		providerMap:   initialize.InitProvider(c),
+		c:              c,
+		dao:            dao.New(c),
+		TaskChain:      make(chan taskTx, 100),
+		contractEvent:  initialize.NewContractEvent(),
+		providerMap:    initialize.InitProvider(c),
+		IDToMultiChain: initialize.InitIDToMultiChain(c),
 	}
 	if s.c.Scheduler.Active {
 		s.cron = cron.New()

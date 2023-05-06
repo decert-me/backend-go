@@ -62,7 +62,7 @@ func (s *Service) rpcRequest(chainID int, url string) (spent int64) {
 	if err != nil {
 		return max
 	}
-	address := common.HexToAddress(s.c.Contract.MultiChain[chainID].Badge)
+	address := common.HexToAddress(s.IDToMultiChain[chainID].Badge)
 	instance, err := ABI.NewBadge(address, rpcClient)
 	if err != nil {
 		fmt.Println(err)
