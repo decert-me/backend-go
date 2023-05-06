@@ -33,9 +33,12 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	if err != nil {
 		return
 	}
-	questDataDetail, err := s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
-	if err != nil {
-		return
+	var questDataDetail string
+	if gjson.Get(metadata, "version").Float() == 1.1 {
+		questDataDetail, err = s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
+		if err != nil {
+			return
+		}
 	}
 
 	tr, err := s.dao.QueryTransactionByHash(hash)
