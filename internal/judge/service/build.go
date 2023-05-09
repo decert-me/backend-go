@@ -40,10 +40,10 @@ func (s *Service) BuildSolidity(req request.BuildReq) (res response.BuildRes, er
 		return
 	}
 	contract := relativeFilePath + ":" + result[1]
-	args := []string{"create", contract, "--private-key=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", "--offline", "--json"}
+	args := []string{"create", contract, "--private-key=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", "--json"}
 	execRes, err := execCommand(foundryPath, "forge", args...)
 	if err := os.Rename(p, p+".bak"); err != nil {
-		log.Errorv("os.Remove error", zap.Error(err))
+		log.Errorv("os.Rename error", zap.Error(err))
 	}
 	if err != nil {
 		return
