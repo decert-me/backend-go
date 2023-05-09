@@ -10,14 +10,22 @@ import (
 	"strings"
 )
 
-func (s *Service) RunSolidity(req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) TryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
 	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenID})
 	if err != nil {
 		return
 	}
-	if gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).Int() != 3 {
+	questType := gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
+	if questType == "coding" {
+		return s.RunSolidity(req, quest)
+	} else if questType == "special_judge_coding" {
+		return s.RunSpecialSolidity(req, quest)
+	} else {
 		return tryRunRes, errors.New("不是编程题目")
 	}
+}
+
+func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunRes response.TryRunRes, err error) {
 	//input := "[\"[2,7,11,15],9\",\"[3,2,4],6\",\"[3,3],6\"]"
 	//output := "[\"[0,1]\",\"[1,2]\",\"[0,1]\"]"
 	inputArray := gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.input", req.QuestIndex)).Array()
@@ -111,11 +119,7 @@ func (s *Service) RunSolidity(req request.TryRunReq) (tryRunRes response.TryRunR
 	return
 }
 
-func (s *Service) RunSpecialSolidity(req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
-	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenID})
-	if err != nil {
-		return
-	}
+func (s *Service) RunSpecialSolidity(req request.TryRunReq, quest model.Quest) (tryRunRes response.TryRunRes, err error) {
 	spjCode := gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).String()
 	if spjCode == "" {
 		return tryRunRes, errors.New("no spj code found")

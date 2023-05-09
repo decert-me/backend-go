@@ -10,7 +10,7 @@ import (
 func TryRun(c *gin.Context) {
 	var req request.TryRunReq
 	_ = c.ShouldBindJSON(&req)
-	if res, err := srv.RunSpecialSolidity(req); err != nil {
+	if res, err := srv.TryRun(req); err != nil {
 		log.Errorv("err", zap.Error(err))
 		Fail(c)
 	} else {
