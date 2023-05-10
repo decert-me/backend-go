@@ -15,6 +15,18 @@ RUN go mod download
 COPY . .
 RUN go build -ldflags="-s -w" -o /bin/judge/decert-judge internal/judge/cmd/main.go
 
+
+FROM rust:latest AS builder-rust
+
+LABEL stage=rustbuilder
+
+ENV RUSTUP_DIST_SERVER https://rsproxy.cn
+ENV RUSTUP_UPDATE_ROOT https://rsproxy.cn/rustup
+
+RUN cargo install svm-rs && svm install 0.8.16 \
+    && svm install 0.7.6 && svm install 0.7.6 \
+    && svm install 0.6.12 && svm install 0.5.17 && svm install 0.4.26
+
 FROM ubuntu:latest
 
 ENV PATH=/root/.foundry/bin/:$PATH
@@ -23,14 +35,18 @@ RUN sed -E -i -e 's/(archive|ports).ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' -
     buildDeps='curl' && apt-get update && apt-get install -y git $buildDeps && \
     curl -L https://foundry.paradigm.xyz | bash && . /root/.bashrc && foundryup && \
     git config --global user.email "you@example.com" && git config --global user.name "Your Name" && \
-    mkdir -p /cloud-run-foundry/ && cd /cloud-run-foundry/ && forge init
+    mkdir -p /cloud-run-foundry/ && cd /cloud-run-foundry/ && forge init && \
+    apt-get purge -y --auto-remove $buildDeps && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 运行应用程序
 WORKDIR /judge
 
+COPY --from=builder-rust /root/.svm/ /root/.svm/
 COPY --from=builder /bin/judge/decert-judge /judge/decert-judge
 COPY /bin/judge/config.yaml /judge/config.yaml
-add entrypoint.sh /judge/
+
+ADD entrypoint.sh /judge/
 
 EXPOSE 8888
 ENTRYPOINT /judge/entrypoint.sh
