@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"strings"
 )
@@ -35,10 +36,26 @@ func (s *Service) handleURI(hash string, vLog *types.Log) (err error) {
 	if err != nil {
 		return
 	}
+	var questDataDetail string
+	if gjson.Get(metadata, "version").Float() == 1.1 {
+		questDataDetail, err = s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
+		if err != nil {
+			return
+		}
+	}
+
+	challengeUrl := gjson.Get(metadata, "attributes.challenge_url").String()
+	var uuid string
+	if len(strings.Split(challengeUrl, "/quests/")) >= 2 {
+		uuid = strings.Split(challengeUrl, "/quests/")[1]
+	}
+
 	quest := model.Quest{
-		TokenId:  tokenId,
-		Uri:      uri.Value,
-		MetaData: []byte(metadata),
+		UUID:      uuid,
+		TokenId:   tokenId,
+		Uri:       uri.Value,
+		MetaData:  []byte(metadata),
+		QuestData: []byte(questDataDetail),
 	}
 	err = s.dao.UpdateQuest(&quest)
 	if err != nil {
