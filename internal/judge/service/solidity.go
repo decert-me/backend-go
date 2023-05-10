@@ -15,7 +15,7 @@ func (s *Service) TryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, e
 	if err != nil {
 		return
 	}
-	questType := gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
+	questType := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
 	if questType == "coding" {
 		return s.RunSolidity(req, quest)
 	} else if questType == "special_judge_coding" {
@@ -28,8 +28,8 @@ func (s *Service) TryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, e
 func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunRes response.TryRunRes, err error) {
 	//input := "[\"[2,7,11,15],9\",\"[3,2,4],6\",\"[3,3],6\"]"
 	//output := "[\"[0,1]\",\"[1,2]\",\"[0,1]\"]"
-	inputArray := gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.input", req.QuestIndex)).Array()
-	outputArray := gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.output", req.QuestIndex)).Array()
+	inputArray := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.input", req.QuestIndex)).Array()
+	outputArray := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.output", req.QuestIndex)).Array()
 	tryRunRes.Input = req.Input
 	tryRunRes.TotalTestcases = len(outputArray)
 	// 编译
@@ -110,7 +110,7 @@ func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunR
 	tryRunRes.JudgeID, err = s.dao.SaveJudgeResult(model.JudgeResult{
 		TokenID:    req.TokenID,
 		QuestIndex: req.QuestIndex,
-		ScoreRaw:   gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.score", req.QuestIndex)).Int(),
+		ScoreRaw:   gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.score", req.QuestIndex)).Int(),
 		Pass:       true,
 	})
 	if err != nil {
@@ -120,7 +120,7 @@ func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunR
 }
 
 func (s *Service) RunSpecialSolidity(req request.TryRunReq, quest model.Quest) (tryRunRes response.TryRunRes, err error) {
-	spjCode := gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).String()
+	spjCode := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).String()
 	if spjCode == "" {
 		return tryRunRes, errors.New("no spj code found")
 	}
@@ -140,7 +140,7 @@ func (s *Service) RunSpecialSolidity(req request.TryRunReq, quest model.Quest) (
 	tryRunRes.JudgeID, err = s.dao.SaveJudgeResult(model.JudgeResult{
 		TokenID:    req.TokenID,
 		QuestIndex: req.QuestIndex,
-		ScoreRaw:   gjson.Get(string(quest.MetaData), fmt.Sprintf("questions.%d.score", req.QuestIndex)).Int(),
+		ScoreRaw:   gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.score", req.QuestIndex)).Int(),
 		Pass:       true,
 	})
 	if err != nil {
