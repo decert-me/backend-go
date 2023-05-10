@@ -20,7 +20,10 @@ FROM rust:latest AS builder-rust
 
 LABEL stage=rustbuilder
 
-RUN CARGO_HTTP_MULTIPLEXING=false cargo install svm-rs && svm install 0.8.16 \
+ENV RUSTUP_DIST_SERVER https://rsproxy.cn
+ENV RUSTUP_UPDATE_ROOT https://rsproxy.cn/rustup
+
+RUN cargo install svm-rs && svm install 0.8.16 \
     && svm install 0.7.6 && svm install 0.7.6 \
     && svm install 0.6.12 && svm install 0.5.17 && svm install 0.4.26
 
@@ -36,6 +39,7 @@ RUN sed -E -i -e 's/(archive|ports).ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' -
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 运行应用程序
+WORKDIR /judge
 
 COPY --from=builder-rust /root/.svm/ /root/.svm/
 COPY --from=builder /bin/judge/decert-judge /judge/decert-judge
