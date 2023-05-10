@@ -20,7 +20,7 @@ FROM rust:latest AS builder-rust
 
 LABEL stage=rustbuilder
 
-RUN cargo install svm-rs && svm install 0.8.16 \
+RUN CARGO_HTTP_MULTIPLEXING=false cargo install svm-rs && svm install 0.8.16 \
     && svm install 0.7.6 && svm install 0.7.6 \
     && svm install 0.6.12 && svm install 0.5.17 && svm install 0.4.26
 
