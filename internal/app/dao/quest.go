@@ -106,6 +106,7 @@ func (d *Dao) GetQuestChallengeUserByTokenID(tokenId int64) (res response.GetQue
 		Select("users.*").
 		Joins("LEFT JOIN users ON user_challenges.address=users.address").
 		Where("user_challenges.token_id", tokenId).
+		Order("user_challenges.add_ts desc").
 		Limit(12).
 		Find(&res.Users).Error
 	return res, err
@@ -126,6 +127,7 @@ func (d *Dao) GetQuestChallengeUserByUUID(uuid string) (res response.GetQuestCha
 		Select("users.*").
 		Joins("LEFT JOIN users ON user_challenges.address=users.address").
 		Where("user_challenges.token_id", quest.TokenId).
+		Order("user_challenges.add_ts desc").
 		Limit(12).
 		Find(&res.Users).Error
 	return res, err
