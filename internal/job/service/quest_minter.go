@@ -170,7 +170,7 @@ func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.
 		}
 		if res.Cmp(big.NewInt(0)) != 0 {
 			// already claimed update status
-			if err = s.dao.UpdateAirdropped(&model.ClaimBadgeTweet{Address: receivers[i], TokenId: tokenId[i].Int64()}); err != nil {
+			if err = s.dao.UpdateAirdroppedError(tokenId[i].Int64(), receivers[i], "already claimed"); err != nil {
 				log.Errorv("UpdateAirdropped error", zap.Error(err))
 			}
 			continue
