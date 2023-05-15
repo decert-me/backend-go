@@ -80,10 +80,11 @@ func (s *Service) RunTestSolidity(req request.TryTestRunReq) (tryRunRes response
 	name := jsonParsed.Get(fmt.Sprintf("%d.name", index)).String()
 	method := fmt.Sprintf("%v(%v)(%v)", name, inputTypes, outputTypes)
 	//fmt.Println(method)
-	var outPut strings.Builder
-
-	for _, v := range strings.Split(req.Input, "\n") {
-		// 运行
+	tryRunRes.Status = 3
+	// 检查是否通过
+	tryRunRes.TotalTestcases = len(req.Input)
+	for i, v := range req.Input {
+		//fmt.Println(v)
 		res, err := s.CastCall(request.CastCallReq{
 			To:     contract.ContractAddress,
 			Method: method,
@@ -94,33 +95,9 @@ func (s *Service) RunTestSolidity(req request.TryTestRunReq) (tryRunRes response
 			tryRunRes.Msg = err.Error()
 			return tryRunRes, err
 		}
-		if res.Status == 1 {
-			tryRunRes.Status = 2
-			tryRunRes.Msg = res.Msg
-			return tryRunRes, err
-		}
-		outPut.WriteString(res.Data)
-		outPut.WriteString("\n")
-	}
-	tryRunRes.Status = 3
-	// 检查是否通过
-	inputArray := gjson.Parse(req.Input).Array()
-	outputArray := gjson.Parse(req.Output).Array()
-	for i, v := range inputArray {
-		//fmt.Println(v)
-		res, err := s.CastCall(request.CastCallReq{
-			To:     contract.ContractAddress,
-			Method: method,
-			Data:   v.String(),
-		})
-		if err != nil {
-			tryRunRes.Status = 2
-			tryRunRes.Msg = err.Error()
-			return tryRunRes, err
-		}
-		if res.Data != outputArray[i].String() {
+		if res.Data != req.Output[i] {
 			tryRunRes.Correct = false
-			tryRunRes.LastInput = v.String()
+			tryRunRes.LastInput = v
 			tryRunRes.LastOutput = res.Data
 			return tryRunRes, err
 		}
@@ -266,6 +243,13 @@ func (s *Service) RunSpecialSolidity(req request.TryRunReq, quest model.Quest) (
 		return tryRunRes, errors.New("no spj code found")
 	}
 	// 编译
+	contract, err := s.BuildSolidity(request.BuildReq{Code: req.Code})
+	if err != nil || contract.Status == 1 {
+		tryRunRes.Status = 1
+		tryRunRes.Msg = contract.Output
+		return
+	}
+	// 测试
 	res, err := s.TestSolidity(request.ForgeTestReq{
 		Code:    req.Code,
 		Address: "",
@@ -273,19 +257,24 @@ func (s *Service) RunSpecialSolidity(req request.TryRunReq, quest model.Quest) (
 	tryRunRes.TotalCorrect = res.TotalCorrect
 	tryRunRes.TotalTestcases = res.TotalTestcases
 	if err != nil || res.Status == 1 {
-		tryRunRes.Status = 1
+		tryRunRes.Status = 2
 		tryRunRes.Msg = res.Output
 		return
 	}
+	tryRunRes.Status = 3
 	tryRunRes.Correct = true
-	if err != nil {
-		return
-	}
 	return
 }
 
 func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes response.TryTestRunRes, err error) {
 	// 编译
+	contract, err := s.BuildSolidity(request.BuildReq{Code: req.Code})
+	if err != nil || contract.Status == 1 {
+		tryRunRes.Status = 1
+		tryRunRes.Msg = contract.Output
+		return
+	}
+	// 测试
 	res, err := s.TestSolidity(request.ForgeTestReq{
 		Code:    req.Code,
 		Address: "",
@@ -293,10 +282,11 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 	tryRunRes.TotalCorrect = res.TotalCorrect
 	tryRunRes.TotalTestcases = res.TotalTestcases
 	if err != nil || res.Status == 1 {
-		tryRunRes.Status = 1
+		tryRunRes.Status = 2
 		tryRunRes.Msg = res.Output
 		return
 	}
+	tryRunRes.Status = 3
 	tryRunRes.Correct = true
 	return
 }
