@@ -3,12 +3,9 @@ package service
 import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/utils"
-	"backend-go/pkg/log"
 	"errors"
 	"github.com/google/uuid"
 	"github.com/tidwall/gjson"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *model.Quest) (pass bool, err error) {
@@ -28,9 +25,9 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 	for i, _ := range answerS {
 		_, isUUID := uuid.Parse(answerS[i].String())
 		if isUUID == nil {
-			if s.JudgeResultCheck(answerS[i].String(), quest, uint8(i)) {
-				score += scoreList[i].Int()
-			}
+			//if s.JudgeResultCheck(answerS[i].String(), quest, uint8(i)) {
+			//	score += scoreList[i].Int()
+			//}
 			continue
 		}
 		if answerS[i].String() == answerU[i].String() {
@@ -41,19 +38,6 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 		return true, nil
 	}
 	return
-}
-
-func (s *Service) JudgeResultCheck(uuid string, quest *model.Quest, index uint8) (pass bool) {
-	res, err := s.dao.FilterJudgeResult(
-		model.JudgeResult{
-			ID:         uuid,
-			TokenID:    quest.TokenId,
-			QuestIndex: index,
-		})
-	if err != nil && err != gorm.ErrRecordNotFound {
-		log.Errorv("FilterJudgeResult error", zap.Error(err))
-	}
-	return res.Pass
 }
 
 func (s *Service) AnswerScore(key, answerUser, uri string, quest model.Quest) (userScore int64, pass bool, err error) {

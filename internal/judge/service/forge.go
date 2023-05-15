@@ -21,6 +21,7 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	foundryPath := s.c.Foundry.WorkPath
 	// 获取合约名称
 	re := regexp.MustCompile(`contract\s+(\w+)\s*{`)
+
 	result := re.FindStringSubmatch(req.Code)
 	if len(result) < 1 {
 		return res, errors.New("contract name no match")

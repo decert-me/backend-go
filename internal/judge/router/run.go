@@ -9,5 +9,6 @@ func InitRunRouter(Router *gin.RouterGroup) {
 	runRouter := Router.Group("run")
 	{
 		runRouter.POST("tryRun", v1.TryRun)
+		runRouter.POST("tryTestRun", v1.TryTestRun)
 	}
 }

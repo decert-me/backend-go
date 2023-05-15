@@ -11,4 +11,5 @@ type Config struct {
 	Pgsql   *Pgsql       `mapstructure:"pgsql" json:"pgsql" yaml:"pgsql"`
 	Auth    *auth.Config `mapstructure:"auth" json:"auth" yaml:"auth"`
 	Foundry *Foundry     `mapstructure:"foundry" json:"foundry" yaml:"foundry"`
+	Quest   *Quest       `mapstructure:"quest" json:"quest" yaml:"quest"`
 }

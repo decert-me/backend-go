@@ -16,4 +16,5 @@ type Config struct {
 	Quest      *Quest       `mapstructure:"quest" json:"quest" yaml:"quest"`
 	Local      *Local       `mapstructure:"local" json:"local" yaml:"local"`
 	IPFS       []IPFS       `mapstructure:"ipfs" json:"ipfs" yaml:"ipfs"`
+	Judge      []Judge      `mapstructure:"judge" json:"judge" yaml:"judge"`
 }

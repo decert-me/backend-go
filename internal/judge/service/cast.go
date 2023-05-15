@@ -3,7 +3,6 @@ package service
 import (
 	"backend-go/internal/judge/model/request"
 	"backend-go/internal/judge/model/response"
-	"fmt"
 	"github.com/tidwall/gjson"
 	"strings"
 )
@@ -15,8 +14,6 @@ func (s *Service) CastCall(req request.CastCallReq) (res response.CastCallRes, e
 	} else if !strings.Contains(req.Data, "],") {
 		args = append(args, req.Method)
 		args = append(args, strings.Split(req.Data, ",")...)
-		fmt.Println(args)
-		fmt.Println(req.Data)
 	} else {
 		args = append(args, req.Method)
 		for _, v := range strings.Split(req.Data, "],") {

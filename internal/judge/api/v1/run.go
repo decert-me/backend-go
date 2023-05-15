@@ -17,3 +17,14 @@ func TryRun(c *gin.Context) {
 		OkWithData(res, c)
 	}
 }
+
+func TryTestRun(c *gin.Context) {
+	var req request.TryTestRunReq
+	_ = c.ShouldBindJSON(&req)
+	if res, err := srv.TryTestRun(req); err != nil {
+		log.Errorv("err", zap.Error(err))
+		Fail(c)
+	} else {
+		OkWithData(res, c)
+	}
+}
