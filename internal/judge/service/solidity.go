@@ -171,6 +171,9 @@ func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunR
 	//fmt.Println(method)
 	var outPut, exceptOutPut strings.Builder
 	for _, v := range strings.Split(req.Input, "\n") {
+		if v == "" {
+			continue
+		}
 		// 运行
 		startTime := time.Now()
 		res, err := s.CastCall(request.CastCallReq{
@@ -206,7 +209,6 @@ func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunR
 		exceptOutPut.WriteString(exceptRes.Data)
 		exceptOutPut.WriteString("\n")
 	}
-
 	tryRunRes.ExceptOutput = strings.TrimRight(exceptOutPut.String(), "\n")
 	tryRunRes.Output = strings.TrimRight(outPut.String(), "\n")
 	tryRunRes.Status = 3
@@ -218,6 +220,7 @@ func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunR
 			Method: method,
 			Data:   v.String(),
 		})
+
 		if err != nil {
 			tryRunRes.Status = 2
 			tryRunRes.Msg = err.Error()

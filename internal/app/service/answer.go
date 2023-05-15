@@ -27,7 +27,7 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 	var score int64
 	for i, v := range answerS {
 		// 编程题目
-		if gjson.Get(v.String(), "type").String() == "coding" || gjson.Get(v.String(), "type").String() == "special_judge_coding" {
+		if gjson.Get(v.String(), "type").String() == "coding" || gjson.Get(v.String(), "type").String() == "special_judge_coding" || answerU[i].String() == "" {
 			// 跳过不正确
 			if gjson.Get(v.String(), "correct").Bool() == false {
 				continue
@@ -47,8 +47,11 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 			score += scoreList[i].Int()
 		}
 	}
+
 	if userScore == (score*10000/totalScore) && score >= passingScore {
 		return true, nil
+	} else {
+		return true, errors.New("not enough scores")
 	}
 	return
 }
@@ -70,7 +73,7 @@ func (s *Service) AnswerScore(key, answerUser, uri string, quest model.Quest) (u
 	for i, v := range answerS {
 		if answerS[i].String() == answerU[i].String() {
 			// 编程题目
-			if gjson.Get(v.String(), "type").String() == "coding" || gjson.Get(v.String(), "type").String() == "special_judge_coding" {
+			if gjson.Get(v.String(), "type").String() == "coding" || gjson.Get(v.String(), "type").String() == "special_judge_coding" || answerU[i].String() == "" {
 				// 跳过不正确
 				if gjson.Get(v.String(), "correct").Bool() == false {
 					continue
