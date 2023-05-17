@@ -15,9 +15,12 @@ import (
 	"time"
 )
 
-func (s *Service) BuildSolidity(req request.BuildReq) (res response.BuildRes, err error) {
+func (s *Service) BuildSolidity(private string, req request.BuildReq) (res response.BuildRes, err error) {
 	if req.Address == "" {
 		req.Address = common.HexToAddress("0").String()
+	}
+	if private == "" {
+		private = GetPrivate()
 	}
 	foundryPath := s.c.Foundry.WorkPath
 	// 获取合约名称
@@ -40,7 +43,7 @@ func (s *Service) BuildSolidity(req request.BuildReq) (res response.BuildRes, er
 		return
 	}
 	contract := relativeFilePath + ":" + result[1]
-	args := []string{"create", contract, "--private-key=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", "--json"}
+	args := []string{"create", contract, fmt.Sprintf("--private-key=%s", private), "--json"}
 	execRes, err := execCommand(foundryPath, "forge", args...)
 	if err := os.Rename(p, p+".bak"); err != nil {
 		log.Errorv("os.Rename error", zap.Error(err))
