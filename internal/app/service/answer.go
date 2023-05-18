@@ -5,6 +5,7 @@ import (
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
+	"fmt"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
@@ -26,8 +27,13 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 	}
 	var score int64
 	for i, v := range answerS {
+		if v.String() == "" {
+			continue
+		}
+		questType := gjson.Get(v.String(), "type").String()
+		questValue := gjson.Get(v.String(), "value").String()
 		// 编程题目
-		if gjson.Get(v.String(), "type").String() == "coding" || gjson.Get(v.String(), "type").String() == "special_judge_coding" || answerU[i].String() == "" {
+		if questType == "coding" || questType == "special_judge_coding" {
 			// 跳过不正确
 			if gjson.Get(v.String(), "correct").Bool() == false {
 				continue
@@ -43,8 +49,40 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 			}
 			continue
 		}
-		if answerS[i].String() == answerU[i].String() {
-			score += scoreList[i].Int()
+		// 单选题
+		if questType == "multiple_choice" || questType == "fill_blank" {
+			if questValue == answerU[i].String() {
+				score += scoreList[i].Int()
+			}
+			continue
+		}
+		// 多选题
+		if questType == "multiple_response" {
+			answerArray := gjson.Get(questValue, "@this").Array()
+			fmt.Println(len(answerArray))
+			fmt.Println(len(answerU[i].Array()))
+			// 数量
+			if len(answerArray) != len(answerU[i].Array()) {
+				continue
+			}
+			// 内容
+			allRight := true
+			for _, v := range answerArray {
+				var right bool
+				for _, item := range answerU[i].Array() {
+					if item.String() == v.String() {
+						right = true
+						break
+					}
+				}
+				if !right {
+					allRight = false
+					break
+				}
+			}
+			if allRight {
+				score += scoreList[i].Int()
+			}
 		}
 	}
 
