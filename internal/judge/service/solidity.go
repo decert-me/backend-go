@@ -20,15 +20,15 @@ func (s *Service) TryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, e
 	}
 	questType := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
 	if questType == "coding" {
-		return s.RunSolidity(req, quest)
+		return s.RunNormalSolidity(req, quest)
 	} else if questType == "special_judge_coding" {
-		return s.RunSpecialSolidity(req, quest)
+		return s.RunNormalSpecialSolidity(req, quest)
 	} else {
 		return tryRunRes, errors.New("不是编程题目")
 	}
 }
 
-func (s *Service) TryTestRun(req request.TryTestRunReq) (tryRunRes response.TryTestRunRes, err error) {
+func (s *Service) TryTestRun(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
 	if req.SpjCode == "" {
 		return s.RunTestSolidity(req)
 	} else {
@@ -36,8 +36,7 @@ func (s *Service) TryTestRun(req request.TryTestRunReq) (tryRunRes response.TryT
 	}
 }
 
-func (s *Service) RunTestSolidity(req request.TryTestRunReq) (tryRunRes response.TryTestRunRes, err error) {
-	private := GetPrivate()
+func (s *Service) RunTestSolidity(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 获取运行函数
 	var functionName string
 	re := regexp.MustCompile(`function\s+(\w+)\s*\(`)
@@ -45,80 +44,20 @@ func (s *Service) RunTestSolidity(req request.TryTestRunReq) (tryRunRes response
 	if len(matches) > 1 {
 		functionName = matches[1]
 	}
-	// 编译
-	contract, err := s.BuildSolidity(private, request.BuildReq{Code: req.Code})
-	if err != nil || contract.Status == 1 {
-		tryRunRes.Status = 1
-		tryRunRes.Msg = contract.Output
-		return
+	fmt.Println(req.ExampleInput)
+	fmt.Println(req.ExampleOutput)
+	runReq := runSolidityReq{
+		InputArray:    req.ExampleInput,
+		OutputArray:   req.ExampleOutput,
+		CorrectAnswer: req.ExampleCode,
+		Input:         req.Input,
+		Code:          req.Code,
+		FunctionName:  functionName,
 	}
-	jsonParsed := gjson.Parse(contract.ABI)
-	// 获取函数index
-	var index int
-	for i, v := range jsonParsed.Get("#.name").Array() {
-		if v.String() == functionName {
-			index = i
-			break
-		}
-	}
-
-	// 获取add(uint256,uint256)(uint256)
-	inputsType := jsonParsed.Get(fmt.Sprintf("%d.inputs.#.type", index)).Array()
-	var inputsTypes []string
-	for _, v := range inputsType {
-		inputsTypes = append(inputsTypes, v.String())
-	}
-
-	outputType := jsonParsed.Get(fmt.Sprintf("%d.outputs.#.type", index)).Array()
-	var outputsTypes []string
-	for _, v := range outputType {
-		outputsTypes = append(outputsTypes, v.String())
-	}
-
-	inputTypes := strings.Join(inputsTypes, ",")
-	outputTypes := strings.Join(outputsTypes, ",")
-
-	name := jsonParsed.Get(fmt.Sprintf("%d.name", index)).String()
-	method := fmt.Sprintf("%v(%v)(%v)", name, inputTypes, outputTypes)
-	//fmt.Println(method)
-	tryRunRes.Status = 3
-	// 检查是否通过
-	tryRunRes.TotalTestcases = len(req.Input)
-	for i, v := range req.Input {
-		//fmt.Println(v)
-		res, err := s.CastCall(request.CastCallReq{
-			To:     contract.ContractAddress,
-			Method: method,
-			Data:   v,
-		})
-		if err != nil {
-			tryRunRes.Status = 2
-			tryRunRes.Msg = err.Error()
-			return tryRunRes, err
-		}
-		if res.Data != req.Output[i] {
-			tryRunRes.Correct = false
-			tryRunRes.LastInput = v
-			tryRunRes.LastOutput = res.Data
-			return tryRunRes, err
-		}
-		tryRunRes.TotalCorrect++
-	}
-	tryRunRes.Correct = true
-	return
+	return s.RunSolidity(runReq)
 }
 
-func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunRes response.TryRunRes, err error) {
-	private := GetPrivate()
-	//input := "[\"[2,7,11,15],9\",\"[3,2,4],6\",\"[3,3],6\"]"
-	//output := "[\"[0,1]\",\"[1,2]\",\"[0,1]\"]"
-	inputArray := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.input", req.QuestIndex)).Array()
-	outputArray := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.output", req.QuestIndex)).Array()
-	correctAnswerRaw := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.code_snippets.#(lang=Solidity).correctAnswer", req.QuestIndex)).String()
-	correctAnswer := utils.AnswerDecode(s.c.Quest.EncryptKey, correctAnswerRaw)
-	correctAnswer = gjson.Parse(correctAnswer).String()
-	tryRunRes.Input = req.Input
-	tryRunRes.TotalTestcases = len(outputArray)
+func (s *Service) RunNormalSolidity(req request.TryRunReq, quest model.Quest) (tryRunRes response.TryRunRes, err error) {
 	// 获取运行函数
 	var functionName string
 	codeSnippetRaw := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.code_snippets.#(lang=Solidity).code", req.QuestIndex)).String()
@@ -127,23 +66,77 @@ func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunR
 	if len(matches) > 1 {
 		functionName = matches[1]
 	}
+	inputArray := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.input", req.QuestIndex)).Array()
+	outputArray := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.output", req.QuestIndex)).Array()
+	correctAnswerRaw := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.code_snippets.#(lang=Solidity).correctAnswer", req.QuestIndex)).String()
+	correctAnswer := utils.AnswerDecode(s.c.Quest.EncryptKey, correctAnswerRaw)
+	correctAnswer = gjson.Parse(correctAnswer).String()
+	var inputArrayString, outputArrayString []string
+	// 类型转换
+	for _, v := range inputArray {
+		inputArrayString = append(inputArrayString, v.String())
+	}
+	for _, v := range outputArray {
+		outputArrayString = append(outputArrayString, v.String())
+	}
+	runReq := runSolidityReq{
+		InputArray:    inputArrayString,
+		OutputArray:   outputArrayString,
+		CorrectAnswer: correctAnswer,
+		Input:         req.Input,
+		Code:          req.Code,
+		FunctionName:  functionName,
+	}
+	return s.RunSolidity(runReq)
+}
+
+type runSolidityReq struct {
+	InputArray    []string
+	OutputArray   []string
+	CorrectAnswer string
+	Input         string
+	Code          string
+	FunctionName  string
+	SpjCode       string
+}
+
+func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes, err error) {
+	private := GetPrivate()
+	// 参数
+	inputArray := req.InputArray
+	outputArray := req.OutputArray
+	correctAnswer := req.CorrectAnswer
+	tryRunRes.Input = req.Input
+	functionName := req.FunctionName
+	tryRunRes.TotalTestcases = len(outputArray)
 	// 编译
-	contract, err := s.BuildSolidity(private, request.BuildReq{Code: req.Code})
-	if err != nil || contract.Status == 1 {
-		tryRunRes.Status = 1
-		tryRunRes.Msg = contract.Output
-		return
+	var contract response.BuildRes
+	if req.Code != "" {
+		contract, err = s.BuildSolidity(private, request.BuildReq{Code: req.Code})
+		if err != nil || contract.Status == 1 {
+			tryRunRes.Status = 1
+			tryRunRes.Msg = contract.Output
+			return
+		}
 	}
 	// 编译标准答案
 	correctContract, err := s.BuildSolidity(private, request.BuildReq{Code: correctAnswer})
-	if err != nil || contract.Status == 1 {
+	if err != nil || correctContract.Status == 1 {
 		tryRunRes.Status = 1
-		tryRunRes.Msg = contract.Output
+		tryRunRes.Msg = correctContract.Output
 		return
 	}
+	fmt.Println("err", err)
 	// quest.QuestData
 	// 使用gjson解析JSON字符串
-	jsonParsed := gjson.Parse(contract.ABI)
+	var jsonParsed gjson.Result
+	if req.Code != "" {
+		jsonParsed = gjson.Parse(contract.ABI)
+	} else {
+		// 标准答案
+		jsonParsed = gjson.Parse(correctContract.ABI)
+	}
+
 	// 获取函数index
 	var index int
 	for i, v := range jsonParsed.Get("#.name").Array() {
@@ -170,13 +163,14 @@ func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunR
 
 	name := jsonParsed.Get(fmt.Sprintf("%d.name", index)).String()
 	method := fmt.Sprintf("%v(%v)(%v)", name, inputTypes, outputTypes)
-	//fmt.Println(method)
+	fmt.Println(method)
 	var outPut, exceptOutPut strings.Builder
 	for _, v := range strings.Split(req.Input, "\n") {
 		if v == "" {
 			continue
 		}
 		v = strings.Replace(v, "\n", "", -1)
+		v = strings.TrimSpace(v)
 		// 运行
 		startTime := time.Now()
 		res, err := s.CastCall(request.CastCallReq{
@@ -217,23 +211,37 @@ func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunR
 	tryRunRes.Status = 3
 	// 检查是否通过
 	for i, v := range inputArray {
-		//fmt.Println(v)
-		res, err := s.CastCall(request.CastCallReq{
-			To:     contract.ContractAddress,
-			Method: method,
-			Data:   strings.Replace(v.String(), "\n", "", -1),
-		})
-
-		if err != nil {
-			tryRunRes.Status = 2
-			tryRunRes.Msg = err.Error()
-			return tryRunRes, err
+		v = strings.TrimSpace(v)
+		var res response.CastCallRes
+		if req.Code == "" {
+			res, err = s.CastCall(request.CastCallReq{
+				To:     correctContract.ContractAddress,
+				Method: method,
+				Data:   strings.Replace(v, "\n", "", -1),
+			})
+			if err != nil {
+				tryRunRes.Status = 2
+				tryRunRes.Msg = err.Error()
+				return tryRunRes, err
+			}
+		} else {
+			res, err = s.CastCall(request.CastCallReq{
+				To:     contract.ContractAddress,
+				Method: method,
+				Data:   strings.Replace(v, "\n", "", -1),
+			})
+			if err != nil {
+				tryRunRes.Status = 2
+				tryRunRes.Msg = err.Error()
+				return tryRunRes, err
+			}
 		}
-		if res.Data != outputArray[i].String() {
+		fmt.Println("res", res)
+		if res.Data != strings.TrimSpace(outputArray[i]) {
 			tryRunRes.Correct = false
-			tryRunRes.LastInput = v.String()
+			tryRunRes.LastInput = v
 			tryRunRes.LastOutput = res.Data
-			tryRunRes.LastExpect = outputArray[i].String()
+			tryRunRes.LastExpect = outputArray[i]
 			return tryRunRes, err
 		}
 		tryRunRes.TotalCorrect++
@@ -243,12 +251,9 @@ func (s *Service) RunSolidity(req request.TryRunReq, quest model.Quest) (tryRunR
 	return
 }
 
-func (s *Service) RunSpecialSolidity(req request.TryRunReq, quest model.Quest) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.TryRunRes, err error) {
 	private := GetPrivate()
-	spjCode := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).String()
-	if spjCode == "" {
-		return tryRunRes, errors.New("no spj code found")
-	}
+	spjCode := req.SpjCode
 	// 编译
 	contract, err := s.BuildSolidity(private, request.BuildReq{Code: req.Code})
 	if err != nil || contract.Status == 1 {
@@ -273,28 +278,22 @@ func (s *Service) RunSpecialSolidity(req request.TryRunReq, quest model.Quest) (
 	return
 }
 
-func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes response.TryTestRunRes, err error) {
-	private := GetPrivate()
-	// 编译
-	contract, err := s.BuildSolidity(private, request.BuildReq{Code: req.Code})
-	if err != nil || contract.Status == 1 {
-		tryRunRes.Status = 1
-		tryRunRes.Msg = contract.Output
-		return
+func (s *Service) RunNormalSpecialSolidity(req request.TryRunReq, quest model.Quest) (tryRunRes response.TryRunRes, err error) {
+	spjCode := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).String()
+	if spjCode == "" {
+		return tryRunRes, errors.New("no spj code found")
 	}
-	// 测试
-	res, err := s.TestSolidity(request.ForgeTestReq{
+	runReq := runSolidityReq{
+		SpjCode: spjCode,
 		Code:    req.Code,
-		Address: "",
-	}, req.SpjCode)
-	tryRunRes.TotalCorrect = res.TotalCorrect
-	tryRunRes.TotalTestcases = res.TotalTestcases
-	if err != nil || res.Status == 1 {
-		tryRunRes.Status = 2
-		tryRunRes.Msg = res.Output
-		return
 	}
-	tryRunRes.Status = 3
-	tryRunRes.Correct = true
-	return
+	return s.RunSpecialSolidity(runReq)
+}
+
+func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
+	runReq := runSolidityReq{
+		SpjCode: req.SpjCode,
+		Code:    req.ExampleCode,
+	}
+	return s.RunSpecialSolidity(runReq)
 }

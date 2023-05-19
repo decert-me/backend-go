@@ -13,7 +13,6 @@ type TryRunRes struct {
 	LastInput      string `json:"last_input"`
 	LastOutput     string `json:"last_output"`
 	LastExpect     string `json:"last_expect"`
-	JudgeID        string `json:"-"`
 }
 
 type TryTestRunRes struct {

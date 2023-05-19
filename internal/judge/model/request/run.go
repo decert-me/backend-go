@@ -10,11 +10,13 @@ type TryRunReq struct {
 }
 
 type TryTestRunReq struct {
-	Lang        string   `json:"lang"`
-	CodeSnippet string   `json:"code_snippet"`
-	Code        string   `json:"code"`
-	SpjCode     string   `json:"spj_code"`
-	Input       []string `json:"input"`
-	Output      []string `json:"output"`
-	QuestIndex  uint8
+	Lang          string   `json:"lang"`
+	CodeSnippet   string   `json:"code_snippet"`
+	Code          string   `json:"code"`
+	ExampleCode   string   `json:"example_code"`
+	SpjCode       string   `json:"spj_code"`
+	Input         string   `json:"input"`
+	ExampleInput  []string `json:"example_input"`
+	ExampleOutput []string `json:"example_output"`
+	QuestIndex    uint8
 }

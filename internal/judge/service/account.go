@@ -21,15 +21,15 @@ var privateList = []string{
 	"0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97",
 	"0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
 }
-var index privateIndex
+var indexPrivate privateIndex
 
 func GetPrivate() (res string) {
-	index.l.Lock()
-	if index.index >= len(privateList) {
-		index.index = 0
+	indexPrivate.l.Lock()
+	if indexPrivate.index >= len(privateList) {
+		indexPrivate.index = 0
 	}
-	res = privateList[index.index]
-	index.index++
-	index.l.Unlock()
+	res = privateList[indexPrivate.index]
+	indexPrivate.index++
+	indexPrivate.l.Unlock()
 	return res
 }
