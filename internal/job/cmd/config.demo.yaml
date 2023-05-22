@@ -47,7 +47,7 @@ contract:
 # twitter configuration
 twitter:
   bear-token: ""
-  claim-content: ["Glad to have completed a new challenge 💪🏻  .\n\nI just claimed a free NFT badge from @decertme.\n\n Meeting the challenge and claim yours at https://decert.me/quests/\n\n #DeCert","很高兴完成了一个新的挑战 💪🏻  。\n\n我从 @decertme 获得一个 NFT 勋章。\n\n 你也可以参与挑战：https://decert.me/quests/\n\n #DeCert"]
+
 # scheduler configuration
 scheduler:
   active: true
