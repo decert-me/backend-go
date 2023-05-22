@@ -1,22 +1,33 @@
 package v1
 
 import (
+	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
 	"github.com/gin-gonic/gin"
 )
 
 func UploadJson(c *gin.Context) {
-	json := c.PostForm("body")
-	if json == "" {
+	types := c.Query("type")
+	var uploadJSON interface{}
+	if types == "challenge" {
+		var uploadJSONChallenge request.UploadJSONChallenge
+		if err := c.ShouldBindJSON(&uploadJSONChallenge); err != nil {
+			FailWithMessage(GetMessage(c, "ParameterError"), c)
+			return
+		}
+		uploadJSON = uploadJSONChallenge
+	} else if types == "nft" {
+		var uploadJSONNFT request.UploadJSONNFT
+		if err := c.ShouldBindJSON(&uploadJSONNFT); err != nil {
+			FailWithMessage(GetMessage(c, "ParameterError"), c)
+			return
+		}
+		uploadJSON = uploadJSONNFT
+	} else {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
-	// 文件大小限制
-	if len(json) > 1024*1024*5 {
-		FailWithMessage(GetMessage(c, "FileSizeExceedsLimit"), c)
-		return
-	}
-	err, hash := srv.IPFSUploadJSON(json) // 文件上传后拿到文件路径
+	err, hash := srv.IPFSUploadJSON(uploadJSON) // 文件上传后拿到文件路径
 	if err != nil {
 		FailWithMessage(GetMessage(c, "UploadFailed"), c)
 		return
