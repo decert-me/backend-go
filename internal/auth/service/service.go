@@ -1,8 +1,8 @@
 package service
 
 import (
-	"backend-go/internal/app/config"
-	"backend-go/internal/app/dao"
+	"backend-go/internal/auth/config"
+	"backend-go/internal/auth/dao"
 	"context"
 )
 
