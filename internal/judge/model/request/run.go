@@ -14,7 +14,7 @@ type TryTestRunReq struct {
 	CodeSnippet   string   `json:"code_snippet"`
 	Code          string   `json:"code"`
 	ExampleCode   string   `json:"example_code"`
-	SpjCode       string   `json:"spj_code"`
+	SpjCode       []string `json:"spj_code"`
 	Input         string   `json:"input"`
 	ExampleInput  []string `json:"example_input"`
 	ExampleOutput []string `json:"example_output"`
