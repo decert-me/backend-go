@@ -5,7 +5,7 @@ LABEL stage=gobuilder
 ENV CGO_ENABLED 0
 ENV GOPROXY https://goproxy.cn,direct
 
-RUN apk update --no-cache && apk add --no-cache tzdata
+RUN apk update --no-cache && apk add --no-cache tzdata && apk add wget
 
 WORKDIR /backend-go
 
@@ -13,19 +13,9 @@ ADD go.mod .
 ADD go.sum .
 RUN go mod download
 COPY . .
-RUN go build -ldflags="-s -w" -o /bin/judge/decert-judge internal/judge/cmd/main.go
 
-
-FROM rust:latest AS builder-rust
-
-LABEL stage=rustbuilder
-
-ENV RUSTUP_DIST_SERVER https://rsproxy.cn
-ENV RUSTUP_UPDATE_ROOT https://rsproxy.cn/rustup
-
-RUN cargo install svm-rs && svm install 0.8.16 \
-    && svm install 0.7.6 && svm install 0.7.6 \
-    && svm install 0.6.12 && svm install 0.5.17 && svm install 0.4.26
+RUN chmod +x ./solc_down.sh && ./solc_down.sh && \
+    go build -ldflags="-s -w" -o /bin/judge/decert-judge internal/judge/cmd/main.go
 
 FROM ubuntu:latest
 
@@ -36,13 +26,14 @@ RUN sed -E -i -e 's/(archive|ports).ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' -
     git config --global user.email "you@example.com" && git config --global user.name "Your Name" && \
     mkdir -p /cloud-run-foundry/ && cd /cloud-run-foundry/ && forge init && \
     apt-get purge -y --auto-remove $buildDeps && \
+    mkdir -p "$HOME/.svm" && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 运行应用程序
 WORKDIR /judge
 
-COPY --from=builder-rust /root/.svm/ /root/.svm/
 COPY --from=builder /bin/judge/decert-judge /judge/decert-judge
+COPY --from=builder $HOME/.svm $HOME/.svm
 COPY /bin/judge/config.yaml /judge/config.yaml
 ADD entrypoint.sh /judge/
 
