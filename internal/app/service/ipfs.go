@@ -179,13 +179,14 @@ func (s *Service) IPFSUploadFile(header *multipart.FileHeader) (err error, hash 
 // @description: 上传JSON
 // @param: header *multipart.FileHeader
 // @return: err error, list interface{}, total int64
-func (s *Service) IPFSUploadJSON(data string) (err error, hash string) {
-	if !json.Valid([]byte(data)) {
-		return errors.New("err"), hash
+func (s *Service) IPFSUploadJSON(uploadJSON interface{}) (err error, hash string) {
+	data, err := json.Marshal(uploadJSON)
+	if err != nil {
+		return err, hash
 	}
 	// 组成请求体
 	jsonReq := make(map[string]interface{})
-	jsonReq["body"] = data
+	jsonReq["body"] = string(data)
 	// 发送请求
 	url := fmt.Sprintf("%s/upload/json", s.GetIPFSUploadAPI())
 	client := req.C().SetTimeout(120 * time.Second)
