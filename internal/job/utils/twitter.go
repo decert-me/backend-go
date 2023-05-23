@@ -54,7 +54,7 @@ func CheckIfMatchClaimTweet(c *config.Config, tokenId int64, tweet string) bool 
 	const twitter = "@decertme"
 	const twitterLink = "https://decert.me/quests/"
 	// 推文包含有「@DecertMe」
-	if !strings.Contains(tweet, twitter) {
+	if !strings.Contains(strings.ToLower(tweet), twitter) {
 		return false
 	}
 	// 包含挑战链接
