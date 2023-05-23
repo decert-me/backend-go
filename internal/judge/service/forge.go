@@ -42,7 +42,10 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	contract := "--match-path=" + relativeFilePath
 	args := []string{"test", contract, "--offline", "--json"}
 	execRes, err := execCommand(foundryPath, "forge", args...)
-	if err := os.Rename(p, p+".bak"); err != nil {
+	//if err := os.Rename(p, p+".bak"); err != nil {
+	//	log.Errorv("os.Rename error", zap.Error(err))
+	//}
+	if err := os.Remove(p); err != nil {
 		log.Errorv("os.Remove error", zap.Error(err))
 	}
 	if err != nil {
