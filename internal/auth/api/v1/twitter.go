@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"backend-go/internal/auth/model/request"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,9 +16,15 @@ func TwitterAuthorizationURL(c *gin.Context) {
 
 // TwitterCallback 推特回调登陆
 func TwitterCallback(c *gin.Context) {
-	if list, err := srv.TwitterAuthorizationURL(); err != nil {
+	var req request.TwitterCallbackReq
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	if result, err := srv.TwitterCallback(req); err != nil {
 		Fail(c)
 	} else {
-		OkWithData(list, c)
+		OkWithData(result, c)
 	}
 }

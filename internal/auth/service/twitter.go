@@ -8,6 +8,7 @@ import (
 	"github.com/dghubble/oauth1/twitter"
 )
 
+// TwitterAuthorizationURL 推特获取登陆链接
 func (s *Service) TwitterAuthorizationURL() (res string, err error) {
 	config := oauth1.Config{
 		ConsumerKey:    s.c.Auth.Github.ConsumerKey,
@@ -26,14 +27,15 @@ func (s *Service) TwitterAuthorizationURL() (res string, err error) {
 	return authorizationURL.String(), err
 }
 
-func (s *Service) TwitterCallback(req request.TwitterCallbackReq) {
+// TwitterCallback 推特回调登陆
+func (s *Service) TwitterCallback(req request.TwitterCallbackReq) (result interface{}, err error) {
 	config := oauth1.Config{
 		ConsumerKey:    s.c.Auth.Github.ConsumerKey,
 		ConsumerSecret: s.c.Auth.Github.ConsumerSecret,
 		CallbackURL:    s.c.Auth.Github.CallbackURL,
 		Endpoint:       twitter.AuthorizeEndpoint,
 	}
-	accessToken, accessSecret, err := config.AccessToken(req.RequestToken, "secret does not matter", req.Verifiers)
+	accessToken, accessSecret, err := config.AccessToken(req.RequestToken, "secret does not matter", req.Verifier)
 	if err != nil {
 		return
 	}
@@ -46,5 +48,5 @@ func (s *Service) TwitterCallback(req request.TwitterCallbackReq) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	user.ID
+	//user.ID
 }
