@@ -3,6 +3,7 @@ package v1
 import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"backend-go/internal/app/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,6 +13,10 @@ func UploadJson(c *gin.Context) {
 	if types == "challenge" {
 		var uploadJSONChallenge request.UploadJSONChallenge
 		if err := c.ShouldBindJSON(&uploadJSONChallenge); err != nil {
+			FailWithMessage(GetMessage(c, "ParameterError"), c)
+			return
+		}
+		if !utils.VerifyUploadJSONChallenge(uploadJSONChallenge) {
 			FailWithMessage(GetMessage(c, "ParameterError"), c)
 			return
 		}

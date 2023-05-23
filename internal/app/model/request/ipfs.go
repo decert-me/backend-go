@@ -22,9 +22,19 @@ type UploadJSONChallenge struct {
 	Creator     string `json:"creator" binding:"required"`
 	Content     string `json:"content"`
 	Questions   []struct {
-		Title   string   `json:"title" binding:"required"`
-		Type    string   `json:"type" binding:"required"`
-		Score   int      `json:"score" binding:"required"`
+		Input        []string `json:"input,omitempty"`
+		Output       []string `json:"output,omitempty"`
+		Title        string   `json:"title" binding:"required"`
+		Description  string   `json:"description,omitempty"`
+		Type         string   `json:"type" binding:"required"`
+		Score        int      `json:"score" binding:"required"`
+		Languages    []string `json:"languages,omitempty"`
+		CodeSnippets []struct {
+			Lang          string `json:"lang"`
+			Code          string `json:"code"`
+			CorrectAnswer string `json:"correctAnswer"`
+		} `json:"code_snippets,omitempty"`
+		SpjCode string   `json:"spj_code,omitempty"`
 		Options []string `json:"options,omitempty"`
 	} `json:"questions" binding:"required"`
 	Answers      string    `json:"answers" binding:"required"`
