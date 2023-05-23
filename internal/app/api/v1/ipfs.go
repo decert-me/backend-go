@@ -16,7 +16,7 @@ func UploadJson(c *gin.Context) {
 			FailWithMessage(GetMessage(c, "ParameterError"), c)
 			return
 		}
-		if !utils.VerifyUploadJSONChallenge(uploadJSONChallenge) {
+		if !utils.VerifyUploadJSONChallenge(srv.GetConfig().Quest.EncryptKey, uploadJSONChallenge) {
 			FailWithMessage(GetMessage(c, "ParameterError"), c)
 			return
 		}

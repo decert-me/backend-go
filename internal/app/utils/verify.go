@@ -1,37 +1,29 @@
 package utils
 
-import "backend-go/internal/app/model/request"
+import (
+	"backend-go/internal/app/model/request"
+	"github.com/tidwall/gjson"
+)
 
-func VerifyUploadJSONChallenge(uploadJSONChallenge request.UploadJSONChallenge) bool {
+func VerifyUploadJSONChallenge(key string, uploadJSONChallenge request.UploadJSONChallenge) bool {
+	answers := gjson.Parse(AnswerDecode(key, uploadJSONChallenge.Answers)).Array()
 	// 校验题目正确性
-	for _, quest := range uploadJSONChallenge.Questions {
+	for i, quest := range uploadJSONChallenge.Questions {
 		// 多选题
 		if quest.Type == "multiple_response" {
-			if len(quest.Options) < 2 {
+			if len(answers[i].Array()) < 2 {
 				return false
 			}
 		}
 		// 单选题
 		if quest.Type == "multiple_choice" {
-			if len(quest.Options) != 1 {
+			if len(answers[i].Array()) != 1 {
 				return false
 			}
 		}
 		// 填空题
 		if quest.Type == "fill_blank" {
-			if quest.Options[0] == "" {
-				return false
-			}
-		}
-		// 普通编程题
-		if quest.Type == "coding" {
-			if len(quest.Input) != len(quest.Output) {
-				return false
-			}
-		}
-		// 特殊编程题
-		if quest.Type == "special_judge_coding" {
-			if quest.SpjCode == "" {
+			if answers[i].String() == "" {
 				return false
 			}
 		}
