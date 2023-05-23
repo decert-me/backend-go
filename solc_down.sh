@@ -8,7 +8,7 @@ elif [ "$osType" = "Darwin" ]; then
     fileName="solc-macos"
 fi
 
-VERSIONS=("v0.8.19")
+VERSIONS=("v0.8.16" "v0.7.6" "v0.7.6" "v0.6.12" "v0.5.17" "v0.4.26")
 
 for VERSION in "${VERSIONS[@]}"
 do
@@ -18,7 +18,3 @@ do
     mv "solc-${VERSION:1}" "$HOME/.svm/${VERSION:1}/solc-${VERSION:1}"
     chmod +x "$HOME/.svm/${VERSION:1}/solc-${VERSION:1}"
 done
-
-#nohup anvil > /dev/null 2>&1 &
-
-#./decert-judge > log.log 2>&1
