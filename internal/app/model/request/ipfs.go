@@ -34,7 +34,7 @@ type UploadJSONChallenge struct {
 			Code          string `json:"code"`
 			CorrectAnswer string `json:"correctAnswer"`
 		} `json:"code_snippets,omitempty"`
-		SpjCode string   `json:"spj_code,omitempty"`
+		SpjCode []string `json:"spj_code,omitempty"`
 		Options []string `json:"options,omitempty"`
 	} `json:"questions" binding:"required"`
 	Answers      string    `json:"answers" binding:"required"`
