@@ -28,3 +28,8 @@ func TwitterCallback(c *gin.Context) {
 		OkWithData(result, c)
 	}
 }
+
+// Twitter 获取用户推文信息
+func TwitterUserTweet() {
+
+}

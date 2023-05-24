@@ -1,7 +1,7 @@
 package initialize
 
 import (
-	"backend-go/internal/app/config"
+	"backend-go/internal/auth/config"
 	"flag"
 	"fmt"
 
