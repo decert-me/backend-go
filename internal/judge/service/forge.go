@@ -5,6 +5,7 @@ import (
 	"backend-go/internal/judge/model/response"
 	"backend-go/pkg/log"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
@@ -42,12 +43,12 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	contract := "--match-path=" + relativeFilePath
 	args := []string{"test", contract, "--offline", "--json"}
 	execRes, err := execCommand(foundryPath, "forge", args...)
-	//if err := os.Rename(p, p+".bak"); err != nil {
-	//	log.Errorv("os.Rename error", zap.Error(err))
-	//}
-	if err := os.Remove(p); err != nil {
-		log.Errorv("os.Remove error", zap.Error(err))
+	if err := os.Rename(p, p+".bak"); err != nil {
+		log.Errorv("os.Rename error", zap.Error(err))
 	}
+	//if err := os.Remove(p); err != nil {
+	//	log.Errorv("os.Remove error", zap.Error(err))
+	//}
 	if err != nil {
 		return
 	}
@@ -61,6 +62,9 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	resultArray := gjson.Get(execResList[len(execResList)-2], "*.test_results").Array()
 	res.TotalTestcases = len(resultArray)
 	for _, v := range resultArray {
+		fmt.Print(gjson.Get(v.String(), "*.success").Bool())
+		fmt.Print(gjson.Get(v.String(), "*.reason").String())
+		fmt.Print(gjson.Get(v.String(), "*.decoded_logs").String())
 		if !gjson.Get(v.String(), "*.success").Bool() {
 			if gjson.Get(v.String(), "*.reason").String() != "" {
 				res.Output = gjson.Get(v.String(), "*.reason").String()

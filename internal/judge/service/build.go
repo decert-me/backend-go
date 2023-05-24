@@ -45,12 +45,12 @@ func (s *Service) BuildSolidity(private string, req request.BuildReq) (res respo
 	contract := relativeFilePath + ":" + result[1]
 	args := []string{"create", contract, fmt.Sprintf("--private-key=%s", private), "--json"}
 	execRes, err := execCommand(foundryPath, "forge", args...)
-	//if err := os.Rename(p, p+".bak"); err != nil {
-	//	log.Errorv("os.Rename error", zap.Error(err))
-	//}
-	if err := os.Remove(p); err != nil {
-		log.Errorv("os.Remove error", zap.Error(err))
+	if err := os.Rename(p, p+".bak"); err != nil {
+		log.Errorv("os.Rename error", zap.Error(err))
 	}
+	//if err := os.Remove(p); err != nil {
+	//	log.Errorv("os.Remove error", zap.Error(err))
+	//}
 	if err != nil {
 		return
 	}

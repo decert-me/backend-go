@@ -58,6 +58,9 @@ func (s *Service) TryTestRun(req request.TryTestRunReq) (tryRunRes response.TryR
 		if err != nil {
 			return tryRunResTemp, err
 		}
+		tryRunRes.Correct = tryRunResTemp.Correct
+		tryRunRes.Status = tryRunResTemp.Status
+		tryRunRes.Msg = tryRunResTemp.Msg
 	}
 	return
 }
@@ -280,6 +283,14 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.TryRunRes, err error) {
 	private := GetPrivate()
 	spjCode := req.SpjCode
+	// 清除
+	var spjCodeNew strings.Builder
+	for _, v := range strings.Split(spjCode, "\n") {
+		if strings.Contains(v, "SPDX-License-Identifier") {
+			continue
+		}
+		spjCodeNew.WriteString(v)
+	}
 	// 编译
 	contract, err := s.BuildSolidity(private, request.BuildReq{Code: req.Code})
 	if err != nil || contract.Status == 1 {
@@ -291,7 +302,7 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 	res, err := s.TestSolidity(request.ForgeTestReq{
 		Code:    req.Code,
 		Address: "",
-	}, spjCode)
+	}, spjCodeNew.String())
 	tryRunRes.TotalCorrect = res.TotalCorrect
 	tryRunRes.TotalTestcases = res.TotalTestcases
 	if err != nil || res.Status == 1 {
@@ -325,14 +336,17 @@ func (s *Service) RunNormalSpecialSolidity(req request.TryRunReq, quest model.Qu
 
 func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
 	for _, v := range req.SpjCode {
-		runReq := runSolidityReq{
-			SpjCode: v,
-			Code:    req.ExampleCode,
-		}
-		tryRunRes, err = s.RunSpecialSolidity(runReq)
-		// 错误提前终止
-		if err != nil {
-			return
+		if v.Frame == "Foundry" {
+			runReq := runSolidityReq{
+				SpjCode: v.Code,
+				Code:    req.ExampleCode,
+			}
+			tryRunRes, err = s.RunSpecialSolidity(runReq)
+			fmt.Println("tryRunRes", tryRunRes)
+			// 错误提前终止
+			if err != nil {
+				return
+			}
 		}
 	}
 	return
