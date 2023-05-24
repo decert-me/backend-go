@@ -22,14 +22,26 @@ func TwitterCallback(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
-	if result, err := srv.TwitterCallback(req); err != nil {
+	address := c.GetString("address")
+	if result, err := srv.TwitterCallback(address, req); err != nil {
 		Fail(c)
 	} else {
 		OkWithData(result, c)
 	}
 }
 
-// Twitter 获取用户推文信息
-func TwitterUserTweet() {
-
+// TwitterUserTweet 获取用户推文信息
+func TwitterUserTweet(c *gin.Context) {
+	var req request.TwitterCallbackReq
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	address := c.GetString("address")
+	if result, err := srv.TwitterCallback(address, req); err != nil {
+		Fail(c)
+	} else {
+		OkWithData(result, c)
+	}
 }

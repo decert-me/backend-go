@@ -1,5 +1,7 @@
 package config
 
+import "backend-go/pkg/auth"
+
 type Twitter struct {
 	ConsumerKey    string `mapstructure:"consumer-key" json:"consumer-key" yaml:"consumer-key"`
 	ConsumerSecret string `mapstructure:"consumer-secret" json:"consumer-secret" yaml:"consumer-secret"`
@@ -11,6 +13,7 @@ type Github struct {
 }
 
 type Auth struct {
-	Twitter Twitter `mapstructure:"twitter" json:"twitter" yaml:"twitter"`
-	Github  Github  `mapstructure:"github" json:"github" yaml:"github"`
+	Auth    *auth.Config `mapstructure:"auth" json:"auth" yaml:"auth"`
+	Twitter Twitter      `mapstructure:"twitter" json:"twitter" yaml:"twitter"`
+	Github  Github       `mapstructure:"github" json:"github" yaml:"github"`
 }

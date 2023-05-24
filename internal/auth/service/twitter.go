@@ -1,8 +1,10 @@
 package service
 
 import (
+	"backend-go/internal/app/model"
 	"backend-go/internal/auth/model/receive"
 	"backend-go/internal/auth/model/request"
+	"backend-go/internal/auth/utils"
 	"backend-go/pkg/log"
 	"encoding/json"
 	"errors"
@@ -23,12 +25,15 @@ func (s *Service) TwitterAuthorizationURL() (res string, err error) {
 		CallbackURL:    s.c.Auth.Twitter.CallbackURL,
 		Endpoint:       twitter.AuthorizeEndpoint,
 	}
-	requestToken, _, err := config.RequestToken()
+	requestToken, requestSecret, err := config.RequestToken()
 	if err != nil {
+		log.Errorv("RequestToken error", zap.Error(err))
 		return "", err
 	}
+	fmt.Println(requestToken, requestSecret)
 	authorizationURL, err := config.AuthorizationURL(requestToken)
 	if err != nil {
+		log.Errorv("AuthorizationURL error", zap.Error(err))
 		return "", err
 	}
 	return authorizationURL.String(), err
@@ -44,6 +49,7 @@ func (s *Service) TwitterCallback(address string, req request.TwitterCallbackReq
 	}
 	accessToken, accessSecret, err := config.AccessToken(req.RequestToken, "secret does not matter", req.Verifier)
 	if err != nil {
+		log.Errorv("AccessToken error", zap.Error(err))
 		return
 	}
 
@@ -54,7 +60,8 @@ func (s *Service) TwitterCallback(address string, req request.TwitterCallbackReq
 
 	user, _, err := client.Accounts.VerifyCredentials(nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorv("VerifyCredentials error", zap.Error(err))
+		return
 	}
 	// 查找是否已经绑定过
 	binding, err := s.dao.TwitterIsBinding(user.ID)
@@ -92,7 +99,16 @@ func (s *Service) TwitterUserTweet(claimReq request.TwitterClaimReq) (err error)
 		return err
 	}
 	// 匹配推文
-
-	//
+	for _, v := range tweets.Data {
+		if utils.CheckIfMatchClaimTweet(twitterID, v.Text) {
+			// 写入待空投列表
+			s.dao.TwitterCreateTweetClaim(&model.ClaimBadgeTweet{
+				Address: claimReq.Address,
+				TokenId: claimReq.TokenId,
+				Score:   claimReq.Score,
+				TweetId: v.ID,
+			})
+		}
+	}
 	return
 }

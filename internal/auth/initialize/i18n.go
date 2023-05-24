@@ -1,7 +1,7 @@
 package initialize
 
 import (
-	"backend-go/internal/app/config"
+	"backend-go/internal/auth/config"
 	"backend-go/pkg/log"
 	"encoding/json"
 	"go.uber.org/zap"

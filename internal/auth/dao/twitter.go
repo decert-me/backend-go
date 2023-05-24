@@ -1,7 +1,10 @@
 package dao
 
 import (
+	"backend-go/internal/app/model"
 	"fmt"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"strconv"
 )
 
@@ -30,4 +33,20 @@ func (d *Dao) TwitterQueryIdByAddress(address string) (twitterID string, err err
 		return twitterID, err
 	}
 	return twitterID, err
+}
+
+func (d *Dao) TwitterCreateTweetClaim(req *model.ClaimBadgeTweet) (exists bool, err error) {
+	var claim model.ClaimBadgeTweet
+	result := d.db.Where("address = ? AND token_id = ?", req.Address, req.TokenId).Where("status = 1").First(&claim)
+	if result.Error == nil {
+		return true, nil
+	}
+	if result.Error != gorm.ErrRecordNotFound {
+		return false, result.Error
+	}
+	err = d.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "address"}, {Name: "token_id"}},
+		UpdateAll: true,
+	}).Create(&req).Error
+	return exists, err
 }

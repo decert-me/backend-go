@@ -1,9 +1,9 @@
 package router
 
 import (
-	"backend-go/internal/app/middleware"
 	v1 "backend-go/internal/auth/api/v1"
 	"backend-go/internal/auth/config"
+	"backend-go/internal/auth/middleware"
 	"fmt"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
@@ -13,6 +13,7 @@ import (
 )
 
 func New(c *config.Config) {
+	middleware.Init(c)
 	Router := Routers(c)
 	Host := "0.0.0.0"
 	if c.System.Env == "public" {
@@ -62,6 +63,8 @@ func Routers(c *config.Config) *gin.Engine {
 	v1Group.Use(middleware.I18n())
 	{
 		InitAuthRouter(v1Group)
+		InitCallbackRouter(v1Group)
+		InitTwitterRouter(v1Group)
 	}
 
 	fmt.Println("router register success")
