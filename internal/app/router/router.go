@@ -23,8 +23,8 @@ func New(c *config.Config) {
 	s := &http.Server{
 		Addr:           address,
 		Handler:        Router,
-		ReadTimeout:    30 * time.Second,
-		WriteTimeout:   30 * time.Second,
+		ReadTimeout:    300 * time.Second,
+		WriteTimeout:   300 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 	// 保证文本顺序输出

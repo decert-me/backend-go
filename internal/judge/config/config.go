@@ -12,4 +12,5 @@ type Config struct {
 	Auth    *auth.Config `mapstructure:"auth" json:"auth" yaml:"auth"`
 	Foundry *Foundry     `mapstructure:"foundry" json:"foundry" yaml:"foundry"`
 	Quest   *Quest       `mapstructure:"quest" json:"quest" yaml:"quest"`
+	Hardhat *Hardhat     `mapstructure:"hardhat" json:"hardhat" yaml:"hardhat"`
 }

@@ -28,17 +28,21 @@ func (s *Service) TryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, e
 	if len(input) != 0 {
 		tryRunRes, err = s.RunNormalSolidity(req, quest)
 		// 错误提前返回
-		if err != nil {
+		if err != nil || tryRunRes.Status != 3 {
 			return
 		}
 	}
+	var tryRunResTemp response.TryRunRes
 	// 特殊编程题目
 	spjCode := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).Array()
 	if len(spjCode) != 0 {
-		tryRunResTemp, err := s.RunNormalSpecialSolidity(req, quest)
+		tryRunResTemp, err = s.RunNormalSpecialSolidity(req, quest)
 		if err != nil {
 			return tryRunResTemp, err
 		}
+	}
+	if tryRunRes.Status == 0 {
+		return tryRunResTemp, nil
 	}
 	return
 }
@@ -61,6 +65,8 @@ func (s *Service) TryTestRun(req request.TryTestRunReq) (tryRunRes response.TryR
 		tryRunRes.Correct = tryRunResTemp.Correct
 		tryRunRes.Status = tryRunResTemp.Status
 		tryRunRes.Msg = tryRunResTemp.Msg
+		tryRunRes.TotalTestcases = tryRunResTemp.TotalTestcases
+		tryRunRes.TotalCorrect = tryRunResTemp.TotalCorrect
 	}
 	return
 }
@@ -265,7 +271,6 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 				return tryRunRes, err
 			}
 		}
-		fmt.Println("res", res)
 		if res.Data != strings.TrimSpace(outputArray[i]) {
 			tryRunRes.Correct = false
 			tryRunRes.LastInput = v
@@ -315,20 +320,49 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 	return
 }
 
+func (s *Service) RunSpecialHardhatSolidity(req runSolidityReq) (tryRunRes response.TryRunRes, err error) {
+	// 测试
+	res, err := s.HardhatTestSolidity(request.ForgeTestReq{
+		Code:    req.Code,
+		Address: "",
+	}, req.SpjCode)
+
+	tryRunRes.TotalCorrect = res.TotalCorrect
+	tryRunRes.TotalTestcases = res.TotalTestcases
+	tryRunRes.Msg = res.Output
+	tryRunRes.Status = res.Status
+	tryRunRes.Correct = true
+	return
+}
+
 func (s *Service) RunNormalSpecialSolidity(req request.TryRunReq, quest model.Quest) (tryRunRes response.TryRunRes, err error) {
-	spjCode := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).Array()
-	if len(spjCode) == 0 {
+	spjCodeList := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).Array()
+	if len(spjCodeList) == 0 {
 		return tryRunRes, errors.New("no spj code found")
 	}
-	for _, v := range spjCode {
-		runReq := runSolidityReq{
-			SpjCode: v.String(),
-			Code:    req.Code,
-		}
-		tryRunRes, err = s.RunSpecialSolidity(runReq)
-		// 错误提前终止
-		if err != nil {
-			return
+	for _, v := range spjCodeList {
+		frame := gjson.Get(v.String(), "frame").String()
+		spjCode := gjson.Get(v.String(), "code").String()
+		if frame == "Foundry" {
+			runReq := runSolidityReq{
+				SpjCode: spjCode,
+				Code:    req.Code,
+			}
+			tryRunRes, err = s.RunSpecialSolidity(runReq)
+			// 错误提前终止
+			if err != nil || tryRunRes.Status != 3 {
+				return
+			}
+		} else if frame == "Hardhat" {
+			runReq := runSolidityReq{
+				SpjCode: spjCode,
+				Code:    req.Code,
+			}
+			tryRunRes, err = s.RunSpecialHardhatSolidity(runReq)
+			// 错误提前终止
+			if err != nil || tryRunRes.Status != 3 {
+				return
+			}
 		}
 	}
 	return
@@ -342,9 +376,19 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 				Code:    req.ExampleCode,
 			}
 			tryRunRes, err = s.RunSpecialSolidity(runReq)
-			fmt.Println("tryRunRes", tryRunRes)
 			// 错误提前终止
-			if err != nil {
+			if err != nil || tryRunRes.Status != 3 {
+				return
+			}
+		} else if v.Frame == "Hardhat" {
+			runReq := runSolidityReq{
+				SpjCode: v.Code,
+				Code:    req.ExampleCode,
+			}
+			tryRunRes, err = s.RunSpecialHardhatSolidity(runReq)
+			return tryRunRes, err
+			// 错误提前终止
+			if err != nil || tryRunRes.Status != 3 {
 				return
 			}
 		}
