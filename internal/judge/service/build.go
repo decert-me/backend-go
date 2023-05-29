@@ -10,6 +10,7 @@ import (
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -22,7 +23,7 @@ func (s *Service) BuildSolidity(private string, req request.BuildReq) (res respo
 	if private == "" {
 		private = GetPrivate()
 	}
-	foundryPath := s.c.Foundry.WorkPath
+	foundryPath := path.Join(s.c.Judge.WorkPath, req.Address, "foundry")
 	// 获取合约名称
 	re := regexp.MustCompile(`contract\s+(\w+)\s*{`)
 	result := re.FindStringSubmatch(req.Code)
@@ -31,26 +32,22 @@ func (s *Service) BuildSolidity(private string, req request.BuildReq) (res respo
 	}
 	// 保存代码
 	fileName := time.Now().Format("20060102150405.000") + ".sol"
-	relativePath := "src/" + req.Address + "/"
-	relativeFilePath := relativePath + fileName
-	if err = os.MkdirAll(foundryPath+"/"+relativePath, os.ModePerm); err != nil {
-		log.Errorv("os.MkdirAll() Filed", zap.Error(err))
-		return
-	}
-	p := foundryPath + "/" + relativeFilePath
+	relativeFilePath := path.Join("src", fileName)
+	p := path.Join(foundryPath, relativeFilePath)
 	if err = os.WriteFile(p, []byte(req.Code), 0664); err != nil {
 		log.Errorv("os.WriteFile() Filed", zap.Error(err))
 		return
 	}
 	contract := relativeFilePath + ":" + result[1]
-	args := []string{"create", contract, fmt.Sprintf("--private-key=%s", private), "--json"}
-	execRes, err := execCommand(foundryPath, "forge", args...)
-	if err := os.Rename(p, p+".bak"); err != nil {
-		log.Errorv("os.Rename error", zap.Error(err))
-	}
-	//if err := os.Remove(p); err != nil {
-	//	log.Errorv("os.Remove error", zap.Error(err))
+	command := fmt.Sprintf("cd /foundry && forge create %s %s --json", contract, fmt.Sprintf(" --private-key=%s", private))
+	args := []string{"exec", "-i", req.Address, "bash", "-c", command}
+	execRes, err := execCommand("", "docker", args...)
+	//if err := os.Rename(p, p+".bak"); err != nil {
+	//	log.Errorv("os.Rename error", zap.Error(err))
 	//}
+	if err := os.Remove(p); err != nil {
+		log.Errorv("os.Remove error", zap.Error(err))
+	}
 	if err != nil {
 		return
 	}
@@ -69,8 +66,9 @@ func (s *Service) BuildSolidity(private string, req request.BuildReq) (res respo
 	data, _ := os.ReadFile(abiFilePath)
 	res.ABI = gjson.Get(string(data), "abi").String()
 	// Gas消耗
-	argsTx := []string{"tx", gjson.Get(execRes, "transactionHash").String(), "--json"}
-	gasRes, err := execCommand(foundryPath, "cast", argsTx...)
+	commandGas := fmt.Sprintf("tx %s --json", gjson.Get(execRes, "transactionHash").String())
+	argsExec := []string{"exec", "-i", req.Address, "bash", "-c", commandGas}
+	gasRes, err := execCommand("", "docker", argsExec...)
 	if err != nil {
 		return
 	}

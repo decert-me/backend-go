@@ -7,6 +7,7 @@ type TryRunReq struct {
 	Code       string `json:"code"`
 	Input      string `json:"input"`
 	Type       string `json:"type"`
+	Address    string `json:"-"`
 }
 
 type SpjCodeList struct {
@@ -23,4 +24,5 @@ type TryTestRunReq struct {
 	ExampleInput  []string      `json:"example_input"`
 	ExampleOutput []string      `json:"example_output"`
 	QuestIndex    uint8
+	Address       string `json:"-"`
 }

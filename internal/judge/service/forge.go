@@ -10,6 +10,7 @@ import (
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -19,7 +20,7 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	if req.Address == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
-	foundryPath := s.c.Foundry.WorkPath
+	foundryPath := path.Join(s.c.Judge.WorkPath, req.Address, "foundry")
 	// 获取合约名称
 	re := regexp.MustCompile(`contract\s+(\w+)\s*{`)
 
@@ -29,26 +30,24 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	}
 	// 保存代码
 	fileName := time.Now().Format("20060102150405.000") + ".sol"
-	relativePath := "src/" + req.Address + "/"
-	relativeFilePath := relativePath + fileName
-	if err = os.MkdirAll(foundryPath+"/"+relativePath, os.ModePerm); err != nil {
-		log.Errorv("os.MkdirAll() Filed", zap.Error(err))
-		return
-	}
-	p := foundryPath + "/" + relativeFilePath
+	relativeFilePath := path.Join("src", fileName)
+	p := path.Join(foundryPath, relativeFilePath)
 	if err = os.WriteFile(p, []byte(req.Code+"\n"+spjCode), 0664); err != nil {
 		log.Errorv("os.WriteFile() Filed", zap.Error(err))
 		return
 	}
 	contract := "--match-path=" + relativeFilePath
-	args := []string{"test", contract, "--offline", "--json"}
-	execRes, err := execCommand(foundryPath, "forge", args...)
-	if err := os.Rename(p, p+".bak"); err != nil {
-		log.Errorv("os.Rename error", zap.Error(err))
-	}
-	//if err := os.Remove(p); err != nil {
-	//	log.Errorv("os.Remove error", zap.Error(err))
+	//args := []string{"test", contract, "--offline", "--json"}
+	//execRes, err := execCommand(foundryPath, "forge", args...)
+	command := fmt.Sprintf("cd /foundry && forge test %s --offline --json", contract)
+	args := []string{"exec", "-i", req.Address, "bash", "-c", command}
+	execRes, err := execCommand("", "docker", args...)
+	//if err := os.Rename(p, p+".bak"); err != nil {
+	//	log.Errorv("os.Rename error", zap.Error(err))
 	//}
+	if err := os.Remove(p); err != nil {
+		log.Errorv("os.Remove error", zap.Error(err))
+	}
 	if err != nil {
 		return
 	}

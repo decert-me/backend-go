@@ -5,18 +5,32 @@ import (
 	"backend-go/internal/app/utils"
 	"backend-go/internal/judge/model/request"
 	"backend-go/internal/judge/model/response"
+	"backend-go/pkg/log"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/tidwall/gjson"
+	"go.uber.org/zap"
+	"os"
+	"path"
 	"regexp"
 	"strings"
 	"time"
 )
 
-func (s *Service) TryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
 	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenID})
 	if err != nil {
 		return
+	}
+	// 默认零地址
+	if address == "" {
+		address = common.HexToAddress("0").String()
+	}
+	req.Address = address
+	// Docker启动
+	if err = s.SolidityDockerInit(address); err != nil {
+		return tryRunRes, errors.New("UnexpectedError")
 	}
 	questType := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
 
@@ -47,7 +61,16 @@ func (s *Service) TryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, e
 	return
 }
 
-func (s *Service) TryTestRun(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) TryTestRun(address string, req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
+	// 默认零地址
+	if address == "" {
+		address = common.HexToAddress("0").String()
+	}
+	req.Address = address
+	// Docker启动
+	if err = s.SolidityDockerInit(address); err != nil {
+		return tryRunRes, errors.New("UnexpectedError")
+	}
 	// 普通编程题目
 	if len(req.ExampleInput) != 0 {
 		tryRunRes, err = s.RunTestSolidity(req)
@@ -82,6 +105,7 @@ func (s *Service) RunTestSolidity(req request.TryTestRunReq) (tryRunRes response
 	fmt.Println(req.ExampleInput)
 	fmt.Println(req.ExampleOutput)
 	runReq := runSolidityReq{
+		Address:       req.Address,
 		InputArray:    req.ExampleInput,
 		OutputArray:   req.ExampleOutput,
 		CorrectAnswer: req.ExampleCode,
@@ -115,6 +139,7 @@ func (s *Service) RunNormalSolidity(req request.TryRunReq, quest model.Quest) (t
 		outputArrayString = append(outputArrayString, v.String())
 	}
 	runReq := runSolidityReq{
+		Address:       req.Address,
 		InputArray:    inputArrayString,
 		OutputArray:   outputArrayString,
 		CorrectAnswer: correctAnswer,
@@ -126,6 +151,7 @@ func (s *Service) RunNormalSolidity(req request.TryRunReq, quest model.Quest) (t
 }
 
 type runSolidityReq struct {
+	Address       string
 	InputArray    []string
 	OutputArray   []string
 	CorrectAnswer string
@@ -147,7 +173,7 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 	// 编译
 	var contract response.BuildRes
 	if req.Code != "" {
-		contract, err = s.BuildSolidity(private, request.BuildReq{Code: req.Code})
+		contract, err = s.BuildSolidity(private, request.BuildReq{Code: req.Code, Address: req.Address})
 		if err != nil || contract.Status == 1 {
 			tryRunRes.Status = 1
 			tryRunRes.Msg = contract.Output
@@ -155,7 +181,7 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 		}
 	}
 	// 编译标准答案
-	correctContract, err := s.BuildSolidity(private, request.BuildReq{Code: correctAnswer})
+	correctContract, err := s.BuildSolidity(private, request.BuildReq{Code: correctAnswer, Address: req.Address})
 	if err != nil || correctContract.Status == 1 {
 		tryRunRes.Status = 1
 		tryRunRes.Msg = correctContract.Output
@@ -208,10 +234,11 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 		v = strings.TrimSpace(v)
 		// 运行
 		startTime := time.Now()
-		res, err := s.CastCall(request.CastCallReq{
-			To:     contract.ContractAddress,
-			Method: method,
-			Data:   v,
+		res, err := s.CastCall(req.Address, request.CastCallReq{
+			Address: req.Address,
+			To:      contract.ContractAddress,
+			Method:  method,
+			Data:    v,
 		})
 		endTime := time.Now()
 		elapsedTime := endTime.Sub(startTime)
@@ -230,7 +257,7 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 		outPut.WriteString("\n")
 		// 标准输出
 		startTime = time.Now()
-		exceptRes, err := s.CastCall(request.CastCallReq{
+		exceptRes, err := s.CastCall(req.Address, request.CastCallReq{
 			To:     correctContract.ContractAddress,
 			Method: method,
 			Data:   v,
@@ -249,7 +276,7 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 		v = strings.TrimSpace(v)
 		var res response.CastCallRes
 		if req.Code == "" {
-			res, err = s.CastCall(request.CastCallReq{
+			res, err = s.CastCall(req.Address, request.CastCallReq{
 				To:     correctContract.ContractAddress,
 				Method: method,
 				Data:   strings.Replace(v, "\n", "", -1),
@@ -260,7 +287,7 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 				return tryRunRes, err
 			}
 		} else {
-			res, err = s.CastCall(request.CastCallReq{
+			res, err = s.CastCall(req.Address, request.CastCallReq{
 				To:     contract.ContractAddress,
 				Method: method,
 				Data:   strings.Replace(v, "\n", "", -1),
@@ -395,4 +422,39 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 		}
 	}
 	return
+}
+
+// SolidityDockerInit 初始化Solidity运行环境
+func (s *Service) SolidityDockerInit(address string) (err error) {
+	// 判断容器是否存在
+	if ExistsDocker(address) {
+		return nil
+	}
+	hardhatPath := path.Join(s.c.Judge.WorkPath, address, "hardhat")
+	foundryPath := path.Join(s.c.Judge.WorkPath, address, "foundry")
+	// 初始化 Hardhat 目录
+	hardhatDirList := []string{"contracts", "test"}
+	var mapping []string
+	for _, dir := range hardhatDirList {
+		if err = os.MkdirAll(path.Join(hardhatPath, dir), os.ModePerm); err != nil {
+			log.Errorv("os.MkdirAll() Filed", zap.Error(err))
+			return
+		}
+		mapping = append(mapping, "-v", path.Join(hardhatPath, dir)+":"+path.Join("/hardhat", dir))
+	}
+	// 初始化 Foundry 目录
+	foundryDirList := []string{"src"}
+	for _, dir := range foundryDirList {
+		if err = os.MkdirAll(path.Join(foundryPath, dir), os.ModePerm); err != nil {
+			log.Errorv("os.MkdirAll() Filed", zap.Error(err))
+			return
+		}
+		mapping = append(mapping, "-v", path.Join(foundryPath, dir)+":"+path.Join("/foundry", dir))
+	}
+	// Hardhat 缓存目录
+	mapping = append(mapping, "-v", path.Join(s.c.Judge.CachePath, "hardhat/cache")+":/root/.cache")
+	// Foundry 缓存目录
+	mapping = append(mapping, "-v", path.Join(s.c.Judge.CachePath, "foundry/svm")+":/root/.svm")
+
+	return CreateDocker(address, "judge:1.0", mapping)
 }

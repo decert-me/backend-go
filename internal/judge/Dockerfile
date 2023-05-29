@@ -11,3 +11,5 @@ RUN apk add --no-cache nodejs && apk add --no-cache npm && \
     echo -e "require(\"@nomicfoundation/hardhat-toolbox\");\n\nmodule.exports = {\n  solidity: \"0.8.17\",\n};" > hardhat.config.js && \
     npm init -y && npm install --save-dev hardhat@2.14.0 @nomicfoundation/hardhat-toolbox@2.0.2 && \
     npm install
+
+ENTRYPOINT ["anvil"]

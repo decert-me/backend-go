@@ -2,6 +2,7 @@ package service
 
 import (
 	"backend-go/pkg/log"
+	"errors"
 	"go.uber.org/zap"
 	"strings"
 )
@@ -21,18 +22,20 @@ func ExistsDocker(name string) bool {
 }
 
 // CreateDocker 创建docker
-func CreateDocker(name string, image string, argList []string) bool {
-	args := []string{"run", "-itd", "--name", name, image, "/bin/bash"}
+func CreateDocker(name string, image string, argList []string) error {
+	args := []string{"run", "-itd", "--name", name}
 	args = append(args, argList...)
+	args = append(args, image)
 	execRes, err := execCommand("", "docker", args...)
 	if err != nil {
 		log.Errorv("execCommand error", zap.Error(err))
-		return false
+		return errors.New("execCommand error")
 	}
-	if strings.Contains(execRes, "No such container") {
-		return false
+	if strings.Contains(execRes, "Unable to find image") {
+		log.Errorv("image not found", zap.String("image", image))
+		return errors.New("image not found")
 	}
-	return true
+	return nil
 }
 
 // DelDocker 删除容器
