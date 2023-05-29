@@ -1,43 +1,13 @@
-FROM golang:alpine AS builder
+FROM ghcr.io/foundry-rs/foundry:latest
 
-LABEL stage=gobuilder
-
-ENV CGO_ENABLED 0
-ENV GOPROXY https://goproxy.cn,direct
-
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
-    apk update --no-cache && apk add --no-cache tzdata && apk add wget
-
-WORKDIR /backend-go
-
-ADD go.mod .
-ADD go.sum .
-RUN go mod download
-COPY . .
-
-RUN go build -ldflags="-s -w" -o /bin/judge/decert-judge internal/judge/cmd/main.go
-
-FROM ubuntu:latest
-
-WORKDIR /judge
-COPY --from=builder /bin/judge/decert-judge /judge/decert-judge
-ADD bin/judge/config.yaml /judge/config.yaml
-ADD internal/judge/deploy/solc_down.sh /judge/
-ADD internal/judge/deploy/hardhat/Dockerfile /hardhat/
 
 # 环境配置
-RUN sed -E -i -e 's/(archive|ports).ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' -e '/security.ubuntu.com/d' /etc/apt/sources.list && \
-    buildDeps='curl' && apt-get update && apt-get install -y git docker.io $buildDeps && \
-    curl -L https://foundry.paradigm.xyz | bash && . /root/.bashrc && foundryup && \
-    git config --global user.email "you@example.com" && git config --global user.name "Your Name" && \
-    mkdir -p /cloud-run-foundry/ && cd /cloud-run-foundry/ && forge init && \
-    mkdir -p "$HOME/.svm" && cd /judge && chmod +x ./solc_down.sh && bash ./solc_down.sh && \
-    cd /hardhat && service docker start  && docker build -t myimage:1.0 . && \
-    apt-get purge -y --auto-remove $buildDeps && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add --no-cache git bash && git config --global user.email "you@example.com" && git config --global user.name "Your Name" && \
+    mkdir /foundry && cd /foundry && forge init && forge test && \
+    rm -r script src test
 
-#
-ADD internal/judge/deploy/entrypoint.sh /judge/
-
-EXPOSE 8888
-ENTRYPOINT /judge/entrypoint.sh
+RUN apk add --no-cache nodejs && apk add --no-cache npm && \
+    mkdir /hardhat && cd /hardhat &&  npm config set registry https://registry.npm.taobao.org && \
+    echo -e "require(\"@nomicfoundation/hardhat-toolbox\");\n\nmodule.exports = {\n  solidity: \"0.8.17\",\n};" > hardhat.config.js && \
+    npm init -y && npm install --save-dev hardhat@2.14.0 @nomicfoundation/hardhat-toolbox@2.0.2 && \
+    npm install

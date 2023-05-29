@@ -286,7 +286,7 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 }
 
 func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.TryRunRes, err error) {
-	private := GetPrivate()
+	//private := GetPrivate()
 	spjCode := req.SpjCode
 	// 清除
 	var spjCodeNew strings.Builder
@@ -294,15 +294,16 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 		if strings.Contains(v, "SPDX-License-Identifier") {
 			continue
 		}
-		spjCodeNew.WriteString(v)
+		spjCodeNew.WriteString(v + "\n")
+		spjCodeNew.WriteString("\n")
 	}
 	// 编译
-	contract, err := s.BuildSolidity(private, request.BuildReq{Code: req.Code})
-	if err != nil || contract.Status == 1 {
-		tryRunRes.Status = 1
-		tryRunRes.Msg = contract.Output
-		return
-	}
+	//contract, err := s.BuildSolidity(private, request.BuildReq{Code: req.Code})
+	//if err != nil || contract.Status == 1 {
+	//	tryRunRes.Status = 1
+	//	tryRunRes.Msg = contract.Output
+	//	return
+	//}
 	// 测试
 	res, err := s.TestSolidity(request.ForgeTestReq{
 		Code:    req.Code,
