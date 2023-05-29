@@ -13,10 +13,10 @@ func (s *Service) CastCall(ctrName string, req request.CastCallReq) (res respons
 	if req.CallData != "" {
 		args = append(args, req.CallData)
 	} else if !strings.Contains(req.Data, "],") {
-		args = append(args, req.Method)
+		args = append(args, "\""+req.Method+"\"")
 		args = append(args, strings.Split(req.Data, ",")...)
 	} else {
-		args = append(args, req.Method)
+		args = append(args, "\""+req.Method+"\"")
 		for _, v := range strings.Split(req.Data, "],") {
 			if v[:1] == "[" {
 				args = append(args, v+"]")
@@ -27,9 +27,11 @@ func (s *Service) CastCall(ctrName string, req request.CastCallReq) (res respons
 		}
 	}
 	command := fmt.Sprintf("cast %s", strings.Join(args, " "))
+	fmt.Println("command", command)
 	argsExec := []string{"exec", "-i", ctrName, "bash", "-c", command}
 
 	execRes, err := execCommand("", "docker", argsExec...)
+	fmt.Println("execRes", execRes)
 	//execRes, err := execCommand("", "cast", args...)
 	if err != nil {
 		res.Msg = err.Error()

@@ -42,14 +42,14 @@ func (s *Service) BuildSolidity(private string, req request.BuildReq) (res respo
 	command := fmt.Sprintf("cd /foundry && forge create %s %s --json", contract, fmt.Sprintf(" --private-key=%s", private))
 	args := []string{"exec", "-i", req.Address, "bash", "-c", command}
 	execRes, err := execCommand("", "docker", args...)
+	if err != nil {
+		return
+	}
 	//if err := os.Rename(p, p+".bak"); err != nil {
 	//	log.Errorv("os.Rename error", zap.Error(err))
 	//}
 	if err := os.Remove(p); err != nil {
 		log.Errorv("os.Remove error", zap.Error(err))
-	}
-	if err != nil {
-		return
 	}
 
 	if !gjson.Valid(execRes) {
@@ -62,9 +62,15 @@ func (s *Service) BuildSolidity(private string, req request.BuildReq) (res respo
 	// 合约地址
 	res.ContractAddress = gjson.Get(execRes, "deployedTo").String()
 	// 读取ABI
-	abiFilePath := foundryPath + "/out/" + fileName + "/" + result[1] + ".json"
-	data, _ := os.ReadFile(abiFilePath)
-	res.ABI = gjson.Get(string(data), "abi").String()
+	abiFilePath := "/foundry/out/" + fileName + "/" + result[1] + ".json"
+	commandRead := fmt.Sprintf("cat %s", abiFilePath)
+	argsRead := []string{"exec", "-i", req.Address, "bash", "-c", commandRead}
+	execRead, err := execCommand("", "docker", argsRead...)
+	if err != nil {
+		return
+	}
+	//data, _ := os.ReadFile(abiFilePath)
+	res.ABI = gjson.Get(execRead, "abi").String()
 	// Gas消耗
 	commandGas := fmt.Sprintf("tx %s --json", gjson.Get(execRes, "transactionHash").String())
 	argsExec := []string{"exec", "-i", req.Address, "bash", "-c", commandGas}

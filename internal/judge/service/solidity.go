@@ -197,7 +197,6 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 		// 标准答案
 		jsonParsed = gjson.Parse(correctContract.ABI)
 	}
-
 	// 获取函数index
 	var index int
 	for i, v := range jsonParsed.Get("#.name").Array() {

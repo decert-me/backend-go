@@ -39,7 +39,7 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	contract := "--match-path=" + relativeFilePath
 	//args := []string{"test", contract, "--offline", "--json"}
 	//execRes, err := execCommand(foundryPath, "forge", args...)
-	command := fmt.Sprintf("cd /foundry && forge test %s --offline --json", contract)
+	command := fmt.Sprintf("cd /foundry && forge test %s --json", contract)
 	args := []string{"exec", "-i", req.Address, "bash", "-c", command}
 	execRes, err := execCommand("", "docker", args...)
 	//if err := os.Rename(p, p+".bak"); err != nil {
