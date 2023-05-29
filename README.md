@@ -43,3 +43,9 @@ go test ./internal/job/service
 go test ./pkg/...
 ```
 
+## Docker
+```shell
+docker build -t foundry:1.0 .
+docker build -t hardhat:1.0 .
+sudo docker build -t judge:1.0 -f internal/judge/Dockerfile .
+```

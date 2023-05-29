@@ -43,14 +43,6 @@ func (s *Service) HardhatTestSolidity(req request.ForgeTestReq, spjCode string) 
 		return
 	}
 	relativePath := hardhatPath + dirPath
-	//resourcePath, resourceName := filepath.Split(s.c.Hardhat.ResourcePath)
-	// 解压依赖包
-	//UnArgs := []string{"xzf", resourceName, "-C", hardhatPath + dirPath}
-	//_, err = execCommand(resourcePath, "tar", UnArgs...)
-	//if err != nil {
-	//	log.Errorv("execCommand error", zap.Any("args", UnArgs))
-	//	return res, errors.New("UnexpectedError")
-	//}
 	// solc目录
 	solcCachePath := s.c.Hardhat.SolcCachePath
 	solcCacheMap := solcCachePath + ":/root/.cache"
