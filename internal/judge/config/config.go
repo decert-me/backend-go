@@ -12,4 +12,5 @@ type Config struct {
 	Auth   *auth.Config `mapstructure:"auth" json:"auth" yaml:"auth"`
 	Judge  *Judge       `mapstructure:"judge" json:"judge" yaml:"judge"`
 	Quest  *Quest       `mapstructure:"quest" json:"quest" yaml:"quest"`
+	Docker *Docker      `mapstructure:"docker" json:"docker" yaml:"docker"`
 }

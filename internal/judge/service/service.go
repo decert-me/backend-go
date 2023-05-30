@@ -3,8 +3,10 @@ package service
 import (
 	"backend-go/internal/judge/config"
 	"backend-go/internal/judge/dao"
+	"backend-go/pkg/log"
 	"context"
 	"github.com/robfig/cron/v3"
+	"go.uber.org/zap"
 )
 
 // Service struct
@@ -20,7 +22,13 @@ func New(c *config.Config) (s *Service) {
 		c:   c,
 		dao: dao.New(c),
 	}
-
+	if s.c.Docker.ClearEnabled {
+		s.cron = cron.New()
+		if _, err := s.cron.AddFunc("*/5 * * * *", func() { s.ClearDocker() }); err != nil {
+			log.Errorv("ClearDocker cron init error", zap.Error(err))
+		}
+		s.cron.Start()
+	}
 	return
 }
 

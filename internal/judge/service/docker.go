@@ -55,3 +55,7 @@ func DelDocker(name string) bool {
 	}
 	return true
 }
+
+func (s *Service) ClearDocker() {
+
+}
