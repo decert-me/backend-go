@@ -333,7 +333,7 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 	// 测试
 	res, err := s.TestSolidity(request.ForgeTestReq{
 		Code:    req.Code,
-		Address: "",
+		Address: req.Address,
 	}, spjCodeNew.String())
 	tryRunRes.TotalCorrect = res.TotalCorrect
 	tryRunRes.TotalTestcases = res.TotalTestcases
@@ -378,6 +378,7 @@ func (s *Service) RunNormalSpecialSolidity(req request.TryRunReq, quest model.Qu
 			runReq := runSolidityReq{
 				SpjCode: spjCode,
 				Code:    req.Code,
+				Address: req.Address,
 			}
 			tryRunRes, err = s.RunSpecialSolidity(runReq)
 			// 错误提前终止
@@ -406,6 +407,7 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 			runReq := runSolidityReq{
 				SpjCode: v.Code,
 				Code:    req.ExampleCode,
+				Address: req.Address,
 			}
 			tryRunRes, err = s.RunSpecialSolidity(runReq)
 			// 错误提前终止
