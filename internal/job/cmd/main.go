@@ -26,9 +26,9 @@ func main() {
 		log.Infov("backend-job get a signal", zap.String("signal", si.String()))
 		switch si {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			log.Info("backend-job exit")
 			s.Close()
 			time.Sleep(2 * time.Second)
+			log.Info("backend-job exit")
 			return
 		case syscall.SIGHUP:
 		default:
