@@ -75,7 +75,7 @@ func (s *Service) TryTestRun(address string, req request.TryTestRunReq) (tryRunR
 	if len(req.ExampleInput) != 0 {
 		tryRunRes, err = s.RunTestSolidity(req)
 		// 错误提前返回
-		if err != nil {
+		if err != nil || tryRunRes.Status != 3 || tryRunRes.Correct != true {
 			return
 		}
 	}
@@ -323,7 +323,7 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 		spjCodeNew.WriteString(v + "\n")
 		spjCodeNew.WriteString("\n")
 	}
-	// 编译
+	//// 编译
 	//contract, err := s.BuildSolidity(private, request.BuildReq{Code: req.Code})
 	//if err != nil || contract.Status == 1 {
 	//	tryRunRes.Status = 1
@@ -337,13 +337,12 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 	}, spjCodeNew.String())
 	tryRunRes.TotalCorrect = res.TotalCorrect
 	tryRunRes.TotalTestcases = res.TotalTestcases
-	if err != nil || res.Status == 1 {
-		tryRunRes.Status = 2
-		tryRunRes.Msg = res.Output
-		return
+	tryRunRes.Status = res.Status
+	tryRunRes.Msg = res.Output
+
+	if res.TotalCorrect != 0 && res.TotalCorrect == res.TotalTestcases {
+		tryRunRes.Correct = true
 	}
-	tryRunRes.Status = 3
-	tryRunRes.Correct = true
 	return
 }
 
@@ -351,14 +350,19 @@ func (s *Service) RunSpecialHardhatSolidity(req runSolidityReq) (tryRunRes respo
 	// 测试
 	res, err := s.HardhatTestSolidity(request.ForgeTestReq{
 		Code:    req.Code,
-		Address: "",
+		Address: req.Address,
 	}, req.SpjCode)
 
 	tryRunRes.TotalCorrect = res.TotalCorrect
 	tryRunRes.TotalTestcases = res.TotalTestcases
 	tryRunRes.Msg = res.Output
 	tryRunRes.Status = res.Status
-	tryRunRes.Correct = true
+	if res.TotalCorrect == 0 || res.TotalTestcases != res.TotalCorrect {
+		tryRunRes.Correct = false
+	} else {
+		tryRunRes.Correct = true
+	}
+
 	return
 }
 
@@ -384,6 +388,7 @@ func (s *Service) RunNormalSpecialSolidity(req request.TryRunReq, quest model.Qu
 			runReq := runSolidityReq{
 				SpjCode: spjCode,
 				Code:    req.Code,
+				Address: req.Address,
 			}
 			tryRunRes, err = s.RunSpecialHardhatSolidity(runReq)
 			// 错误提前终止
@@ -411,6 +416,7 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 			runReq := runSolidityReq{
 				SpjCode: v.Code,
 				Code:    req.ExampleCode,
+				Address: req.Address,
 			}
 			tryRunRes, err = s.RunSpecialHardhatSolidity(runReq)
 			return tryRunRes, err
@@ -425,6 +431,8 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 
 // SolidityDockerInit 初始化Solidity运行环境
 func (s *Service) SolidityDockerInit(address string) (err error) {
+	// 更新时间
+	s.dao.UpdateUserResourceTime(address)
 	// 判断容器是否存在
 	if ExistsDocker(address) {
 		return nil

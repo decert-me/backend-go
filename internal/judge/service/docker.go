@@ -3,8 +3,10 @@ package service
 import (
 	"backend-go/pkg/log"
 	"errors"
+	"fmt"
 	"go.uber.org/zap"
 	"strings"
+	"time"
 )
 
 // ExistsDocker 检测 docker 是否存在
@@ -57,5 +59,16 @@ func DelDocker(name string) bool {
 }
 
 func (s *Service) ClearDocker() {
+	fmt.Println("ClearDocker")
+	// 计算时间
+	timeNow := time.Now()
 
+	userList, err := s.dao.GetUserResourceBeforeList(timeNow.Add(-time.Duration(s.c.Docker.ClearTime) * time.Minute))
+	if err != nil {
+		log.Errorv("GetUserResourceBeforeList error", zap.Error(err))
+		return
+	}
+	for _, v := range userList {
+		DelDocker(v.Address)
+	}
 }

@@ -60,6 +60,7 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	}
 	resultArray := gjson.Get(execResList[len(execResList)-2], "*.test_results").Array()
 	res.TotalTestcases = len(resultArray)
+
 	for _, v := range resultArray {
 		fmt.Print(gjson.Get(v.String(), "*.success").Bool())
 		fmt.Print(gjson.Get(v.String(), "*.reason").String())
@@ -70,11 +71,11 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 			} else {
 				res.Output = gjson.Get(v.String(), "*.decoded_logs").String()
 			}
-			res.Status = 1
+			res.Status = 3
 			return
 		}
 		res.TotalCorrect++
 	}
-
+	res.Status = 3
 	return res, nil
 }
