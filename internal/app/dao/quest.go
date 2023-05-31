@@ -46,8 +46,6 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	if err != nil {
 		return questList, total, err
 	}
-	fmt.Println(req.OrderKey)
-	fmt.Println(req.Desc)
 	if req.OrderKey == "token_id" {
 		fmt.Println(req.OrderKey)
 		fmt.Println(req.Desc)
@@ -60,7 +58,7 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 		db.Order("token_id desc")
 	}
 	if req.SearchKey != "" {
-		db.Where("quest.token_id LIKE ? OR quest.description ILKIE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
+		db.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
 	}
 	if req.Address != "" {
 		db.Select("quest.*,c.claimed")
