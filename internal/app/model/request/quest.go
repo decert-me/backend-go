@@ -5,7 +5,10 @@ import "backend-go/internal/app/model"
 type GetQuestListRequest struct {
 	model.Quest
 	PageInfo
-	Address string
+	Address   string
+	OrderKey  string `json:"order_key" form:"order_key,default=token_id"` // 排序
+	Desc      bool   `json:"desc" form:"desc,default=true"`               // 排序方式:升序false(默认)|降序true
+	SearchKey string `json:"search_key" form:"search_key"`                // 搜索关键字
 }
 
 type AddQuestRequest struct {
