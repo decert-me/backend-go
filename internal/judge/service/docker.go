@@ -4,6 +4,7 @@ import (
 	"backend-go/pkg/log"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"go.uber.org/zap"
 	"strings"
 	"time"
@@ -62,7 +63,6 @@ func (s *Service) ClearDocker() {
 	fmt.Println("ClearDocker")
 	// 计算时间
 	timeNow := time.Now()
-
 	userList, err := s.dao.GetUserResourceBeforeList(timeNow.Add(-time.Duration(s.c.Docker.ClearTime) * time.Minute))
 	if err != nil {
 		log.Errorv("GetUserResourceBeforeList error", zap.Error(err))
@@ -70,5 +70,9 @@ func (s *Service) ClearDocker() {
 	}
 	for _, v := range userList {
 		DelDocker(v.Address)
+	}
+	// 额外删除
+	if _, ok := dockerRunning[common.HexToAddress("0").String()]; ok {
+		DelDocker(common.HexToAddress("0").String())
 	}
 }

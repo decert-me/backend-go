@@ -24,7 +24,7 @@ func New(c *config.Config) (s *Service) {
 	}
 	if s.c.Docker.ClearEnabled {
 		s.cron = cron.New()
-		if _, err := s.cron.AddFunc("*/1 * * * *", func() { s.ClearDocker() }); err != nil {
+		if _, err := s.cron.AddFunc("*/5 * * * *", func() { s.ClearDocker() }); err != nil {
 			log.Errorv("ClearDocker cron init error", zap.Error(err))
 		}
 		s.cron.Start()

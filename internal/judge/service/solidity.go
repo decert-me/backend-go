@@ -449,10 +449,11 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 
 // SolidityDockerInit 初始化Solidity运行环境
 func (s *Service) SolidityDockerInit(address string) (l *sync.Mutex, err error) {
-	if _, ok := dockerRunning[address]; !ok {
-		dockerRunning[address] = new(sync.Mutex)
+	addressParse := common.HexToAddress(address).String()
+	if _, ok := dockerRunning[addressParse]; !ok {
+		dockerRunning[addressParse] = new(sync.Mutex)
 	}
-	lock := dockerRunning[address]
+	lock := dockerRunning[addressParse]
 	lock.Lock()
 	// 更新时间
 	s.dao.UpdateUserResourceTime(address)
