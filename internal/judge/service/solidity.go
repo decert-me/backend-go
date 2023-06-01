@@ -15,9 +15,15 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
+var dockerRunning map[string]*sync.Mutex
+
+func init() {
+	dockerRunning = make(map[string]*sync.Mutex)
+}
 func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
 	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenID})
 	if err != nil {
@@ -29,7 +35,9 @@ func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes respo
 	}
 	req.Address = address
 	// Docker启动
-	if err = s.SolidityDockerInit(address); err != nil {
+	lock, err := s.SolidityDockerInit(address)
+	defer lock.Unlock()
+	if err != nil {
 		return tryRunRes, errors.New("UnexpectedError")
 	}
 	questType := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
@@ -68,7 +76,9 @@ func (s *Service) TryTestRun(address string, req request.TryTestRunReq) (tryRunR
 	}
 	req.Address = address
 	// Docker启动
-	if err = s.SolidityDockerInit(address); err != nil {
+	lock, err := s.SolidityDockerInit(address)
+	defer lock.Unlock()
+	if err != nil {
 		return tryRunRes, errors.New("UnexpectedError")
 	}
 	// 普通编程题目
@@ -402,11 +412,17 @@ func (s *Service) RunNormalSpecialSolidity(req request.TryRunReq, quest model.Qu
 }
 
 func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
+	var code string
+	if req.Code != "" {
+		code = req.Code
+	} else {
+		code = req.ExampleCode
+	}
 	for _, v := range req.SpjCode {
 		if v.Frame == "Foundry" {
 			runReq := runSolidityReq{
 				SpjCode: v.Code,
-				Code:    req.ExampleCode,
+				Code:    code,
 				Address: req.Address,
 			}
 			tryRunRes, err = s.RunSpecialSolidity(runReq)
@@ -417,7 +433,7 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 		} else if v.Frame == "Hardhat" {
 			runReq := runSolidityReq{
 				SpjCode: v.Code,
-				Code:    req.ExampleCode,
+				Code:    code,
 				Address: req.Address,
 			}
 			tryRunRes, err = s.RunSpecialHardhatSolidity(runReq)
@@ -432,12 +448,17 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 }
 
 // SolidityDockerInit 初始化Solidity运行环境
-func (s *Service) SolidityDockerInit(address string) (err error) {
+func (s *Service) SolidityDockerInit(address string) (l *sync.Mutex, err error) {
+	if _, ok := dockerRunning[address]; !ok {
+		dockerRunning[address] = new(sync.Mutex)
+	}
+	lock := dockerRunning[address]
+	lock.Lock()
 	// 更新时间
 	s.dao.UpdateUserResourceTime(address)
 	// 判断容器是否存在
 	if ExistsDocker(address) {
-		return nil
+		return lock, nil
 	}
 	hardhatPath := path.Join(s.c.Judge.WorkPath, address, "hardhat")
 	foundryPath := path.Join(s.c.Judge.WorkPath, address, "foundry")
@@ -465,5 +486,5 @@ func (s *Service) SolidityDockerInit(address string) (err error) {
 	// Foundry 缓存目录
 	mapping = append(mapping, "-v", path.Join(s.c.Judge.CachePath, "foundry/svm")+":/root/.svm")
 
-	return CreateDocker(address, "judge:1.0", mapping)
+	return lock, CreateDocker(address, "judge:1.0", mapping)
 }
