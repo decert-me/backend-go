@@ -38,9 +38,17 @@ auth:
   expires-time: 86400
   issuer: "Decert"
 
-# local configuration
-local:
-  path: 'uploads/file'
-
 foundry:
   work-path: "/Users/mac/Code/cloud-run-foundry"
+
+# quest configuration
+quest:
+  encrypt-key: "Pz8HN1LAD7Q2C6gvQewnM3pxFvLeO8z8eKNnWxGQ"
+
+judge:
+  work-path: "/Users/mac/Code/resource/"
+  cache-path: "/Users/mac/Code/resource/cache"
+
+docker:
+  clear-enabled: true
+  clear-time: 15
