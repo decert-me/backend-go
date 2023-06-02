@@ -21,12 +21,12 @@ pgsql:
 
 # log configuration
 log:
-  level: info
-  save: true
-  format: console
-  log-in-console: true
-  prefix: '[backend-go]'
-  director: log
+  level: info      # 日志等级
+  save: true       # 日志本地化存储
+  format: console  # 日志格式
+  log-in-console: true    # 输出到终端
+  prefix: '[backend-go]'  # 日志前缀
+  director: log           # 日志目录
   show-line: true
   encode-level: LowercaseColorLevelEncoder
   stacktrace-key: stacktrace
@@ -34,21 +34,18 @@ log:
 
 # auth configuration
 auth:
-  signing-key: "Decert"
-  expires-time: 86400
-  issuer: "Decert"
-
-foundry:
-  work-path: "/Users/mac/Code/cloud-run-foundry"
+  signing-key: "Decert"  # 密钥
+  expires-time: 86400    # 过期时间（秒）
+  issuer: "Decert"       # Issuer
 
 # quest configuration
 quest:
-  encrypt-key: "Pz8HN1LAD7Q2C6gvQewnM3pxFvLeO8z8eKNnWxGQ"
+  encrypt-key: "Pz8HN1LAD7Q2C6gvQewnM3pxFvLeO8z8eKNnWxGQ" # 加密密码
 
 judge:
-  work-path: "/Users/mac/Code/resource/"
-  cache-path: "/Users/mac/Code/resource/cache"
+  work-path: "/Users/mac/Code/resource/"        # 判题模块工作目录，临时保存用户代码
+  cache-path: "/Users/mac/Code/resource/cache"  # 判题模块缓存目录，缓存 solc 等
 
 docker:
-  clear-enabled: true
-  clear-time: 15
+  clear-enabled: true # 开启 Docker 定时清空容器
+  clear-time: 15  # Docker 定时清空超过闲置时长的容器（分钟）
