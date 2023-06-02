@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"backend-go/internal/app/utils"
 	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -50,11 +51,24 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 	defer func() {
 		db.Exec("DROP TABLE temp_table")
 	}()
+
+	// 跳过已存在的
+	var tokenList []int64
+	for _, claim := range claimable {
+		tokenList = append(tokenList, claim.TokenId)
+	}
+	var existTokenList []int64
+	db.Raw("SELECT token_id FROM claim_badge_tweet WHERE token_id in ? AND address= ? AND status=0 UNION "+
+		"SELECT token_id FROM user_challenges WHERE token_id in ? AND address = ?", tokenList, req.Address, tokenList, req.Address).Scan(&existTokenList)
 	for _, v := range claimable {
+		if utils.SliceIsExist(existTokenList, v.TokenId) {
+			continue
+		}
 		if err = db.Exec("INSERT INTO temp_table (token_id,add_ts) VALUES (?, ?)", v.TokenId, v.AddTs).Error; err != nil {
 			return res, total, err
 		}
 	}
+
 	err = db.Raw("SELECT count(1) FROM (SELECT a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id WHERE address = ? "+
 		" UNION "+
 		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM claim_badge_tweet a JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0"+
@@ -103,7 +117,15 @@ func (d *Dao) GetChallengeNotClaimList(req *request.GetChallengeListRequest) (re
 	// 临时数据
 	var claimable []request.Claimable
 	json.Unmarshal([]byte(req.Claimable), &claimable)
-	fmt.Println("claimable", claimable)
+	// 跳过已存在的
+	var tokenList []int64
+	for _, claim := range claimable {
+		tokenList = append(tokenList, claim.TokenId)
+	}
+	var existTokenList []int64
+	db.Raw("SELECT token_id FROM claim_badge_tweet WHERE token_id in ? AND address= ? AND status=0 UNION "+
+		"SELECT token_id FROM user_challenges WHERE token_id in ? AND address = ?", tokenList, req.Address, tokenList, req.Address).Scan(&existTokenList)
+
 	if err = db.Exec("CREATE TEMPORARY TABLE temp_table (token_id int8, add_ts int8)").Error; err != nil {
 		return res, total, err
 	}
@@ -111,6 +133,9 @@ func (d *Dao) GetChallengeNotClaimList(req *request.GetChallengeListRequest) (re
 		db.Exec("DROP TABLE temp_table")
 	}()
 	for _, v := range claimable {
+		if utils.SliceIsExist(existTokenList, v.TokenId) {
+			continue
+		}
 		if err = db.Exec("INSERT INTO temp_table (token_id,add_ts) VALUES (?, ?)", v.TokenId, v.AddTs).Error; err != nil {
 			return res, total, err
 		}
