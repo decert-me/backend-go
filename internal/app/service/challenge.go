@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Service) GetUserChallengeList(req request.GetChallengeListRequest) (res []response.GetChallengeListRes, total int64, err error) {
-	if req.Type == 1 {
+	if req.Type == 1 { //
 		res, total, err = s.dao.GetChallengeNotClaimList(&req)
 		return
 	}
@@ -19,7 +19,7 @@ func (s *Service) GetUserChallengeList(req request.GetChallengeListRequest) (res
 		res, total, err = s.dao.GetChallengeList(&req)
 		return
 	}
-	if req.Address == req.ReqAddress {
+	if req.Address == req.ReqAddress { //
 		res, total, err = s.dao.GetOwnerChallengeList(&req)
 	} else {
 		res, total, err = s.dao.GetChallengeList(&req)

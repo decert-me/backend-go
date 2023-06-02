@@ -4,6 +4,8 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/gorm/clause"
 )
@@ -37,17 +39,37 @@ func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (e
 func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res []response.GetChallengeListRes, total int64, err error) {
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
-	db := d.db
-
+	db := d.db.Begin()
+	// 临时数据
+	var claimable []request.Claimable
+	json.Unmarshal([]byte(req.Claimable), &claimable)
+	fmt.Println("claimable", claimable)
+	if err = db.Exec("CREATE TEMPORARY TABLE temp_table (token_id int8, add_ts int8)").Error; err != nil {
+		return res, total, err
+	}
+	defer func() {
+		db.Exec("DROP TABLE temp_table")
+	}()
+	for _, v := range claimable {
+		if err = db.Exec("INSERT INTO temp_table (token_id,add_ts) VALUES (?, ?)", v.TokenId, v.AddTs).Error; err != nil {
+			return res, total, err
+		}
+	}
 	err = db.Raw("SELECT count(1) FROM (SELECT a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id WHERE address = ? "+
 		" UNION "+
-		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM claim_badge_tweet a JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0) a1", req.Address, req.Address).Scan(&total).Error
+		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM claim_badge_tweet a JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0"+
+		" UNION "+
+		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM temp_table a JOIN quest b ON a.token_id=b.token_id"+
+		") a1", req.Address, req.Address).Scan(&total).Error
 	if err != nil {
 		return res, total, err
 	}
 	err = db.Raw("SELECT * FROM ((SELECT a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id  WHERE address = ? ORDER BY a.add_ts DESC"+
 		") UNION ("+
-		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM claim_badge_tweet a JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0 ORDER BY a.add_ts DESC)) a1 ORDER BY add_ts DESC LIMIT ? OFFSET ? ",
+		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM claim_badge_tweet a JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0 ORDER BY a.add_ts DESC"+
+		") UNION ("+
+		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM temp_table a JOIN quest b ON a.token_id=b.token_id"+
+		")) a1 ORDER BY complete_ts DESC LIMIT ? OFFSET ? ",
 		req.Address, req.Address, limit, offset).Scan(&res).Error
 	if err != nil {
 		return res, total, err
@@ -78,12 +100,30 @@ func (d *Dao) GetChallengeNotClaimList(req *request.GetChallengeListRequest) (re
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
 	db := d.db
-
+	// 临时数据
+	var claimable []request.Claimable
+	json.Unmarshal([]byte(req.Claimable), &claimable)
+	fmt.Println("claimable", claimable)
+	if err = db.Exec("CREATE TEMPORARY TABLE temp_table (token_id int8, add_ts int8)").Error; err != nil {
+		return res, total, err
+	}
+	defer func() {
+		db.Exec("DROP TABLE temp_table")
+	}()
+	for _, v := range claimable {
+		if err = db.Exec("INSERT INTO temp_table (token_id,add_ts) VALUES (?, ?)", v.TokenId, v.AddTs).Error; err != nil {
+			return res, total, err
+		}
+	}
 	err = db.Raw("SELECT COUNT(1) FROM claim_badge_tweet a LEFT JOIN quest b ON a.token_id=b.token_id  WHERE address = ? AND a.status=0", req.Address).Scan(&total).Error
 	if err != nil {
 		return res, total, err
 	}
-	err = db.Raw("SELECT 'f' as claimed,a.add_ts as complete_ts,b.* FROM claim_badge_tweet a LEFT JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0 ORDER BY a.add_ts DESC LIMIT ? OFFSET ?",
+	total = total + int64(len(claimable))
+	err = db.Raw("SELECT * FROM ((SELECT 'f' as claimed,a.add_ts as complete_ts,b.* FROM claim_badge_tweet a LEFT JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0 "+
+		") UNION ("+
+		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM temp_table a JOIN quest b ON a.token_id=b.token_id"+
+		")) a1 ORDER BY complete_ts DESC LIMIT ? OFFSET ?",
 		req.Address, limit, offset).Scan(&res).Error
 	if err != nil {
 		return res, total, err
