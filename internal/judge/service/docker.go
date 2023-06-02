@@ -12,10 +12,13 @@ import (
 
 // ExistsDocker 检测 docker 是否存在
 func ExistsDocker(name string) bool {
-	args := []string{"container", "inspect", name}
+	args := []string{"container", "inspect", "--format", "{{.State.Running}}", name}
 	execRes, err := execCommand("", "docker", args...)
 	if err != nil {
 		log.Errorv("execCommand error", zap.Error(err))
+		return false
+	}
+	if strings.TrimSpace(execRes) == "false" {
 		return false
 	}
 	if strings.Contains(execRes, "No such container") {

@@ -461,6 +461,7 @@ func (s *Service) SolidityDockerInit(address string) (l *sync.Mutex, err error) 
 	if ExistsDocker(address) {
 		return lock, nil
 	}
+	DelDocker(address)
 	hardhatPath := path.Join(s.c.Judge.WorkPath, address, "hardhat")
 	foundryPath := path.Join(s.c.Judge.WorkPath, address, "foundry")
 	// 初始化 Hardhat 目录
