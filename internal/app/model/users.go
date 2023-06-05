@@ -2,6 +2,7 @@ package model
 
 import (
 	"gorm.io/datatypes"
+	"time"
 )
 
 type Users struct {
@@ -12,4 +13,5 @@ type Users struct {
 	Description       *string        `gorm:"column:description;type:varchar(100);comment:自我介绍;default:''" json:"description" form:"description"`
 	CreationTimestamp int64          `gorm:"column:creation_timestamp;autoCreateTime" json:"creationTimestamp"`
 	Socials           datatypes.JSON `gorm:"column:socials" json:"socials"`
+	ResourceTime      time.Time      `gorm:"column:resource_time"`
 }

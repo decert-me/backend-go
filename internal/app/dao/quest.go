@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -39,18 +40,33 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	offset := req.PageSize * (req.Page - 1)
 
 	db := d.db.Model(&model.Quest{})
+
+	db.Where(&req.Quest)
+	err = db.Count(&total).Error
+	if err != nil {
+		return questList, total, err
+	}
+	if req.OrderKey == "token_id" {
+		fmt.Println(req.OrderKey)
+		fmt.Println(req.Desc)
+		if req.Desc {
+			db.Order("token_id desc")
+		} else {
+			db.Order("token_id asc")
+		}
+	} else {
+		db.Order("token_id desc")
+	}
+	if req.SearchKey != "" {
+		db.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
+	}
 	if req.Address != "" {
 		db.Select("quest.*,c.claimed")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
 	} else {
 		db.Select("*")
 	}
-	db.Where(&req.Quest)
-	err = db.Count(&total).Error
-	if err != nil {
-		return questList, total, err
-	}
-	err = db.Limit(limit).Offset(offset).Order("token_id desc").Find(&questList).Error
+	err = db.Limit(limit).Offset(offset).Find(&questList).Error
 
 	return questList, total, err
 }

@@ -63,6 +63,16 @@ func (a *Auth) CreateToken(claims CustomClaims) (string, error) {
 
 // ParseToken 解析 token
 func (a *Auth) ParseToken(tokenString string) (*CustomClaims, error) {
+	return a._ParseToken(tokenString, false)
+}
+
+// ParseTokenIgnoreExp 解析 token
+func (a *Auth) ParseTokenIgnoreExp(tokenString string) (*CustomClaims, error) {
+	return a._ParseToken(tokenString, true)
+}
+
+// ParseToken 解析 token
+func (a *Auth) _ParseToken(tokenString string, ignoreExp bool) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (i interface{}, e error) {
 		return a.key, nil
 	})
@@ -70,7 +80,7 @@ func (a *Auth) ParseToken(tokenString string) (*CustomClaims, error) {
 		if ve, ok := err.(*jwt.ValidationError); ok {
 			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 				return nil, TokenMalformed
-			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
+			} else if ve.Errors&jwt.ValidationErrorExpired != 0 && !ignoreExp {
 				// Token is expired
 				return nil, TokenExpired
 			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {

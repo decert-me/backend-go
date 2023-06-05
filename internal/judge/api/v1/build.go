@@ -10,7 +10,7 @@ import (
 func BuildSolidity(c *gin.Context) {
 	var req request.BuildReq
 	_ = c.ShouldBindJSON(&req)
-	if res, err := srv.BuildSolidity(req); err != nil {
+	if res, err := srv.BuildSolidity("", req); err != nil {
 		log.Errorv("err", zap.Error(err))
 		Fail(c)
 	} else {

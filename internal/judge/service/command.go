@@ -19,8 +19,10 @@ func execCommand(dir string, command string, args ...string) (res string, err er
 	if err != nil {
 		return res, err
 	}
-
-	cmd.Start()
+	err = cmd.Start()
+	if err != nil {
+		return res, err
+	}
 	oReader := bufio.NewReader(stdout)
 	eReader := bufio.NewReader(stderr)
 	var stringBuf strings.Builder
@@ -39,6 +41,5 @@ func execCommand(dir string, command string, args ...string) (res string, err er
 		}
 		stringBuf.WriteString(line)
 	}
-
 	return stringBuf.String(), nil
 }

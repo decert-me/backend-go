@@ -5,10 +5,11 @@ import (
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
-	"github.com/google/uuid"
+	"fmt"
+	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
+	"time"
 )
 
 func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *model.Quest) (pass bool, err error) {
@@ -25,35 +26,72 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 		return false, errors.New("unexpect error")
 	}
 	var score int64
-	for i, _ := range answerS {
-		_, isUUID := uuid.Parse(answerS[i].String())
-		if isUUID == nil {
-			if s.JudgeResultCheck(answerS[i].String(), quest, uint8(i)) {
+	for i, v := range answerS {
+		if v.String() == "" {
+			continue
+		}
+		questType := gjson.Get(v.String(), "type").String()
+		questValue := gjson.Get(v.String(), "value").String()
+		// 编程题目
+		if questType == "coding" || questType == "special_judge_coding" {
+			// 跳过不正确
+			if gjson.Get(v.String(), "correct").Bool() == false {
+				continue
+			}
+			reqMap := make(map[string]interface{})
+			reqMap["code"] = gjson.Get(v.String(), "code").String()
+			reqMap["lang"] = gjson.Get(v.String(), "lang").String()
+			reqMap["token_id"] = quest.TokenId
+			reqMap["quest_index"] = i
+			// 检查答案
+			if s.CodingCheck(reqMap) {
 				score += scoreList[i].Int()
 			}
 			continue
 		}
-		if answerS[i].String() == answerU[i].String() {
-			score += scoreList[i].Int()
+		// 单选题
+		if questType == "multiple_choice" || questType == "fill_blank" {
+			if questValue == answerU[i].String() {
+				score += scoreList[i].Int()
+			}
+			continue
+		}
+		// 多选题
+		if questType == "multiple_response" {
+			answerArray := gjson.Get(questValue, "@this").Array()
+			fmt.Println(len(answerArray))
+			fmt.Println(len(answerU[i].Array()))
+			// 数量
+			if len(answerArray) != len(answerU[i].Array()) {
+				continue
+			}
+			// 内容
+			allRight := true
+			for _, v := range answerArray {
+				var right bool
+				for _, item := range answerU[i].Array() {
+					if item.String() == v.String() {
+						right = true
+						break
+					}
+				}
+				if !right {
+					allRight = false
+					break
+				}
+			}
+			if allRight {
+				score += scoreList[i].Int()
+			}
 		}
 	}
+
 	if userScore == (score*10000/totalScore) && score >= passingScore {
 		return true, nil
+	} else {
+		return true, errors.New("not enough scores")
 	}
 	return
-}
-
-func (s *Service) JudgeResultCheck(uuid string, quest *model.Quest, index uint8) (pass bool) {
-	res, err := s.dao.FilterJudgeResult(
-		model.JudgeResult{
-			ID:         uuid,
-			TokenID:    quest.TokenId,
-			QuestIndex: index,
-		})
-	if err != nil && err != gorm.ErrRecordNotFound {
-		log.Errorv("FilterJudgeResult error", zap.Error(err))
-	}
-	return res.Pass
 }
 
 func (s *Service) AnswerScore(key, answerUser, uri string, quest model.Quest) (userScore int64, pass bool, err error) {
@@ -70,8 +108,25 @@ func (s *Service) AnswerScore(key, answerUser, uri string, quest model.Quest) (u
 		return userScore, false, errors.New("unexpect error")
 	}
 	var score int64
-	for i, _ := range answerS {
+	for i, v := range answerS {
 		if answerS[i].String() == answerU[i].String() {
+			// 编程题目
+			if gjson.Get(v.String(), "type").String() == "coding" || gjson.Get(v.String(), "type").String() == "special_judge_coding" || answerU[i].String() == "" {
+				// 跳过不正确
+				if gjson.Get(v.String(), "correct").Bool() == false {
+					continue
+				}
+				reqMap := make(map[string]interface{})
+				reqMap["code"] = gjson.Get(v.String(), "code").String()
+				reqMap["lang"] = gjson.Get(v.String(), "lang").String()
+				reqMap["token_id"] = quest.TokenId
+				reqMap["quest_index"] = i
+				// 检查答案
+				if s.CodingCheck(reqMap) {
+					score += scoreList[i].Int()
+				}
+				continue
+			}
 			score += scoreList[i].Int()
 		}
 	}
@@ -79,4 +134,16 @@ func (s *Service) AnswerScore(key, answerUser, uri string, quest model.Quest) (u
 		return score, true, nil
 	}
 	return score, false, nil
+}
+
+func (s *Service) CodingCheck(body interface{}) (correct bool) {
+	client := req.C().SetTimeout(180 * time.Second)
+	res, err := client.R().SetBody(body).Post(s.c.Judge.SolidityAPI[0])
+	if err != nil {
+		log.Errorv("Post error", zap.Error(err))
+	}
+	if gjson.Get(res.String(), "data.correct").Bool() {
+		return true
+	}
+	return false
 }

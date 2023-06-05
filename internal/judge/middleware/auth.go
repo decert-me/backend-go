@@ -39,12 +39,12 @@ func Addr() gin.HandlerFunc {
 		token := c.Request.Header.Get("x-token")
 		if token != "" {
 			// 解析token包含的信息
-			claims, err := midAuth.ParseToken(token)
+			claims, err := midAuth.ParseTokenIgnoreExp(token)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-
+			fmt.Println(claims)
 			c.Set("address", claims.Address)
 		}
 	}

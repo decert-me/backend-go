@@ -8,17 +8,15 @@ import (
 	"strings"
 )
 
-func (s *Service) CastCall(req request.CastCallReq) (res response.CastCallRes, err error) {
+func (s *Service) CastCall(ctrName string, req request.CastCallReq) (res response.CastCallRes, err error) {
 	args := []string{"call", req.To}
 	if req.CallData != "" {
 		args = append(args, req.CallData)
 	} else if !strings.Contains(req.Data, "],") {
-		args = append(args, req.Method)
+		args = append(args, "\""+req.Method+"\"")
 		args = append(args, strings.Split(req.Data, ",")...)
-		fmt.Println(args)
-		fmt.Println(req.Data)
 	} else {
-		args = append(args, req.Method)
+		args = append(args, "\""+req.Method+"\"")
 		for _, v := range strings.Split(req.Data, "],") {
 			if v[:1] == "[" {
 				args = append(args, v+"]")
@@ -28,7 +26,13 @@ func (s *Service) CastCall(req request.CastCallReq) (res response.CastCallRes, e
 			}
 		}
 	}
-	execRes, err := execCommand("", "cast", args...)
+	command := fmt.Sprintf("cast %s", strings.Join(args, " "))
+	fmt.Println("command", command)
+	argsExec := []string{"exec", "-i", ctrName, "bash", "-c", command}
+
+	execRes, err := execCommand("", "docker", argsExec...)
+	fmt.Println("execRes", execRes)
+	//execRes, err := execCommand("", "cast", args...)
 	if err != nil {
 		res.Msg = err.Error()
 		res.Status = 1
@@ -43,15 +47,20 @@ func (s *Service) CastCall(req request.CastCallReq) (res response.CastCallRes, e
 	return res, nil
 }
 
-func (s *Service) CastSend(req request.CastSendReq) (res response.CastSend, err error) {
+func (s *Service) CastSend(ctrName string, req request.CastSendReq) (res response.CastSend, err error) {
 	args := []string{"send", req.To}
 	if req.CallData != "" {
 		args = append(args, req.CallData)
 	} else {
 		args = append(args, req.Method, req.Data)
 	}
-	args = append(args, "--private-key=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", "--json")
-	execRes, err := execCommand("", "cast", args...)
+	//args = append(args, "--private-key=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", "--json")
+	privateKey := "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+	command := fmt.Sprintf("cast %s --private-key=%s --json", strings.Join(args, " "), privateKey)
+	argsExec := []string{"exec", "-i", ctrName, "bash", "-c", command}
+
+	execRes, err := execCommand("", "docker", argsExec...)
+	//execRes, err := execCommand("", "cast", args...)
 	if err != nil {
 		return
 	}

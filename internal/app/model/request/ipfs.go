@@ -2,6 +2,11 @@ package request
 
 import "time"
 
+type SpjCodeList struct {
+	Frame string `json:"frame"`
+	Code  string `json:"code"`
+}
+
 type UploadJSONNFT struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
@@ -34,8 +39,8 @@ type UploadJSONChallenge struct {
 			Code          string `json:"code"`
 			CorrectAnswer string `json:"correctAnswer"`
 		} `json:"code_snippets,omitempty"`
-		SpjCode []string `json:"spj_code,omitempty"`
-		Options []string `json:"options,omitempty"`
+		SpjCode []SpjCodeList `json:"spj_code,omitempty"`
+		Options []string      `json:"options,omitempty"`
 	} `json:"questions" binding:"required"`
 	Answers      string    `json:"answers" binding:"required"`
 	StartTime    time.Time `json:"startTime"`
