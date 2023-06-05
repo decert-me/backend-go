@@ -40,7 +40,7 @@ func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (e
 func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res []response.GetChallengeListRes, total int64, err error) {
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
-	db := d.db.Begin()
+	db := d.db
 	// 临时数据
 	var claimable []request.Claimable
 	json.Unmarshal([]byte(req.Claimable), &claimable)
