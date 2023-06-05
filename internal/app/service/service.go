@@ -23,6 +23,9 @@ func New(c *config.Config) (s *Service) {
 
 	return
 }
+func (s *Service) GetConfig() *config.Config {
+	return s.c
+}
 
 // Close Service.
 func (s *Service) Close() {
