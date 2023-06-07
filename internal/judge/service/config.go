@@ -12,8 +12,17 @@ import (
 type JavaScriptRunCopyIn struct {
 	RunMainCode judge.RunMainCode `json:"main.js"`
 }
+
+type TypeScriptRunCopyIn struct {
+	RunMainCode judge.RunMainCode `json:"main.ts"`
+}
+
 type GolangRunCopyIn struct {
 	RunMainCode judge.RunMainCode `json:"main.go"`
+}
+
+type PythonRunCopyIn struct {
+	RunMainCode judge.RunMainCode `json:"main.py"`
 }
 
 func (s *Service) JavaScriptRun(code string, codeSnippet string, inputs []string) (result interface{}, err error) {
@@ -50,6 +59,50 @@ func (s *Service) JavaScriptRun(code string, codeSnippet string, inputs []string
 			CPULimit:    3000000000,
 			ClockLimit:  4000000000,
 			MemoryLimit: 104857600,
+			ProcLimit:   50,
+			CPURate:     0.1,
+			CopyIn:      runCopyIn,
+		}
+		cmdList = append(cmdList, cmd)
+	}
+
+	return judge.Run{Cmd: cmdList}, nil
+}
+
+func (s *Service) TypeScriptRun(code string, codeSnippet string, inputs []string) (result interface{}, err error) {
+	// 获取函数名称
+	var functionName string
+	re := regexp.MustCompile(`function\s+(\w+)\s*\(`)
+	matches := re.FindStringSubmatch(codeSnippet)
+	if len(matches) > 1 {
+		functionName = matches[1]
+	} else {
+		return result, errors.New("函数名称获取失败")
+	}
+
+	var cmdList []judge.RunCmd
+	for _, input := range inputs {
+		// 输出函数
+		inputCode := fmt.Sprintf("\nconsole.log(%s(%s));", functionName, input)
+		code = code + inputCode
+		// 输入
+		runFiles := []judge.RunFiles{
+			{Content: input},
+			{Name: "stdout", Max: 10240},
+			{Name: "stderr", Max: 10240},
+		}
+		// 代码
+		runCopyIn := TypeScriptRunCopyIn{
+			RunMainCode: judge.RunMainCode{Content: code},
+		}
+		fmt.Println()
+		cmd := judge.RunCmd{
+			Args:        []string{s.c.Judge.TypeScriptPath, "main.ts"},
+			Env:         []string{"PATH=/usr/bin:/bin:/usr/local/bin/"},
+			Files:       runFiles,
+			CPULimit:    3000000000,
+			ClockLimit:  4000000000,
+			MemoryLimit: 1048576000,
 			ProcLimit:   50,
 			CPURate:     0.1,
 			CopyIn:      runCopyIn,
@@ -142,7 +195,7 @@ func (s *Service) GolangRun(code string, codeSnippet string, inputs []string) (r
 func (s *Service) PythonScriptRun(code string, codeSnippet string, inputs []string) (result interface{}, err error) {
 	// 获取函数名称
 	var functionName string
-	re := regexp.MustCompile(`function\s+(\w+)\s*\(`)
+	re := regexp.MustCompile(`def\s+(\w+)\s*\(`)
 	matches := re.FindStringSubmatch(codeSnippet)
 	if len(matches) > 1 {
 		functionName = matches[1]
@@ -153,7 +206,7 @@ func (s *Service) PythonScriptRun(code string, codeSnippet string, inputs []stri
 	var cmdList []judge.RunCmd
 	for _, input := range inputs {
 		// 输出函数
-		inputCode := fmt.Sprintf("\nconsole.log(%s(%s));", functionName, input)
+		inputCode := fmt.Sprintf("\nprint(%s(%s))", functionName, input)
 		code = code + inputCode
 		// 输入
 		runFiles := []judge.RunFiles{
@@ -162,12 +215,13 @@ func (s *Service) PythonScriptRun(code string, codeSnippet string, inputs []stri
 			{Name: "stderr", Max: 10240},
 		}
 		// 代码
-		runCopyIn := JavaScriptRunCopyIn{
+		runCopyIn := PythonRunCopyIn{
 			RunMainCode: judge.RunMainCode{Content: code},
 		}
 		//
+		fmt.Println()
 		cmd := judge.RunCmd{
-			Args:        []string{s.c.Judge.JavaScriptPath, "main.js"},
+			Args:        []string{s.c.Judge.PythonPath, "main.py"},
 			Env:         []string{"PATH=/usr/bin:/bin"},
 			Files:       runFiles,
 			CPULimit:    3000000000,
