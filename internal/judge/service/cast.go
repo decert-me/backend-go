@@ -12,19 +12,16 @@ func (s *Service) CastCall(ctrName string, req request.CastCallReq) (res respons
 	args := []string{"call", req.To}
 	if req.CallData != "" {
 		args = append(args, req.CallData)
-	} else if !strings.Contains(req.Data, "],") {
-		args = append(args, "\""+req.Method+"\"")
-		args = append(args, strings.Split(req.Data, ",")...)
 	} else {
 		args = append(args, "\""+req.Method+"\"")
-		for _, v := range strings.Split(req.Data, "],") {
-			if v[:1] == "[" {
-				args = append(args, v+"]")
-				continue
-			} else {
-				args = append(args, strings.Split(v, ",")...)
+		inputStr := strings.Builder{}
+		for i, v := range gjson.Parse("[" + req.Data + "]").Array() {
+			inputStr.WriteString(v.String())
+			if i+1 < len(gjson.Parse("["+req.Data+"]").Array()) {
+				inputStr.WriteString(" ")
 			}
 		}
+		args = append(args, inputStr.String())
 	}
 	command := fmt.Sprintf("cast %s", strings.Join(args, " "))
 	fmt.Println("command", command)
