@@ -69,7 +69,9 @@ func (s *Service) JavaScriptTryRun(runReq request.TryRunReq) (tryRunRes response
 			}
 			return
 		}
-		runOutput := strings.Replace(strings.TrimRight(runResult[i].Files.Stdout, "\n"), " ", "", -1)
+		runOutput := strings.TrimRight(runResult[i].Files.Stdout, "\n")
+		runOutput = strings.Replace(strings.Replace(runOutput, "[ ", "[", 1), " ]", "]", 1)
+		runOutput = strings.Replace(runOutput, ", ", ",", -1)
 		if runOutput == outputs[i] {
 			tryRunRes.TotalCorrect = tryRunRes.TotalCorrect + 1
 			continue
@@ -132,7 +134,9 @@ func (s *Service) JavaScriptTryTestRun(runReq request.TryTestRunReq) (tryRunRes 
 			}
 			return
 		}
-		runOutput := strings.Replace(strings.TrimRight(runResult[i].Files.Stdout, "\n"), " ", "", -1)
+		runOutput := strings.TrimRight(runResult[i].Files.Stdout, "\n")
+		runOutput = strings.Replace(strings.Replace(runOutput, "[ ", "[", 1), " ]", "]", 1)
+		runOutput = strings.Replace(runOutput, ", ", ",", -1)
 		if runOutput == runReq.ExampleOutput[i] {
 			tryRunRes.TotalCorrect = tryRunRes.TotalCorrect + 1
 			continue
