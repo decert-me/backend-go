@@ -24,7 +24,7 @@ var dockerRunning map[string]*sync.Mutex
 func init() {
 	dockerRunning = make(map[string]*sync.Mutex)
 }
-func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) SolidityTryRun(address string, req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
 	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenID})
 	if err != nil {
 		return
@@ -69,7 +69,7 @@ func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes respo
 	return
 }
 
-func (s *Service) TryTestRun(address string, req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) SolidityTryTestRun(address string, req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 默认零地址
 	if address == "" {
 		address = common.HexToAddress("0").String()
@@ -112,8 +112,8 @@ func (s *Service) RunTestSolidity(req request.TryTestRunReq) (tryRunRes response
 	if len(matches) > 1 {
 		functionName = matches[1]
 	}
-	fmt.Println(req.ExampleInput)
-	fmt.Println(req.ExampleOutput)
+	//fmt.Println(req.ExampleInput)
+	//fmt.Println(req.ExampleOutput)
 	runReq := runSolidityReq{
 		Address:       req.Address,
 		InputArray:    req.ExampleInput,
@@ -462,8 +462,8 @@ func (s *Service) SolidityDockerInit(address string) (l *sync.Mutex, err error) 
 		return lock, nil
 	}
 	DelDocker(address)
-	hardhatPath := path.Join(s.c.Judge.WorkPath, address, "hardhat")
-	foundryPath := path.Join(s.c.Judge.WorkPath, address, "foundry")
+	hardhatPath := path.Join(s.c.Judge.SolidityWorkPath, address, "hardhat")
+	foundryPath := path.Join(s.c.Judge.SolidityWorkPath, address, "foundry")
 	// 初始化 Hardhat 目录
 	hardhatDirList := []string{"contracts", "test"}
 	var mapping []string
@@ -484,9 +484,9 @@ func (s *Service) SolidityDockerInit(address string) (l *sync.Mutex, err error) 
 		mapping = append(mapping, "-v", path.Join(foundryPath, dir)+":"+path.Join("/foundry", dir))
 	}
 	// Hardhat 缓存目录
-	mapping = append(mapping, "-v", path.Join(s.c.Judge.CachePath, "hardhat/cache")+":/root/.cache")
+	mapping = append(mapping, "-v", path.Join(s.c.Judge.SolidityCachePath, "hardhat/cache")+":/root/.cache")
 	// Foundry 缓存目录
-	mapping = append(mapping, "-v", path.Join(s.c.Judge.CachePath, "foundry/svm")+":/root/.svm")
+	mapping = append(mapping, "-v", path.Join(s.c.Judge.SolidityCachePath, "foundry/svm")+":/root/.svm")
 
 	return lock, CreateDocker(address, "judge:1.0", mapping)
 }

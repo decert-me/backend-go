@@ -43,8 +43,11 @@ quest:
   encrypt-key: "Pz8HN1LAD7Q2C6gvQewnM3pxFvLeO8z8eKNnWxGQ" # 加密密码
 
 judge:
+  sandbox-service: "http://192.168.1.15:5050/"  # 沙盒服务URL
   work-path: "/Users/mac/Code/resource/"        # 判题模块工作目录，临时保存用户代码
   cache-path: "/Users/mac/Code/resource/cache"  # 判题模块缓存目录，缓存 solc 等
+  javascript-path: "/Users/mac/.nvm/versions/node/v18.16.0/bin/node"
+  golang-path: "/usr/local/go/bin/go"
 
 docker:
   clear-enabled: true # 开启 Docker 定时清空容器

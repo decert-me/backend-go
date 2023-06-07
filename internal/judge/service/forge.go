@@ -20,7 +20,7 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	if req.Address == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
-	foundryPath := path.Join(s.c.Judge.WorkPath, req.Address, "foundry")
+	foundryPath := path.Join(s.c.Judge.SolidityWorkPath, req.Address, "foundry")
 	// 获取合约名称
 	re := regexp.MustCompile(`contract\s+(\w+)\s*{`)
 

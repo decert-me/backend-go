@@ -23,7 +23,7 @@ func (s *Service) BuildSolidity(private string, req request.BuildReq) (res respo
 	if private == "" {
 		private = GetPrivate()
 	}
-	foundryPath := path.Join(s.c.Judge.WorkPath, req.Address, "foundry")
+	foundryPath := path.Join(s.c.Judge.SolidityWorkPath, req.Address, "foundry")
 	// 获取合约名称
 	re := regexp.MustCompile(`contract\s+(\w+)\s*{`)
 	result := re.FindStringSubmatch(req.Code)

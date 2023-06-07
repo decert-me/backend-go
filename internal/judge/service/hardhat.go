@@ -35,7 +35,7 @@ func (s *Service) HardhatTestSolidity(req request.ForgeTestReq, spjCode string) 
 		req.Address = common.HexToAddress("0").String()
 	}
 
-	hardhatPath := path.Join(s.c.Judge.WorkPath, req.Address, "hardhat")
+	hardhatPath := path.Join(s.c.Judge.SolidityWorkPath, req.Address, "hardhat")
 
 	// 保存代码
 	fileName := time.Now().Format("20060102150405.000") + ".sol"
