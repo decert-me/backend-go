@@ -29,7 +29,7 @@ func ExistsDocker(name string) bool {
 
 // CreateDocker 创建docker
 func CreateDocker(name string, image string, argList []string) error {
-	args := []string{"run", "-itd", "--name", name}
+	args := []string{"run", "-itd", "--init", "--name", name}
 	args = append(args, argList...)
 	args = append(args, image)
 	execRes, err := execCommand("", "docker", args...)
@@ -51,7 +51,7 @@ func DelDocker(name string) bool {
 		log.Errorv("execCommand error", zap.Error(err))
 		return false
 	}
-	execRm, err := execCommand("", "docker", "rm", name)
+	execRm, err := execCommand("", "docker", "rm", "-f", name)
 	if err != nil {
 		log.Errorv("execCommand error", zap.Error(err))
 		return false

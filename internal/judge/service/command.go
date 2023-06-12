@@ -41,5 +41,6 @@ func execCommand(dir string, command string, args ...string) (res string, err er
 		}
 		stringBuf.WriteString(line)
 	}
+	cmd.Wait()
 	return stringBuf.String(), nil
 }
