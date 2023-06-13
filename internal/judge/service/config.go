@@ -158,7 +158,7 @@ func (s *Service) GolangRun(code string, codeSnippet string, inputs []string) (r
 			} else {
 				inputStr.WriteString(v.String())
 			}
-			if i+1 < len(gjson.Parse(input).Array()) {
+			if i+1 < len(gjson.Parse("["+input+"]").Array()) {
 				inputStr.WriteString(",")
 			}
 		}

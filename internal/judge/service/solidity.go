@@ -35,7 +35,7 @@ func (s *Service) SolidityTryRun(address string, req request.TryRunReq) (tryRunR
 	}
 	req.Address = address
 	// Docker启动
-	lock, err := s.SolidityDockerInit(address)
+	lock, err := s.DockerInit(address)
 	defer lock.Unlock()
 	if err != nil {
 		return tryRunRes, errors.New("UnexpectedError")
@@ -76,7 +76,7 @@ func (s *Service) SolidityTryTestRun(address string, req request.TryTestRunReq) 
 	}
 	req.Address = address
 	// Docker启动
-	lock, err := s.SolidityDockerInit(address)
+	lock, err := s.DockerInit(address)
 	defer lock.Unlock()
 	if err != nil {
 		return tryRunRes, errors.New("UnexpectedError")
@@ -448,7 +448,7 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 }
 
 // SolidityDockerInit 初始化Solidity运行环境
-func (s *Service) SolidityDockerInit(address string) (l *sync.Mutex, err error) {
+func (s *Service) DockerInit(address string) (l *sync.Mutex, err error) {
 	addressParse := common.HexToAddress(address).String()
 	if _, ok := dockerRunning[addressParse]; !ok {
 		dockerRunning[addressParse] = new(sync.Mutex)

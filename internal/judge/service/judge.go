@@ -34,6 +34,8 @@ func (s *Service) TryTestRun(address string, req request.TryTestRunReq) (tryRunR
 		return s.PythonTryTestRun(req)
 	} else if req.Lang == "TypeScript" {
 		return s.TypeScriptTryTestRun(req)
+	} else if req.Lang == "Move" {
+		return s.MoveTryTestRun(req)
 	} else {
 		return tryRunRes, errors.New("暂不支持的语言")
 	}
