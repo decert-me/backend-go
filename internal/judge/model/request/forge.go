@@ -1,6 +1,6 @@
 package request
 
-type ForgeTestReq struct {
+type TestReq struct {
 	Lang    string `json:"lang"`
 	Code    string `json:"code"`
 	Address string
