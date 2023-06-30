@@ -25,7 +25,8 @@
     "FileFormatIncorrect": "File format Incorrect!",
     "UploadSuccess": "Upload Success！",
     "UploadFailed": "Upload Failed！",
-    "RecordNotFound": "Record Not Found！"
+    "RecordNotFound": "Record Not Found！",
+    "QuestUpdate": "Question Updated，Please Refresh!"
   },
   "zh-CN": {
     "OperationSuccess": "操作成功！",
@@ -53,6 +54,7 @@
     "FileFormatIncorrect": "文件格式不正确!",
     "UploadSuccess": "上传成功！",
     "UploadFailed": "上传失败！",
-    "RecordNotFound": "记录不存在！"
+    "RecordNotFound": "记录不存在！",
+    "QuestUpdate": "题目已更新，请重新答题！"
   }
 }
