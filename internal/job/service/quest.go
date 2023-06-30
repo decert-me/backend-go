@@ -92,6 +92,13 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 	if err != nil {
 		return
 	}
+	var questDataDetail string
+	if gjson.Get(metadata, "version").Float() == 1.1 {
+		questDataDetail, err = s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
+		if err != nil {
+			return
+		}
+	}
 	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs, Supply: questData.Supply.Uint64()})
 	quest := model.Quest{
 		Title:       questData.Title,
@@ -102,6 +109,7 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").Raw,
+		QuestData:   []byte(questDataDetail),
 	}
 	if err = s.dao.UpdateQuest(&quest); err != nil {
 		log.Errorv("UpdateQuest error", zap.Error(err), zap.Any("quest", quest))
