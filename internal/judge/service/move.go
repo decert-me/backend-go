@@ -122,7 +122,7 @@ func (s *Service) RunNormalSpecialMove(req request.TryRunReq, quest model.Quest)
 				Code:    req.Code,
 				Address: req.Address,
 			}
-			tryRunRes, err = s.RunSpecialMove(runReq)
+			tryRunRes, err = s.RunSpecialMove(frame, runReq)
 			// 错误提前终止
 			if err != nil || tryRunRes.Status != 3 {
 				return

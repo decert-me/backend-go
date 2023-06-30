@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
+	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"math/big"
 	"time"
@@ -18,6 +19,10 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 	// 校验分数正确性
 	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
 	if err != nil {
+		return res, errors.New("TokenIDInvalid")
+	}
+	// 校验题目
+	if req.StandardAnswer != gjson.Get(string(quest.QuestData), "answers").String() {
 		return res, errors.New("TokenIDInvalid")
 	}
 	pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Score, &quest)
