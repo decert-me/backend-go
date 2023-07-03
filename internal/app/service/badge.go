@@ -22,7 +22,7 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 		return res, errors.New("TokenIDInvalid")
 	}
 	// 校验题目
-	if req.StandardAnswer != gjson.Get(string(quest.QuestData), "answers").String() {
+	if req.StandardAnswer != "" && req.StandardAnswer != gjson.Get(string(quest.QuestData), "answers").String() {
 		return res, errors.New("TokenIDInvalid")
 	}
 	pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Score, &quest)
