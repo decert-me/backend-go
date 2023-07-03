@@ -63,6 +63,13 @@ func (s *Service) TwitterCallback(address string, req request.TwitterCallbackReq
 		log.Errorv("VerifyCredentials error", zap.Error(err))
 		return
 	}
+	list, _, err := client.Timelines.UserTimeline(&twitterClient.UserTimelineParams{UserID: 2648158200})
+	if err != nil {
+		log.Errorv("List error", zap.Error(err))
+		return
+	}
+	fmt.Println(list)
+	return
 	// 查找是否已经绑定过
 	binding, err := s.dao.TwitterIsBinding(user.ID)
 	if err != nil {
@@ -93,11 +100,14 @@ func (s *Service) TwitterUserTweet(claimReq request.TwitterClaimReq) (err error)
 		SetCommonBearerAuthToken(s.c.Auth.Twitter.BearerToken)
 	url := fmt.Sprintf("https://api.twitter.com/2/users/%s/tweets", twitterID)
 	req, err := client.R().Get(url)
+	fmt.Println(req.String())
 	var tweets receive.TweetsGenerated
 	if err = json.Unmarshal(req.Bytes(), &tweets); err != nil {
 		log.Errorv("json.Unmarshal error", zap.Error(err))
 		return err
 	}
+	fmt.Println(tweets.Data)
+	return
 	// 匹配推文
 	for _, v := range tweets.Data {
 		if utils.CheckIfMatchClaimTweet(twitterID, v.Text) {

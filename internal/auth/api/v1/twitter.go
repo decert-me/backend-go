@@ -32,16 +32,16 @@ func TwitterCallback(c *gin.Context) {
 
 // TwitterUserTweet 获取用户推文信息
 func TwitterUserTweet(c *gin.Context) {
-	var req request.TwitterCallbackReq
+	var req request.TwitterClaimReq
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
-	address := c.GetString("address")
-	if result, err := srv.TwitterCallback(address, req); err != nil {
+	//address := c.GetString("address")
+	if err := srv.TwitterUserTweet(req); err != nil {
 		Fail(c)
 	} else {
-		OkWithData(result, c)
+		Ok(c)
 	}
 }
