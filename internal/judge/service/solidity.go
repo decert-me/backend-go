@@ -341,7 +341,7 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 	//	return
 	//}
 	// 测试
-	res, err := s.TestSolidity(request.ForgeTestReq{
+	res, err := s.TestSolidity(request.TestReq{
 		Code:    req.Code,
 		Address: req.Address,
 	}, spjCodeNew.String())
@@ -358,7 +358,7 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 
 func (s *Service) RunSpecialHardhatSolidity(req runSolidityReq) (tryRunRes response.TryRunRes, err error) {
 	// 测试
-	res, err := s.HardhatTestSolidity(request.ForgeTestReq{
+	res, err := s.HardhatTestSolidity(request.TestReq{
 		Code:    req.Code,
 		Address: req.Address,
 	}, req.SpjCode)

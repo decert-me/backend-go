@@ -29,7 +29,7 @@ func SaveCode(path string, fileName string, code string) (err error) {
 	return
 }
 
-func (s *Service) HardhatTestSolidity(req request.ForgeTestReq, spjCode string) (res response.ForgeTestRes, err error) {
+func (s *Service) HardhatTestSolidity(req request.TestReq, spjCode string) (res response.TestRes, err error) {
 	// 未登陆默认0地址
 	if req.Address == "" {
 		req.Address = common.HexToAddress("0").String()
@@ -49,7 +49,7 @@ func (s *Service) HardhatTestSolidity(req request.ForgeTestReq, spjCode string) 
 	}
 	relativePath := hardhatPath
 	// docker执行
-	command := fmt.Sprintf("cd /hardhat && npm install > /dev/null 2>&1 && npx hardhat test")
+	command := fmt.Sprintf("cd /hardhat && npx hardhat test")
 	args := []string{"exec", "-i", req.Address, "bash", "-c", command}
 	execRes, err := execCommand(relativePath, "docker", args...)
 	if err != nil {

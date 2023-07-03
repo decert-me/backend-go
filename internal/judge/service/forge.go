@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res response.ForgeTestRes, err error) {
+func (s *Service) TestSolidity(req request.TestReq, spjCode string) (res response.TestRes, err error) {
 	if req.Address == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
