@@ -40,7 +40,7 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 			}
 			reqMap := make(map[string]interface{})
 			reqMap["code"] = gjson.Get(v.String(), "code").String()
-			reqMap["lang"] = gjson.Get(v.String(), "lang").String()
+			reqMap["lang"] = gjson.Get(v.String(), "language").String()
 			reqMap["token_id"] = quest.TokenId
 			reqMap["quest_index"] = i
 			// 检查答案
