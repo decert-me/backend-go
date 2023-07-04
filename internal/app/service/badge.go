@@ -9,7 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
-	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"math/big"
 	"time"
@@ -22,8 +21,8 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 		return res, errors.New("TokenIDInvalid")
 	}
 	// 校验题目
-	if req.StandardAnswer != "" && req.StandardAnswer != gjson.Get(string(quest.QuestData), "answers").String() {
-		return res, errors.New("TokenIDInvalid")
+	if req.Uri != "" && req.Uri != quest.Uri {
+		return res, errors.New("QuestUpdate")
 	}
 	pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Score, &quest)
 	if err != nil {
@@ -63,6 +62,10 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
 	if err != nil {
 		return errors.New("TokenIDInvalid")
+	}
+	// 校验题目
+	if req.Uri != "" && req.Uri != quest.Uri {
+		return errors.New("QuestUpdate")
 	}
 	pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Score, &quest)
 	if err != nil {
