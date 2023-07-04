@@ -75,4 +75,6 @@ ipfs:
 
 # judge configuration
 judge:
-  solidity-api: ["http://192.168.1.10:3022/v1"]
+  judge-api:
+    - url: "http://192.168.1.10:3022/v1"
+      weight: 10
