@@ -15,7 +15,11 @@ func PermitClaimBadge(c *gin.Context) {
 	}
 	address := c.GetString("address")
 	if list, err := srv.PermitClaimBadge(address, req); err != nil {
-		Fail(c)
+		if err.Error() == "QuestUpdate" {
+			OkWithMessage(GetMessage(c, err.Error()), c)
+			return
+		}
+		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		OkWithData(list, c)
 	}
@@ -26,6 +30,10 @@ func SubmitClaimTweet(c *gin.Context) {
 	_ = c.ShouldBindJSON(&req)
 	address := c.GetString("address")
 	if err := srv.SubmitClaimTweet(address, req); err != nil {
+		if err.Error() == "QuestUpdate" {
+			OkWithMessage(GetMessage(c, err.Error()), c)
+			return
+		}
 		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		Ok(c)
