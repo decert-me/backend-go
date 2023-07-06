@@ -148,3 +148,7 @@ func (d *Dao) GetQuestChallengeUserByUUID(uuid string) (res response.GetQuestCha
 		Find(&res.Users).Error
 	return res, err
 }
+
+func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
+	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
+}
