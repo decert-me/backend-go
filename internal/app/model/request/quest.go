@@ -31,6 +31,6 @@ type UpdateQuestRequest struct {
 }
 
 type UpdateRecommendRequest struct {
-	TokenId   int64  `json:"tokenId" binding:"required"`
+	TokenId   int64  `json:"token_id" binding:"required"`
 	Recommend string `json:"recommend"` // 推荐
 }
