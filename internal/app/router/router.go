@@ -69,6 +69,8 @@ func Routers(c *config.Config) *gin.Engine {
 		InitChallengeRouter(v1Group)
 		InitIPFSRouter(v1Group)
 	}
+	// meta
+	Router.GET("/quests/:id", v1.HandleMetaRequest)
 
 	fmt.Println("router register success")
 	return Router
