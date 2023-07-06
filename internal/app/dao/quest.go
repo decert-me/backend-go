@@ -113,6 +113,20 @@ func (d *Dao) GetUserQuestList(req *request.GetUserQuestListRequest) (questList 
 	return questList, total, err
 }
 
+func (d *Dao) GetUserQuestListWithClaimed(req *request.GetUserQuestListRequest) (questList []response.GetUserQuestListRes, total int64, err error) {
+	limit := req.PageSize
+	offset := req.PageSize * (req.Page - 1)
+	db := d.db.Model(&model.Quest{})
+	db.Where(&req.Quest)
+	err = db.Count(&total).Error
+	if err != nil {
+		return questList, total, err
+	}
+	err = db.Limit(limit).Offset(offset).Order("add_ts desc").Find(&questList).Error
+	
+	return questList, total, err
+}
+
 func (d *Dao) GetQuestChallengeUserByTokenID(tokenId int64) (res response.GetQuestChallengeUserRes, err error) {
 	err = d.db.Model(&model.UserChallenges{}).Where("token_id", tokenId).Count(&res.Times).Error
 	if err != nil {
