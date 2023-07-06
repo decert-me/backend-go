@@ -138,7 +138,7 @@ func (s *Service) AnswerScore(key, answerUser, uri string, quest model.Quest) (u
 
 func (s *Service) CodingCheck(body interface{}) (correct bool) {
 	client := req.C().SetTimeout(180 * time.Second)
-	res, err := client.R().SetBody(body).Post(s.c.Judge.SolidityAPI[0])
+	res, err := client.R().SetBody(body).Post(s.W.Next().Item)
 	if err != nil {
 		log.Errorv("Post error", zap.Error(err))
 	}
