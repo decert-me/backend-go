@@ -20,19 +20,19 @@ func (d *Dao) TwitterIsBinding(userID int64) (bool, error) {
 	return true, err
 }
 
-func (d *Dao) TwitterBinding(address string, userID int64, userName string) error {
+func (d *Dao) TwitterBinding(address string, userID int64, userName, accessToken, accessSecret string) error {
 	var count int
-	userInfo := fmt.Sprintf("{\"id\": \"%s\", \"username\": \"%s\"}", strconv.Itoa(int(userID)), userName)
+	userInfo := fmt.Sprintf("{\"id\": \"%s\", \"username\": \"%s\",\"accessToken\": \"%s\",\"accessSecret\": \"%s\"}", strconv.Itoa(int(userID)), userName, accessToken, accessSecret)
 	err := d.db.Raw("UPDATE users SET socials = jsonb_set(socials, '{\"twitter\"}', ?, true) WHERE address = ?", userInfo, address).Scan(&count).Error
 	return err
 }
 
-func (d *Dao) TwitterQueryIdByAddress(address string) (twitterID string, err error) {
-	err = d.db.Raw("SELECT socials->'twitter'->>'id' FROM users WHERE address = ? LIMIT 1", address).Scan(&twitterID).Error
+func (d *Dao) TwitterQueryByAddress(address string) (twitterData string, err error) {
+	err = d.db.Raw("SELECT socials->'twitter' FROM users WHERE address = ? LIMIT 1", address).Scan(&twitterData).Error
 	if err != nil {
-		return twitterID, err
+		return twitterData, err
 	}
-	return twitterID, err
+	return twitterData, err
 }
 
 func (d *Dao) TwitterCreateTweetClaim(req *model.ClaimBadgeTweet) (exists bool, err error) {
