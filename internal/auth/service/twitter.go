@@ -61,11 +61,6 @@ func (s *Service) TwitterCallback(address string, req request.TwitterCallbackReq
 		log.Errorv("VerifyCredentials error", zap.Error(err))
 		return
 	}
-	list, _, err := client.Timelines.UserTimeline(&twitterClient.UserTimelineParams{UserID: 2648158200})
-	if err != nil {
-		log.Errorv("List error", zap.Error(err))
-		return
-	}
 	// 查找是否已经绑定过
 	binding, err := s.dao.TwitterIsBinding(user.ID)
 	if err != nil {
