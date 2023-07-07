@@ -113,17 +113,18 @@ func (d *Dao) GetUserQuestList(req *request.GetUserQuestListRequest) (questList 
 	return questList, total, err
 }
 
-func (d *Dao) GetUserQuestListWithClaimed(req *request.GetUserQuestListRequest) (questList []response.GetUserQuestListRes, total int64, err error) {
+func (d *Dao) GetUserQuestListWithClaimed(req *request.GetUserQuestListRequest) (questList []response.QuestWithClaimed, total int64, err error) {
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
-	db := d.db.Model(&model.Quest{})
+	db := d.db.Model(&response.QuestWithClaimed{})
+	db.Select("quest.*,EXISTS (SELECT 1 FROM user_challenges WHERE quest.token_id = user_challenges.token_id) AS has_claim")
 	db.Where(&req.Quest)
 	err = db.Count(&total).Error
 	if err != nil {
 		return questList, total, err
 	}
 	err = db.Limit(limit).Offset(offset).Order("add_ts desc").Find(&questList).Error
-	
+
 	return questList, total, err
 }
 

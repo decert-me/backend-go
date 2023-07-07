@@ -21,7 +21,7 @@ func (s *Service) GetUserQuestList(searchInfo request.GetUserQuestListRequest) (
 	return
 }
 
-func (s *Service) GetUserQuestListWithClaimed(searchInfo request.GetUserQuestListRequest) (res []response.GetUserQuestListRes, total int64, err error) {
+func (s *Service) GetUserQuestListWithClaimed(searchInfo request.GetUserQuestListRequest) (res []response.QuestWithClaimed, total int64, err error) {
 	res, total, err = s.dao.GetUserQuestListWithClaimed(&searchInfo)
 	return
 }
