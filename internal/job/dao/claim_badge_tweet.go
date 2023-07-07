@@ -63,6 +63,16 @@ func (d *Dao) UpdateAirdroppedList(tokenIds []*big.Int, receivers []common.Addre
 	for i, _ := range receivers {
 		tx.Where("token_id = ? AND address = ?", tokenIds[i], receivers[i].String()).
 			Updates(map[string]interface{}{"status": 1, "airdrop_hash": hash, "airdrop_ts": time.Now().Unix()})
+
+	}
+
+	if err = tx.Commit().Error; err != nil {
+		return
+	}
+	for i, _ := range receivers {
+		if d.c.Discord.Active {
+			d.AirdropSuccessNotice(receivers[i].String(), tokenIds[i].Int64())
+		}
 	}
 	return tx.Commit().Error
 }
@@ -71,5 +81,11 @@ func (d *Dao) UpdateAirdroppedError(tokenId int64, address string, msg string) (
 	err = d.db.Model(&model.ClaimBadgeTweet{}).
 		Where("token_id = ? AND address = ?", tokenId, address).
 		Updates(map[string]interface{}{"msg": msg, "status": 2}).Error
+	if err != nil {
+		return err
+	}
+	if d.c.Discord.Active {
+		d.AirdropFailNotice(address, tokenId, msg)
+	}
 	return
 }
