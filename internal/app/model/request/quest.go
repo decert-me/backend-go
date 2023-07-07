@@ -29,3 +29,8 @@ type UpdateQuestRequest struct {
 	EndTs       string `json:"end_ts" binding:"required"`
 	Supply      string `json:"supply" binding:"required"`
 }
+
+type UpdateRecommendRequest struct {
+	TokenId   int64  `json:"token_id" binding:"required"`
+	Recommend string `json:"recommend"` // 推荐
+}
