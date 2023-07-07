@@ -20,6 +20,10 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 	if err != nil {
 		return res, errors.New("TokenIDInvalid")
 	}
+	// 校验题目
+	if req.Uri != "" && req.Uri != quest.Uri {
+		return res, errors.New("QuestUpdate")
+	}
 	pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Score, &quest)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
@@ -58,6 +62,10 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
 	if err != nil {
 		return errors.New("TokenIDInvalid")
+	}
+	// 校验题目
+	if req.Uri != "" && req.Uri != quest.Uri {
+		return errors.New("QuestUpdate")
 	}
 	pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Score, &quest)
 	if err != nil {
