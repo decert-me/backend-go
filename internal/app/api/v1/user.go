@@ -80,7 +80,7 @@ func GetUserQuestList(c *gin.Context) {
 	var searchInfo request.GetUserQuestListRequest
 	_ = c.ShouldBindQuery(&searchInfo)
 	searchInfo.Creator = c.Param("address")
-	if list, total, err := srv.GetUserQuestList(searchInfo); err != nil {
+	if list, total, err := srv.GetUserQuestListWithClaimed(searchInfo); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
 		OkWithDetailed(response.PageResult{

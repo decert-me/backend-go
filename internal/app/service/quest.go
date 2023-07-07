@@ -24,6 +24,11 @@ func (s *Service) GetUserQuestList(searchInfo request.GetUserQuestListRequest) (
 	return
 }
 
+func (s *Service) GetUserQuestListWithClaimed(searchInfo request.GetUserQuestListRequest) (res []response.QuestWithClaimed, total int64, err error) {
+	res, total, err = s.dao.GetUserQuestListWithClaimed(&searchInfo)
+	return
+}
+
 func (s *Service) GetQuest(id string, address string) (quest response.GetQuestRes, err error) {
 	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
