@@ -41,7 +41,27 @@ func (s *Service) GetDiscordInfo(address string) (res interface{}, err error) {
 	if socials, err = s.dao.GetSocialsInfo(&model.Users{Address: address}); err != nil {
 		return
 	}
-	return gjson.Get(socials, "discord").Value(), err
+	discord := gjson.Get(socials, "discord").Value()
+	if discord == "" {
+		return nil, errors.New("NoBindingDetected")
+	}
+	return discord, err
+}
+
+func (s *Service) GetTwitterInfo(address string) (res interface{}, err error) {
+	var socials string
+	if socials, err = s.dao.GetSocialsInfo(&model.Users{Address: address}); err != nil {
+		return
+	}
+	id := gjson.Get(socials, "twitter.id").String()
+	username := gjson.Get(socials, "twitter.username").String()
+	if id == "" {
+		return nil, errors.New("NoBindingDetected")
+	}
+	res = map[string]string{"id": id,
+		"username": username,
+	}
+	return res, err
 }
 
 func (s *Service) UpdateAvatar(address string, header *multipart.FileHeader) (p string, err error) {

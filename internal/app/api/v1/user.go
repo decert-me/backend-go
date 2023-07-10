@@ -46,6 +46,14 @@ func GetDiscordInfo(c *gin.Context) {
 	}
 }
 
+func GetTwitterInfo(c *gin.Context) {
+	if list, err := srv.GetTwitterInfo(c.GetString("address")); err != nil {
+		FailWithMessage(GetMessage(c, "NoBindingDetected"), c)
+	} else {
+		OkWithData(list, c)
+	}
+}
+
 // GetUserInfo Get User Info
 func GetUserInfo(c *gin.Context) {
 	address := c.Param("address")

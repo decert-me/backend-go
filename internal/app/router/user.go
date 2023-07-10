@@ -18,6 +18,7 @@ func InitUserRouter(Router *gin.RouterGroup) {
 	}
 	{
 		userRouterAuth.GET("discord", v1.GetDiscordInfo)
+		userRouterAuth.GET("twitter", v1.GetTwitterInfo)
 		userRouterAuth.PUT("/:address", v1.UpdateUserInfo)
 		userRouterAuth.POST("/avatar", v1.UpdateAvatar)
 	}
