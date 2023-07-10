@@ -7,7 +7,13 @@ import (
 
 // TwitterAuthorizationURL 获取授权链接
 func TwitterAuthorizationURL(c *gin.Context) {
-	if list, err := srv.TwitterAuthorizationURL(); err != nil {
+	var req request.TwitterAuthorizationReq
+	err := c.ShouldBindQuery(&req)
+	if err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	if list, err := srv.TwitterAuthorizationURL(req); err != nil {
 		Fail(c)
 	} else {
 		OkWithData(list, c)

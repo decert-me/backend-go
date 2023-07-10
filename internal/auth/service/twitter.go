@@ -16,11 +16,11 @@ import (
 )
 
 // TwitterAuthorizationURL 推特获取登陆链接
-func (s *Service) TwitterAuthorizationURL() (res string, err error) {
+func (s *Service) TwitterAuthorizationURL(req request.TwitterAuthorizationReq) (res string, err error) {
 	config := oauth1.Config{
 		ConsumerKey:    s.c.Auth.Twitter.ConsumerKey,
 		ConsumerSecret: s.c.Auth.Twitter.ConsumerSecret,
-		CallbackURL:    s.c.Auth.Twitter.CallbackURL,
+		CallbackURL:    req.Callback,
 		Endpoint:       twitter.AuthorizeEndpoint,
 	}
 	requestToken, requestSecret, err := config.RequestToken()
@@ -42,7 +42,7 @@ func (s *Service) TwitterCallback(address string, req request.TwitterCallbackReq
 	config := oauth1.Config{
 		ConsumerKey:    s.c.Auth.Twitter.ConsumerKey,
 		ConsumerSecret: s.c.Auth.Twitter.ConsumerSecret,
-		CallbackURL:    s.c.Auth.Twitter.CallbackURL,
+		CallbackURL:    req.Callback,
 		Endpoint:       twitter.AuthorizeEndpoint,
 	}
 	accessToken, accessSecret, err := config.AccessToken(req.RequestToken, "secret does not matter", req.Verifier)

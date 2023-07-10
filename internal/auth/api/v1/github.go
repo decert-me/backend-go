@@ -13,9 +13,9 @@ func GithubAuthorizationURL(c *gin.Context) {
 
 // GithubCallback 推特回调登陆
 func GithubCallback(c *gin.Context) {
-	if list, err := srv.TwitterAuthorizationURL(); err != nil {
-		Fail(c)
-	} else {
-		OkWithData(list, c)
-	}
+	//if list, err := srv.TwitterAuthorizationURL(); err != nil {
+	//	Fail(c)
+	//} else {
+	//	OkWithData(list, c)
+	//}
 }
