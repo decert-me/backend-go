@@ -6,6 +6,7 @@ type PermitClaimBadgeReq struct {
 	Answer  string `json:"answer" binding:"required"`
 	Uri     string `json:"uri"`
 }
+
 type SubmitClaimTweetReq struct {
 	TokenId  int64  `json:"tokenId"`
 	TweetUrl string `json:"tweetUrl"`
