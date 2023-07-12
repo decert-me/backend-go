@@ -29,6 +29,7 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 		c.Set("address", claims.Address)
+		c.Set("userID", claims.UserID)
 	}
 }
 

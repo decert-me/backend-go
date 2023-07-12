@@ -68,6 +68,7 @@ func Routers(c *config.Config) *gin.Engine {
 		InitTransactionRouter(v1Group)
 		InitChallengeRouter(v1Group)
 		InitIPFSRouter(v1Group)
+		InitTutorialRouter(v1Group)
 	}
 	// meta
 	Router.GET("/quests/:id", v1.HandleMetaRequest)
