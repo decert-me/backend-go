@@ -2,13 +2,21 @@ package v1
 
 import (
 	"backend-go/internal/app/model/request"
+	v1 "backend-go/internal/judge/api/v1"
 	"github.com/gin-gonic/gin"
 )
 
 func GetProgress(c *gin.Context) {
 	var req request.GetProgressRequest
-	_ = c.ShouldBindQuery(&req)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
 	userID := c.GetUint("userID")
+	if userID == 0 {
+		FailWithDetailed(gin.H{"reload": true}, v1.GetMessage(c, "UnauthorizedAccess"), c)
+		return
+	}
 	if data, err := srv.GetProgress(userID, req); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
@@ -18,8 +26,15 @@ func GetProgress(c *gin.Context) {
 
 func UpdateProgress(c *gin.Context) {
 	var req request.UpdateProgressRequest
-	_ = c.ShouldBindQuery(&req)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
 	userID := c.GetUint("userID")
+	if userID == 0 {
+		FailWithDetailed(gin.H{"reload": true}, v1.GetMessage(c, "UnauthorizedAccess"), c)
+		return
+	}
 	if err := srv.UpdateProgress(userID, req); err != nil {
 		FailWithMessage(GetMessage(c, "UpdateFailed"), c)
 	} else {

@@ -11,5 +11,6 @@ func InitTutorialRouter(Router *gin.RouterGroup) {
 	//tutorialRouterAuth := Router.Group("tutorial").Use(middleware.Auth())
 	{
 		tutorialRouter.POST("progress", v1.GetProgress)
+		tutorialRouter.PUT("progress", v1.UpdateProgress)
 	}
 }

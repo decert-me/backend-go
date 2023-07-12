@@ -63,7 +63,7 @@ func (d *Dao) ChangeProgress(userID uint, req request.GetProgressRequest) (err e
 	}
 	// Data
 	var data []request.ProgressData
-	err = json.Unmarshal(progress.Data, data)
+	err = json.Unmarshal(progress.Data, &data)
 	if err != nil {
 		log.Errorv("json.Unmarshal error", zap.Error(err))
 		return err
@@ -102,7 +102,7 @@ func (d *Dao) UpdateProgress(userID uint, req request.UpdateProgressRequest) (er
 	}
 	// Data
 	var data []request.ProgressData
-	err = json.Unmarshal(progress.Data, data)
+	err = json.Unmarshal(progress.Data, &data)
 	if err != nil {
 		log.Errorv("json.Unmarshal error", zap.Error(err))
 		return err
