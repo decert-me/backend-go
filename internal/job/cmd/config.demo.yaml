@@ -53,5 +53,13 @@ scheduler:
   active: true
   airdrop-badge: "15 * * * *"
 
+# ipfs configuration
 ipfs:
   api: "https://ipfs.io/ipfs/"
+
+# discord configuration
+discord:
+  active: true
+  token: "fe"
+  success-channel: "1105777577794211840"
+  failed-channel: "1105777577794211840"

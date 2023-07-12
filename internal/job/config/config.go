@@ -13,4 +13,5 @@ type Config struct {
 	Scheduler  *Scheduler  `mapstructure:"scheduler" json:"scheduler" yaml:"scheduler"`
 	IPFS       *IPFS       `mapstructure:"ipfs" json:"ipfs" yaml:"ipfs"`
 	Auth       *Auth       `mapstructure:"auth" json:"auth" yaml:"auth"`
+	Discord    *Discord    `mapstructure:"discord" json:"discord" yaml:"discord"`
 }
