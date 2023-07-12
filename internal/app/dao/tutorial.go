@@ -112,6 +112,9 @@ func (d *Dao) UpdateProgress(userID uint, req request.UpdateProgressRequest) (er
 	for i, v := range data {
 		for _, v2 := range req.Data {
 			if v.DocId == v2.DocId {
+				if v2.IsFinish == false {
+					break
+				}
 				temp[i].IsFinish = v2.IsFinish
 			}
 		}
