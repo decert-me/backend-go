@@ -2,7 +2,6 @@ package v1
 
 import (
 	"backend-go/internal/app/model/request"
-	v1 "backend-go/internal/judge/api/v1"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +13,7 @@ func GetProgress(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 	if userID == 0 {
-		FailWithDetailed(gin.H{"reload": true}, v1.GetMessage(c, "UnauthorizedAccess"), c)
+		FailWithDetailed(gin.H{"reload": true}, GetMessage(c, "UnauthorizedAccess"), c)
 		return
 	}
 	if data, err := srv.GetProgress(userID, req); err != nil {
@@ -32,7 +31,7 @@ func UpdateProgress(c *gin.Context) {
 	}
 	userID := c.GetUint("userID")
 	if userID == 0 {
-		FailWithDetailed(gin.H{"reload": true}, v1.GetMessage(c, "UnauthorizedAccess"), c)
+		FailWithDetailed(gin.H{"reload": true}, GetMessage(c, "UnauthorizedAccess"), c)
 		return
 	}
 	if err := srv.UpdateProgress(userID, req); err != nil {
