@@ -6,7 +6,7 @@ type ProgressData struct {
 }
 type GetProgressRequest struct {
 	CatalogueName string         `json:"catalogueName"  binding:"required"`
-	Data          []ProgressData `json:"data"  binding:"required"`
+	Data          []ProgressData `json:"data"`
 }
 
 type UpdateProgressRequest struct {

@@ -20,6 +20,9 @@ func (s *Service) GetProgress(userID uint, req request.GetProgressRequest) (res 
 			return
 		}
 	}
+	if len(req.Data) == 0 {
+		return s.dao.GetProgress(userID, req.CatalogueName)
+	}
 	// 修改数据
 	if change {
 		if err = s.dao.ChangeProgress(userID, req); err != nil {
