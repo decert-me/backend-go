@@ -30,8 +30,11 @@ func (d *Dao) GetPendingAirdrop() (tokenId []*big.Int, listAddr []string, scores
 	}
 	for _, v := range pending {
 		// 获取推文内容
-		tweet, err := utils.GetTweetById(d.c, v.TweetId)
+		tweet, err := utils.GetSpyderTweetById(d.c, v.TweetId)
 		if err != nil {
+			if err.Error() == "NETWORK_ERROR" {
+				continue
+			}
 			d.UpdateAirdroppedError(v.TokenId, v.Address, fmt.Sprintf("GetTweetById err:%s", err.Error()))
 			continue
 		}
