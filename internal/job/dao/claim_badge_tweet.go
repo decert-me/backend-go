@@ -78,11 +78,14 @@ func (d *Dao) UpdateAirdroppedList(tokenIds []*big.Int, receivers []common.Addre
 }
 
 func (d *Dao) UpdateAirdroppedError(tokenId int64, address string, msg string) (err error) {
-	err = d.db.Model(&model.ClaimBadgeTweet{}).
+	raw := d.db.Model(&model.ClaimBadgeTweet{}).
 		Where("token_id = ? AND address = ?", tokenId, address).
-		Updates(map[string]interface{}{"msg": msg, "status": 2}).Error
-	if err != nil {
+		Updates(map[string]interface{}{"msg": msg, "status": 2})
+	if raw.Error != nil {
 		return err
+	}
+	if raw.RowsAffected == 0 {
+		return nil
 	}
 	if d.c.Discord.Active {
 		d.AirdropFailNotice(address, tokenId, msg)
