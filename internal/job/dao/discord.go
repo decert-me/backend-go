@@ -75,7 +75,7 @@ func (d *Dao) AirdropFailNotice(address string, tokenID int64, reason string) {
 	}
 	// 拼接信息
 	description := fmt.Sprintf("Address: %s \n TokenID: %d \n Reason: %s", address, tokenID, reason)
-	footer := discordgo.MessageEmbedFooter{Text: "decert-bot"}
+	footer := discordgo.MessageEmbedFooter{Text: "decertme-bot"}
 	embeds := []*discordgo.MessageEmbed{
 		{Color: 0x0099FF, Title: "SBT 空投失败",
 			Description: description,
