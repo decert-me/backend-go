@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/job/config"
 	"backend-go/pkg/log"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/chromedp"
@@ -94,7 +95,7 @@ func GetSpyderTweetById(c *config.Config, tweetId string) (string, error) {
 	)
 	if err != nil {
 		log.Errorv("err", zap.Error(err))
-		return "", err
+		return "", errors.New("NETWORK_ERROR")
 	}
 	// 将字符串转换为io.Reader
 	reader := strings.NewReader(html)
