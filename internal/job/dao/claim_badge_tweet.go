@@ -79,7 +79,7 @@ func (d *Dao) UpdateAirdroppedList(tokenIds []*big.Int, receivers []common.Addre
 
 func (d *Dao) UpdateAirdroppedError(tokenId int64, address string, msg string) (err error) {
 	raw := d.db.Model(&model.ClaimBadgeTweet{}).
-		Where("token_id = ? AND address = ?", tokenId, address).
+		Where("token_id = ? AND address = ? AND status=0", tokenId, address).
 		Updates(map[string]interface{}{"msg": msg, "status": 2})
 	if raw.Error != nil {
 		return err
