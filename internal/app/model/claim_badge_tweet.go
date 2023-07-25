@@ -10,7 +10,7 @@ type ClaimBadgeTweet struct {
 	AddTs       int64  `gorm:"column:add_ts;autoCreateTime" json:"add_ts"`
 	AirdropTs   int64  `gorm:"column:airdrop_ts" json:"airdrop_ts"`
 	AirdropHash string `gorm:"column:airdrop_hash;type:varchar" json:"airdrop_hash"`
-	Status      uint8  `gorm:"column:status;default:0" json:"status"` // 状态 0: 待空投 1: 成功空投 2: 出现错误
+	Status      uint8  `gorm:"column:status;default:0" json:"status"` // 状态 0: 待空投 1: 成功空投
 	Msg         string `gorm:"column:msg" json:"msg"`                 // 消息
 	Type        uint8  `gorm:"column:type" json:"type"`               // 类型 0: 使用推特链接 1：使用token获取用户推文
 }

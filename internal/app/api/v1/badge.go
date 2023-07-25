@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// claim Badge NFT
+// PermitClaimBadge claim Badge NFT
 func PermitClaimBadge(c *gin.Context) {
 	var req request.PermitClaimBadgeReq
 	err := c.ShouldBindJSON(&req)
@@ -51,5 +51,16 @@ func UpdateBadgeURI(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
 		OkWithData(list, c)
+	}
+}
+
+func SubmitClaimShare(c *gin.Context) {
+	var req request.SubmitClaimShareReq
+	_ = c.ShouldBindJSON(&req)
+	address := c.GetString("address")
+	if res, err := srv.SubmitClaimShare(address, req); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		OkWithData(res, c)
 	}
 }

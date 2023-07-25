@@ -3,14 +3,9 @@ package dao
 import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/job/utils"
-	"backend-go/pkg/log"
 	"errors"
 	"fmt"
-	twitterClient "github.com/dghubble/go-twitter/twitter"
-	"github.com/dghubble/oauth1"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/tidwall/gjson"
-	"go.uber.org/zap"
 	"math/big"
 	"time"
 )
@@ -33,55 +28,18 @@ func (d *Dao) GetPendingAirdrop() (tokenId []*big.Int, listAddr []string, scores
 		return
 	}
 	for _, v := range pending {
-		if v.TweetId == "" {
-			// 查找用户推特信息
-			var twitterData string
-			err = d.db.Raw("SELECT socials->'twitter' FROM users WHERE address = ? LIMIT 1", v.Address).Scan(&twitterData).Error
-			if err != nil || twitterData == "" {
+		tweet, err := utils.GetSpyderTweetById(d.c, v.TweetId)
+		if err != nil {
+			if err.Error() == "NETWORK_ERROR" {
 				continue
 			}
-			// 查询用户推特列表
-			accessToken := gjson.Get(twitterData, "accessToken").String()
-			accessSecret := gjson.Get(twitterData, "accessSecret").String()
-			token := oauth1.NewToken(accessToken, accessSecret)
-			oaConfig := oauth1.NewConfig(d.c.Auth.Twitter.ConsumerKey, d.c.Auth.Twitter.ConsumerSecret)
-			httpClient := oaConfig.Client(oauth1.NoContext, token)
-			client := twitterClient.NewClient(httpClient)
-			userID := gjson.Get(twitterData, "id").Int()
-			list, _, err := client.Timelines.UserTimeline(&twitterClient.UserTimelineParams{UserID: userID, Count: 50})
-			if err != nil {
-				log.Errorv("List error", zap.Error(err))
-				continue
-			}
-			// 匹配推文
-			var match bool
-			for _, v2 := range list {
-				if utils.CheckIfMatchClaimTweet(d.c, v.TokenId, v2.Text) {
-					tokenId = append(tokenId, big.NewInt(v.TokenId))
-					listAddr = append(listAddr, v.Address)
-					scores = append(scores, big.NewInt(v.Score))
-					match = true
-					break
-				}
-			}
-			if !match {
-				d.UpdateAirdroppedError(v.TokenId, v.Address, "TweetNoMatch")
-			}
-		} else {
-			// 获取推文内容
-			tweet, err := utils.GetTweetById(d.c, v.TweetId)
-			if err != nil {
-				d.UpdateAirdroppedError(v.TokenId, v.Address, fmt.Sprintf("GetTweetById err:%s", err.Error()))
-				continue
-			}
-			// 验证推文内容
-			if !utils.CheckIfMatchClaimTweet(d.c, v.TokenId, tweet) {
-				d.UpdateAirdroppedError(v.TokenId, v.Address, "InconsistentTweet")
-				continue
-			}
-			tokenId = append(tokenId, big.NewInt(v.TokenId))
-			listAddr = append(listAddr, v.Address)
-			scores = append(scores, big.NewInt(v.Score))
+			d.UpdateAirdroppedError(v.TokenId, v.Address, fmt.Sprintf("GetTweetById err:%s", err.Error()))
+			continue
+		}
+		// 验证推文内容
+		if !utils.CheckIfMatchClaimTweet(d.c, v.TokenId, tweet) {
+			d.UpdateAirdroppedError(v.TokenId, v.Address, "InconsistentTweet")
+			continue
 		}
 	}
 	if len(tokenId) != len(listAddr) {
@@ -118,11 +76,14 @@ func (d *Dao) UpdateAirdroppedList(tokenIds []*big.Int, receivers []common.Addre
 }
 
 func (d *Dao) UpdateAirdroppedError(tokenId int64, address string, msg string) (err error) {
-	err = d.db.Model(&model.ClaimBadgeTweet{}).
-		Where("token_id = ? AND address = ?", tokenId, address).
-		Updates(map[string]interface{}{"msg": msg, "status": 2}).Error
-	if err != nil {
+	raw := d.db.Model(&model.ClaimBadgeTweet{}).
+		Where("token_id = ? AND address = ? AND status=0", tokenId, address).
+		Updates(map[string]interface{}{"msg": msg, "status": 2})
+	if raw.Error != nil {
 		return err
+	}
+	if raw.RowsAffected == 0 {
+		return nil
 	}
 	if d.c.Discord.Active {
 		d.AirdropFailNotice(address, tokenId, msg)

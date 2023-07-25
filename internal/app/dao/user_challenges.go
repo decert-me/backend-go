@@ -13,7 +13,10 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm/clause"
 	"math/big"
+	"sync"
 )
+
+var lock sync.Mutex
 
 func (d *Dao) CreateChallenges(challenges *model.UserChallenges) (err error) {
 	err = d.db.Clauses(clause.OnConflict{
@@ -40,8 +43,24 @@ func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (e
 	return
 }
 
+func (d *Dao) CreateChallengesOne(tokenId int64, receiver string) (err error) {
+	challenge := model.UserChallenges{
+		Address: receiver,
+		TokenId: tokenId,
+		Claimed: true,
+		Status:  2,
+	}
+	err = d.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "address"}, {Name: "token_id"}},
+		UpdateAll: true,
+	}).Create(&challenge).Error
+	return
+}
+
 // GetOwnerChallengeList 挑战列表包含可领取
 func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res []response.GetChallengeListRes, total int64, err error) {
+	lock.Lock()
+	defer lock.Unlock()
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
 	db := d.db
@@ -126,6 +145,8 @@ func (d *Dao) GetChallengeList(req *request.GetChallengeListRequest) (res []resp
 
 // GetChallengeNotClaimList 未领取挑战列表
 func (d *Dao) GetChallengeNotClaimList(req *request.GetChallengeListRequest) (res []response.GetChallengeListRes, total int64, err error) {
+	lock.Lock()
+	defer lock.Unlock()
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
 	db := d.db
