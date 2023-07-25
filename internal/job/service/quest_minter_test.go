@@ -5,9 +5,13 @@ import (
 	"backend-go/internal/job/config"
 	"backend-go/internal/job/dao"
 	"backend-go/internal/job/initialize"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	"sync"
@@ -113,4 +117,35 @@ func TestQuestMinterServiceCrash(t *testing.T) {
 	s.receiverNotClaimList(client, []*big.Int{big.NewInt(10003)}, []string{"0x7d32D1DE76acd73d58fc76542212e86ea638173232grerg43523"}, []*big.Int{big.NewInt(100)})
 	// restart
 	s.dao = dao.New(c)
+}
+
+func TestSig(t *testing.T) {
+	signPrivateKey, err := crypto.HexToECDSA("20d1f1ad6f3f0320318325c8297d70752ec95b5bd2cadb14f04f29119d2cd9a5")
+	if err != nil {
+		fmt.Println(err)
+	}
+	var tokenIDs, uids []*big.Int
+	tokenIDs = []*big.Int{big.NewInt(1)}
+	uids = []*big.Int{big.NewInt(1)}
+	var origType []uint8
+	var toAddrs []string
+	_ = origType
+	_ = toAddrs
+	_ = uids
+	_ = tokenIDs
+	toAddrs = []string{"0xEC8F98F1A8B5EeDc7a2Fb912285388263751536E"}
+	origType = []uint8{1}
+	hash := solsha3.SoliditySHA3(
+		// types
+		[]string{"address", "uint256[]", "address[]", "uint256[]", "uint8[]"},
+		// values
+		[]interface{}{
+			"0x1E0AffE766d0996DB523040ca108c49060106409", tokenIDs, toAddrs, uids, origType,
+		},
+	)
+	fmt.Println("hash", hexutil.Encode(hash))
+	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
+	signature, _ := crypto.Sign(prefixedHash, signPrivateKey)
+	signature[64] += 27
+	fmt.Println(hexutil.Encode(signature))
 }

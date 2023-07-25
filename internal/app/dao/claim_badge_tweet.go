@@ -59,3 +59,10 @@ func (d *Dao) UpdateAirdroppedList(tokenId int64, receivers []common.Address, ha
 	}
 	return tx.Commit().Error
 }
+
+func (d *Dao) UpdateAirdroppedOne(tokenId int64, receivers string, hash string) (err error) {
+	tx := d.db.Model(&model.ClaimBadgeTweet{}).Begin()
+	tx.Where("token_id = ? AND address = ?", tokenId, receivers).
+		Updates(map[string]interface{}{"airdropped": "true", "airdrop_hash": hash, "airdrop_ts": time.Now().Unix()})
+	return tx.Commit().Error
+}
