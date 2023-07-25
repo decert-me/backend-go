@@ -81,6 +81,7 @@ func (s *Service) ClickCallback(shareCode, clientIP, userAgent string) (err erro
 func (s *Service) AirdropCallback(req request.AirdropCallbackRequest) (err error) {
 	tokenId, err := strconv.Atoi(req.TokenId)
 	if err != nil {
+		log.Errorv("strconv.Atoi error", zap.Error(err))
 		return
 	}
 	if err = s.dao.UpdateAirdroppedOne(int64(tokenId), req.Receiver, req.Hash); err != nil {
