@@ -76,3 +76,7 @@ ipfs:
 # judge configuration
 judge:
   solidity-api: ["http://192.168.1.10:3022/v1"]
+
+share:
+  share-callback: "http://192.168.1.10:8105/v1/url/save"           # 分享码回调
+  click-callback: "http://192.168.1.10:8105/v1/url/saveAccess"     # 点击回调
