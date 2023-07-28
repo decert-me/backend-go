@@ -35,7 +35,8 @@ func (s *Service) ShareCallback(shareCode, params string) (err error) {
 		"share_code": shareCode,
 		"params":     params,
 	}
-	res, err := client.R().SetBodyJsonMarshal(body).Post(s.c.Share.ShareCallback)
+	url := s.c.Share.Callback + "/v1/url/save"
+	res, err := client.R().SetBodyJsonMarshal(body).Post(url)
 	if err != nil {
 		log.Errorv("req post error", zap.Error(err))
 		return
@@ -66,7 +67,8 @@ func (s *Service) ClickCallback(shareCode, clientIP, userAgent string) (err erro
 		"ip":         clientIP,
 		"user_agent": userAgent,
 	}
-	res, err := client.R().SetBodyJsonMarshal(body).Post(s.c.Share.ClickCallback)
+	url := s.c.Share.Callback + "/v1/url/saveAccess"
+	res, err := client.R().SetBodyJsonMarshal(body).Post(url)
 	if err != nil {
 		log.Errorv("req post error", zap.Error(err))
 		return
