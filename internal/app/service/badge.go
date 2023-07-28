@@ -5,6 +5,7 @@ import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
+	"encoding/json"
 	"errors"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -125,4 +126,41 @@ func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURI
 	signature, err := crypto.Sign(prefixedHash, privateKey)
 	signature[64] += 27
 	return hexutil.Encode(signature), err
+}
+
+func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareReq) (res string, err error) {
+	// 校验分数正确性
+	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
+	if err != nil {
+		return res, errors.New("TokenIDInvalid")
+	}
+	// 校验题目
+	if req.Uri != "" && req.Uri != quest.Uri {
+		return res, errors.New("QuestUpdate")
+	}
+	pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Score, &quest)
+	if err != nil {
+		log.Errorv("AnswerCheck error", zap.Error(err))
+		return res, errors.New("UnexpectedError")
+	}
+	if !pass {
+		return res, errors.New("AnswerIncorrect")
+	}
+	// 生成分享码
+	paramsMap := map[string]interface{}{
+		"app": "decert",
+		"params": map[string]interface{}{
+			"receiver": address,
+			"tokenId":  req.TokenId,
+			"score":    req.Score,
+		},
+	}
+	// 将Map转换为JSON格式的字节数组
+	paramsData, err := json.Marshal(paramsMap)
+	if err != nil {
+		log.Errorv("JSON encoding error:", zap.Error(err))
+		return
+	}
+
+	return s.GenerateShare(request.GenerateShareRequest{Params: string(paramsData)})
 }

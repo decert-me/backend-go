@@ -43,6 +43,20 @@ func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (e
 	return
 }
 
+func (d *Dao) CreateChallengesOne(tokenId int64, receiver string) (err error) {
+	challenge := model.UserChallenges{
+		Address: receiver,
+		TokenId: tokenId,
+		Claimed: true,
+		Status:  2,
+	}
+	err = d.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "address"}, {Name: "token_id"}},
+		UpdateAll: true,
+	}).Create(&challenge).Error
+	return
+}
+
 // GetOwnerChallengeList 挑战列表包含可领取
 func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res []response.GetChallengeListRes, total int64, err error) {
 	lock.Lock()
