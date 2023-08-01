@@ -2,6 +2,7 @@ package service
 
 import (
 	"backend-go/internal/app/model/request"
+	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"crypto/md5"
 	"encoding/hex"
@@ -31,12 +32,18 @@ func (s *Service) GenerateShare(req request.GenerateShareRequest) (res string, e
 // ShareCallback 分享回调
 func (s *Service) ShareCallback(shareCode, params string) (err error) {
 	client := req.C()
-	body := map[string]string{
+	body := map[string]interface{}{
 		"share_code": shareCode,
 		"params":     params,
 	}
 	url := s.c.Share.Callback + "/v1/url/save"
-	res, err := client.R().SetBodyJsonMarshal(body).Post(url)
+	// 生成校验hash和时间戳
+	timestamp, hashValue := utils.HashData(body, s.c.Share.VerifyKey)
+	headers := map[string]string{
+		"verify":    hashValue,
+		"timestamp": strconv.Itoa(int(timestamp)),
+	}
+	res, err := client.R().SetHeaders(headers).SetBodyJsonMarshal(body).Post(url)
 	if err != nil {
 		log.Errorv("req post error", zap.Error(err))
 		return
@@ -62,13 +69,20 @@ func (s *Service) ClickShare(c *gin.Context, req request.ClickShareRequest) (err
 // ClickCallback 点击回调
 func (s *Service) ClickCallback(shareCode, clientIP, userAgent string) (err error) {
 	client := req.C()
-	body := map[string]string{
+	body := map[string]interface{}{
+		"app":        "decert",
 		"share_code": shareCode,
 		"ip":         clientIP,
 		"user_agent": userAgent,
 	}
 	url := s.c.Share.Callback + "/v1/url/saveAccess"
-	res, err := client.R().SetBodyJsonMarshal(body).Post(url)
+	// 生成校验hash和时间戳
+	timestamp, hashValue := utils.HashData(body, s.c.Share.VerifyKey)
+	headers := map[string]string{
+		"verify":    hashValue,
+		"timestamp": strconv.Itoa(int(timestamp)),
+	}
+	res, err := client.R().SetHeaders(headers).SetBodyJsonMarshal(body).Post(url)
 	if err != nil {
 		log.Errorv("req post error", zap.Error(err))
 		return
@@ -81,6 +95,10 @@ func (s *Service) ClickCallback(shareCode, clientIP, userAgent string) (err erro
 
 // AirdropCallback 空投回调处理
 func (s *Service) AirdropCallback(req request.AirdropCallbackRequest) (err error) {
+	if req.Status == 2 {
+		s.dao.AirdropFailNotice(req.Receiver, req.TokenId, req.Msg)
+		return
+	}
 	tokenId, err := strconv.Atoi(req.TokenId)
 	if err != nil {
 		log.Errorv("strconv.Atoi error", zap.Error(err))
@@ -92,5 +110,6 @@ func (s *Service) AirdropCallback(req request.AirdropCallbackRequest) (err error
 	if err = s.dao.CreateChallengesOne(int64(tokenId), req.Receiver); err != nil {
 		log.Errorv("updateAirdropStatus", zap.Any("error", err))
 	}
+	s.dao.AirdropSuccessNotice(req.Receiver, req.TokenId)
 	return err
 }
