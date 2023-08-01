@@ -81,6 +81,7 @@ judge:
   solidity-api: ["http://192.168.1.10:3022/v1"]
 
 share:
+  verify-key: "123456"                           # 校验key
   callback: "http://192.168.1.10:8105"   # 回调接口
 
 # discord configuration

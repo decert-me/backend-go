@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/tidwall/gjson"
-	"sort"
 	"strconv"
 	"time"
 )
@@ -39,24 +38,18 @@ func VerifyUploadJSONChallenge(key string, uploadJSONChallenge request.UploadJSO
 }
 
 // HashData 生成校验Hash
-func HashData(data map[string]interface{}, key string) (timestamp int64, hashValue string) {
-	// 将map的键值对按照键名排序，并转换成JSON格式的字符串
-	sortedKeys := make([]string, 0, len(data))
-	for key := range data {
-		sortedKeys = append(sortedKeys, key)
-	}
-	sort.Strings(sortedKeys)
-	var sortedData string
-	for _, key := range sortedKeys {
-		value, _ := json.Marshal(data[key])
-		sortedData += key + string(value)
+func HashData(data interface{}, key string) (timestamp int64, hashValue string) {
+	// 将结构体数据转换为 JSON 格式的字符串
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return
 	}
 	// 获取当前时间戳
 	timestamp = time.Now().Unix()
 
 	// 将时间戳与字符串拼接
-	hashData := sortedData + key + fmt.Sprintf("%d", timestamp)
-
+	hashData := string(jsonData) + key + fmt.Sprintf("%d", timestamp)
+	fmt.Println(hashData)
 	// 对字符串进行哈希计算
 	hasher := sha256.New()
 	hasher.Write([]byte(hashData))
