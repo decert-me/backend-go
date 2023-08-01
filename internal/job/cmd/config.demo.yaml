@@ -60,6 +60,6 @@ ipfs:
 # discord configuration
 discord:
   active: true
-  token: "fe"
+  token: "TzATY3NA.G3oGb.VryUgxsBM"
   success-channel: "1105777577794211840"
   failed-channel: "1105777577794211840"
