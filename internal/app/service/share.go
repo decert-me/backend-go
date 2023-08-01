@@ -2,6 +2,7 @@ package service
 
 import (
 	"backend-go/internal/app/model/request"
+	"backend-go/internal/app/model/response"
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"crypto/md5"
@@ -32,9 +33,9 @@ func (s *Service) GenerateShare(req request.GenerateShareRequest) (res string, e
 // ShareCallback 分享回调
 func (s *Service) ShareCallback(shareCode, params string) (err error) {
 	client := req.C()
-	body := map[string]interface{}{
-		"share_code": shareCode,
-		"params":     params,
+	body := response.ShareCallbackResponse{
+		ShareCode: shareCode,
+		Params:    params,
 	}
 	url := s.c.Share.Callback + "/v1/url/save"
 	// 生成校验hash和时间戳
@@ -69,11 +70,11 @@ func (s *Service) ClickShare(c *gin.Context, req request.ClickShareRequest) (err
 // ClickCallback 点击回调
 func (s *Service) ClickCallback(shareCode, clientIP, userAgent string) (err error) {
 	client := req.C()
-	body := map[string]interface{}{
-		"app":        "decert",
-		"share_code": shareCode,
-		"ip":         clientIP,
-		"user_agent": userAgent,
+	body := response.ClickCallbackResponse{
+		App:       "decert",
+		ShareCode: shareCode,
+		IP:        clientIP,
+		UserAgent: userAgent,
 	}
 	url := s.c.Share.Callback + "/v1/url/saveAccess"
 	// 生成校验hash和时间戳
@@ -105,10 +106,10 @@ func (s *Service) AirdropCallback(req request.AirdropCallbackRequest) (err error
 		return
 	}
 	if err = s.dao.UpdateAirdroppedOne(int64(tokenId), req.Receiver, req.Hash); err != nil {
-		log.Errorv("updateAirdropStatus", zap.Any("error", err))
+		log.Errorv("UpdateAirdroppedOne error", zap.Any("error", err))
 	}
 	if err = s.dao.CreateChallengesOne(int64(tokenId), req.Receiver); err != nil {
-		log.Errorv("updateAirdropStatus", zap.Any("error", err))
+		log.Errorv("CreateChallengesOne error ", zap.Any("error", err))
 	}
 	s.dao.AirdropSuccessNotice(req.Receiver, req.TokenId)
 	return err
