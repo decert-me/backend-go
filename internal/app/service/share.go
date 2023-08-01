@@ -95,7 +95,14 @@ func (s *Service) ClickCallback(shareCode, clientIP, userAgent string) (err erro
 }
 
 // AirdropCallback 空投回调处理
-func (s *Service) AirdropCallback(req request.AirdropCallbackRequest) (err error) {
+func (s *Service) AirdropCallback(c *gin.Context, req request.AirdropCallbackRequest) (err error) {
+	// 校验
+	verify := c.Request.Header.Get("verify")
+	timestamp := c.Request.Header.Get("timestamp")
+	if !utils.VerifyData(req, s.c.Share.VerifyKey, verify, timestamp) {
+		return errors.New("校验失败")
+	}
+
 	if req.Status == 2 {
 		s.dao.AirdropFailNotice(req.Receiver, req.TokenId, req.Msg)
 		return

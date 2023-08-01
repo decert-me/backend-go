@@ -49,7 +49,6 @@ func HashData(data interface{}, key string) (timestamp int64, hashValue string) 
 
 	// 将时间戳与字符串拼接
 	hashData := string(jsonData) + key + fmt.Sprintf("%d", timestamp)
-	fmt.Println(hashData)
 	// 对字符串进行哈希计算
 	hasher := sha256.New()
 	hasher.Write([]byte(hashData))

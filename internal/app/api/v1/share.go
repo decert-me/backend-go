@@ -20,7 +20,7 @@ func ClickShare(c *gin.Context) {
 func AirdropCallback(c *gin.Context) {
 	var submit request.AirdropCallbackRequest
 	_ = c.ShouldBindJSON(&submit)
-	if err := srv.AirdropCallback(submit); err != nil {
+	if err := srv.AirdropCallback(c, submit); err != nil {
 		FailWithMessage(GetMessage(c, "OperationFailed"), c)
 	} else {
 		Ok(c)
