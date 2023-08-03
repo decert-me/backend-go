@@ -182,7 +182,7 @@ func (s *Service) GolangRun(code string, codeSnippet string, inputs []string) (r
 			CPULimit:    3000000000,
 			ClockLimit:  4000000000,
 			MemoryLimit: 104857600,
-			ProcLimit:   50,
+			ProcLimit:   100,
 			CPURate:     0.1,
 			CopyIn:      runCopyIn,
 		}
