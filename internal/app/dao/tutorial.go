@@ -158,9 +158,7 @@ func (d *Dao) GetProgressList(userID uint, catalogueNameList []string) (res []re
 		var percent float64
 		var userReadProgress model.ReadProgress
 		if userID != 0 {
-			if err := d.db.Model(&model.ReadProgress{}).Where("user_id = ? AND catalogue_name = ?", userID, catalogueName).First(&userReadProgress).Error; err != nil {
-				log.Errorv("First error", zap.Error(err))
-			}
+			_ = d.db.Model(&model.ReadProgress{}).Where("user_id = ? AND catalogue_name = ?", userID, catalogueName).First(&userReadProgress).Error
 		}
 		finishArr := gjson.Get(string(userReadProgress.Data), "#.is_finish").Array()
 		total := len(finishArr)
