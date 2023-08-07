@@ -170,8 +170,10 @@ func (d *Dao) GetProgressList(userID uint, catalogueNameList []string) (res []re
 				read++
 			}
 		}
-		temp := float64(read) / float64(total)
-		percent = math.Round(temp*100) / 100
+		if total != 0 && read != 0 {
+			temp := float64(read) / float64(total)
+			percent = math.Round(temp*100) / 100
+		}
 		res = append(res, response.GetProgressListRes{
 			CatalogueName: catalogueName,
 			ReadNum:       readNum,
