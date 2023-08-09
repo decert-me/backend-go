@@ -68,6 +68,7 @@ func Routers(c *config.Config) *gin.Engine {
 		InitTransactionRouter(v1Group)
 		InitChallengeRouter(v1Group)
 		InitIPFSRouter(v1Group)
+		InitJudgeRouter(v1Group)
 		InitTutorialRouter(v1Group)
 		InitShareRouter(v1Group)
 	}

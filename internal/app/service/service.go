@@ -3,6 +3,8 @@ package service
 import (
 	"backend-go/internal/app/config"
 	"backend-go/internal/app/dao"
+	"backend-go/internal/app/initialize"
+	"backend-go/pkg/balancer"
 	"context"
 	"github.com/robfig/cron/v3"
 )
@@ -12,6 +14,7 @@ type Service struct {
 	c    *config.Config
 	dao  *dao.Dao
 	cron *cron.Cron
+	W    *balancer.SmoothRoundrobin
 }
 
 // New init.
@@ -20,7 +23,7 @@ func New(c *config.Config) (s *Service) {
 		c:   c,
 		dao: dao.New(c),
 	}
-
+	s.W = initialize.InitJudge(c)
 	return
 }
 func (s *Service) GetConfig() *config.Config {
