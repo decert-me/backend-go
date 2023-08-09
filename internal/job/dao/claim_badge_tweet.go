@@ -30,8 +30,11 @@ func (d *Dao) GetPendingAirdrop() (tokenId []*big.Int, listAddr []string, scores
 	}
 	for _, v := range pending {
 		// 获取推文内容
-		tweet, err := utils.GetTweetById(d.c, v.TweetId)
+		tweet, err := utils.GetSpyderTweetById(d.c, v.TweetId)
 		if err != nil {
+			if err.Error() == "NETWORK_ERROR" {
+				continue
+			}
 			d.UpdateAirdroppedError(v.TokenId, v.Address, fmt.Sprintf("GetTweetById err:%s", err.Error()))
 			continue
 		}
@@ -63,13 +66,32 @@ func (d *Dao) UpdateAirdroppedList(tokenIds []*big.Int, receivers []common.Addre
 	for i, _ := range receivers {
 		tx.Where("token_id = ? AND address = ?", tokenIds[i], receivers[i].String()).
 			Updates(map[string]interface{}{"status": 1, "airdrop_hash": hash, "airdrop_ts": time.Now().Unix()})
+
+	}
+
+	if err = tx.Commit().Error; err != nil {
+		return
+	}
+	for i, _ := range receivers {
+		if d.c.Discord.Active {
+			d.AirdropSuccessNotice(receivers[i].String(), tokenIds[i].Int64())
+		}
 	}
 	return tx.Commit().Error
 }
 
 func (d *Dao) UpdateAirdroppedError(tokenId int64, address string, msg string) (err error) {
-	err = d.db.Model(&model.ClaimBadgeTweet{}).
-		Where("token_id = ? AND address = ?", tokenId, address).
-		Updates(map[string]interface{}{"msg": msg, "status": 2}).Error
+	raw := d.db.Model(&model.ClaimBadgeTweet{}).
+		Where("token_id = ? AND address = ? AND status=0", tokenId, address).
+		Updates(map[string]interface{}{"msg": msg, "status": 2})
+	if raw.Error != nil {
+		return err
+	}
+	if raw.RowsAffected == 0 {
+		return nil
+	}
+	if d.c.Discord.Active {
+		d.AirdropFailNotice(address, tokenId, msg)
+	}
 	return
 }

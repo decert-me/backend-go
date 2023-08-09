@@ -64,3 +64,17 @@ func GetQuestChallengeUser(c *gin.Context) {
 		OkWithData(data, c)
 	}
 }
+
+func UpdateRecommend(c *gin.Context) {
+	var modify request.UpdateRecommendRequest
+	if err := c.ShouldBindJSON(&modify); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	address := c.GetString("address")
+	if err := srv.UpdateRecommend(address, modify); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		Ok(c)
+	}
+}

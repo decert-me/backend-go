@@ -3,7 +3,7 @@ system:
   env: develop
   addr: 8888
   i18n: "locale.json"
-
+  website: ""
 # pgsql configuration
 pgsql:
   path: "127.0.0.1"
@@ -78,3 +78,14 @@ judge:
   judge-api:
     - url: "http://192.168.1.10:3022/v1"
       weight: 10
+
+share:
+  verify-key: "123456"                           # 校验key
+  callback: "http://192.168.1.10:8105"   # 回调接口
+
+# discord configuration
+discord:
+  active: true
+  token: "TzATY3NA.G3oGb.VryUgxsBM"
+  success-channel: "1105777577794211840"
+  failed-channel: "1105777577794211840"

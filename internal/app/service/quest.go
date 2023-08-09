@@ -1,9 +1,12 @@
 package service
 
 import (
+	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
@@ -18,6 +21,11 @@ func (s *Service) GetQuestList(searchInfo request.GetQuestListRequest) (res []re
 
 func (s *Service) GetUserQuestList(searchInfo request.GetUserQuestListRequest) (res []response.GetUserQuestListRes, total int64, err error) {
 	res, total, err = s.dao.GetUserQuestList(&searchInfo)
+	return
+}
+
+func (s *Service) GetUserQuestListWithClaimed(searchInfo request.GetUserQuestListRequest) (res []response.QuestWithClaimed, total int64, err error) {
+	res, total, err = s.dao.GetUserQuestListWithClaimed(&searchInfo)
 	return
 }
 
@@ -87,6 +95,25 @@ func (s *Service) GetQuestChallengeUser(id string) (res response.GetQuestChallen
 	} else {
 		res, err = s.dao.GetQuestChallengeUserByTokenID(tokenId)
 	}
-
 	return
+}
+
+func (s *Service) UpdateRecommend(address string, modify request.UpdateRecommendRequest) (err error) {
+	// 获取Quest信息
+	quest, err := s.dao.GetQuestByTokenID(modify.TokenId)
+	if err != nil {
+		return errors.New("UnexpectedError")
+	}
+	if quest.Creator != common.HexToAddress(address).String() {
+		return errors.New("UnauthorizedAccess")
+	}
+	// 修改Quest
+	err = s.dao.UpdateQuest(&model.Quest{
+		TokenId:   modify.TokenId,
+		Recommend: modify.Recommend,
+	})
+	if err != nil {
+		return errors.New("OperationFailed")
+	}
+	return nil
 }

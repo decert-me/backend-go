@@ -17,5 +17,6 @@ func InitQuestRouter(Router *gin.RouterGroup) {
 	{
 		questRouterAuth.POST("", v1.AddQuest)
 		questRouterAuth.PUT("", v1.UpdateQuest)
+		questRouterAuth.PUT("/recommend", v1.UpdateRecommend)
 	}
 }

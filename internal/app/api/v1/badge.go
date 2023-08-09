@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// claim Badge NFT
+// PermitClaimBadge claim Badge NFT
 func PermitClaimBadge(c *gin.Context) {
 	var req request.PermitClaimBadgeReq
 	err := c.ShouldBindJSON(&req)
@@ -15,7 +15,11 @@ func PermitClaimBadge(c *gin.Context) {
 	}
 	address := c.GetString("address")
 	if list, err := srv.PermitClaimBadge(address, req); err != nil {
-		Fail(c)
+		if err.Error() == "QuestUpdate" {
+			OkWithMessage(GetMessage(c, err.Error()), c)
+			return
+		}
+		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		OkWithData(list, c)
 	}
@@ -26,6 +30,10 @@ func SubmitClaimTweet(c *gin.Context) {
 	_ = c.ShouldBindJSON(&req)
 	address := c.GetString("address")
 	if err := srv.SubmitClaimTweet(address, req); err != nil {
+		if err.Error() == "QuestUpdate" {
+			OkWithMessage(GetMessage(c, err.Error()), c)
+			return
+		}
 		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		Ok(c)
@@ -43,5 +51,16 @@ func UpdateBadgeURI(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
 		OkWithData(list, c)
+	}
+}
+
+func SubmitClaimShare(c *gin.Context) {
+	var req request.SubmitClaimShareReq
+	_ = c.ShouldBindJSON(&req)
+	address := c.GetString("address")
+	if res, err := srv.SubmitClaimShare(address, req); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		OkWithData(res, c)
 	}
 }

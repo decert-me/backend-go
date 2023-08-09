@@ -33,7 +33,6 @@ func TestMain(m *testing.M) {
 	c.Pgsql.AutoMigrate = true
 	c.BlockChain.ChainID = 5
 	c.BlockChain.Attempt = 5
-	c.Twitter.ClaimContent = "我在 @DecertMe 上完成了一个挑战并获得了链上能力认证的徽章。\nhttps://decert.me/quests/\n#DecertMe"
 	// test contract address
 	c.Contract = &config.Contract{
 		Badge:       "0x66C54CB10Ef3d038aaBA2Ac06d2c25B326be8142",

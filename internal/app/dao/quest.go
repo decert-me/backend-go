@@ -113,6 +113,21 @@ func (d *Dao) GetUserQuestList(req *request.GetUserQuestListRequest) (questList 
 	return questList, total, err
 }
 
+func (d *Dao) GetUserQuestListWithClaimed(req *request.GetUserQuestListRequest) (questList []response.QuestWithClaimed, total int64, err error) {
+	limit := req.PageSize
+	offset := req.PageSize * (req.Page - 1)
+	db := d.db.Model(&response.QuestWithClaimed{})
+	db.Select("quest.*,EXISTS (SELECT 1 FROM user_challenges WHERE quest.token_id = user_challenges.token_id) AS has_claim")
+	db.Where(&req.Quest)
+	err = db.Count(&total).Error
+	if err != nil {
+		return questList, total, err
+	}
+	err = db.Limit(limit).Offset(offset).Order("add_ts desc").Find(&questList).Error
+
+	return questList, total, err
+}
+
 func (d *Dao) GetQuestChallengeUserByTokenID(tokenId int64) (res response.GetQuestChallengeUserRes, err error) {
 	err = d.db.Model(&model.UserChallenges{}).Where("token_id", tokenId).Count(&res.Times).Error
 	if err != nil {
@@ -147,4 +162,8 @@ func (d *Dao) GetQuestChallengeUserByUUID(uuid string) (res response.GetQuestCha
 		Limit(12).
 		Find(&res.Users).Error
 	return res, err
+}
+
+func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
+	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
 }

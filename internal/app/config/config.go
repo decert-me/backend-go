@@ -17,4 +17,6 @@ type Config struct {
 	Local      *Local       `mapstructure:"local" json:"local" yaml:"local"`
 	IPFS       []IPFS       `mapstructure:"ipfs" json:"ipfs" yaml:"ipfs"`
 	Judge      *Judge       `mapstructure:"judge" json:"judge" yaml:"judge"`
+	Share      *Share       `mapstructure:"share" json:"share" yaml:"share"`
+	Discord    *Discord     `mapstructure:"discord" json:"discord" yaml:"discord"`
 }
