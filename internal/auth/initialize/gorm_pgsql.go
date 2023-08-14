@@ -1,7 +1,7 @@
 package initialize
 
 import (
-	"backend-go/internal/judge/config"
+	"backend-go/internal/auth/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

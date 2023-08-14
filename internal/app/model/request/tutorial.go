@@ -13,3 +13,7 @@ type UpdateProgressRequest struct {
 	CatalogueName string         `json:"catalogueName"  binding:"required"`
 	Data          []ProgressData `json:"data"  binding:"required"`
 }
+
+type GetProgressListRequest struct {
+	CatalogueNameList []string `json:"catalogueNameList"  binding:"required"`
+}

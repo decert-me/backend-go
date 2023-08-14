@@ -83,6 +83,7 @@ func (a *Auth) _ParseToken(tokenString string, ignoreExp bool) (*CustomClaims, e
 			} else if ve.Errors&jwt.ValidationErrorExpired != 0 && !ignoreExp {
 				// Token is expired
 				return nil, TokenExpired
+			} else if ve.Errors&jwt.ValidationErrorExpired != 0 && ignoreExp {
 			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
 				return nil, TokenNotValidYet
 			} else {
@@ -90,8 +91,9 @@ func (a *Auth) _ParseToken(tokenString string, ignoreExp bool) (*CustomClaims, e
 			}
 		}
 	}
+
 	if token != nil {
-		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		if claims, ok := token.Claims.(*CustomClaims); ok && (token.Valid || ignoreExp) {
 			return claims, nil
 		}
 		return nil, TokenInvalid

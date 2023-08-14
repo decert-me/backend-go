@@ -38,7 +38,7 @@ func TestService_GetQuest(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1), total)
 	assert.Equal(t, len(questList), 1)
-	quest, err := s.GetQuest(strconv.Itoa(TOKENID))
+	quest, err := s.GetQuest(strconv.Itoa(TOKENID), "")
 	assert.Nil(t, err)
 	metaData := []byte(gjson.Parse("{\"image\": \"ipfs://QmZr8D7Qjurwd8HxzHyqRy7epWsbE5TRUp4yic3qSshGj2\", \"title\": \"Title测试123abc@#¥\", \"version\": 1, \"properties\": {\"url\": \"\", \"answers\": \"PlIZOgVOU28BRxYQEUgWaA==\", \"endTIme\": null, \"requires\": [], \"questions\": [{\"type\": 0, \"score\": 100, \"title\": \"Questions测试123abc@#¥\", \"options\": [\"true\", \"false\"]}, {\"type\": 1, \"score\": 100, \"title\": \"Description2测试123abc@#¥\", \"options\": [\"true\", \"true\", \"false\"]}, {\"type\": 2, \"score\": 100, \"title\": \"Questions3测试123abc@#¥\", \"options\": [\"true\"]}], \"startTime\": \"2023-02-27T02:29:15.240Z\", \"difficulty\": 0, \"estimateTime\": 1800, \"passingScore\": 200}, \"description\": \"Description测试123abc@#¥\"}").Raw)
 	extraData := []byte(gjson.Parse("{\"endTs\": 1678327339, \"supply\": 10, \"startTs\": 1}").Raw)
@@ -64,7 +64,7 @@ func TestService_GetQuest(t *testing.T) {
 	assert.Equal(t, questExpect, quest)
 	assert.Equal(t, questExpect, questList[0].Quest)
 
-	_, err = s.GetQuest("x212")
+	_, err = s.GetQuest("x212", "")
 	assert.Error(t, err, "", "should error when questId not digits")
 	// clear
 	deleteQuest()

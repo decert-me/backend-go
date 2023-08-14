@@ -24,31 +24,26 @@ var dockerRunning map[string]*sync.Mutex
 func init() {
 	dockerRunning = make(map[string]*sync.Mutex)
 }
-func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
-	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenID})
-	if err != nil {
-		return
-	}
+func (s *Service) SolidityTryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 默认零地址
-	if address == "" {
-		address = common.HexToAddress("0").String()
+	if req.Address == "" {
+		req.Address = common.HexToAddress("0").String()
 	}
-	req.Address = address
 	// Docker启动
-	lock, err := s.SolidityDockerInit(address)
+	lock, err := s.DockerInit(req.Address)
 	defer lock.Unlock()
 	if err != nil {
 		return tryRunRes, errors.New("UnexpectedError")
 	}
-	questType := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
+	questType := gjson.Get(string(req.Quest.QuestData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
 
 	if questType != "coding" {
 		return tryRunRes, errors.New("不是编程题目")
 	}
 	// 普通编程题目
-	input := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.input", req.QuestIndex)).Array()
+	input := gjson.Get(string(req.Quest.QuestData), fmt.Sprintf("questions.%d.input", req.QuestIndex)).Array()
 	if len(input) != 0 {
-		tryRunRes, err = s.RunNormalSolidity(req, quest)
+		tryRunRes, err = s.RunNormalSolidity(req, req.Quest)
 		// 错误提前返回
 		if err != nil || tryRunRes.Status != 3 {
 			return
@@ -56,9 +51,9 @@ func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes respo
 	}
 	var tryRunResTemp response.TryRunRes
 	// 特殊编程题目
-	spjCode := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).Array()
+	spjCode := gjson.Get(string(req.Quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).Array()
 	if len(spjCode) != 0 {
-		tryRunResTemp, err = s.RunNormalSpecialSolidity(req, quest)
+		tryRunResTemp, err = s.RunNormalSpecialSolidity(req, req.Quest)
 		if err != nil {
 			return tryRunResTemp, err
 		}
@@ -69,14 +64,13 @@ func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes respo
 	return
 }
 
-func (s *Service) TryTestRun(address string, req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) SolidityTryTestRun(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 默认零地址
-	if address == "" {
-		address = common.HexToAddress("0").String()
+	if req.Address == "" {
+		req.Address = common.HexToAddress("0").String()
 	}
-	req.Address = address
 	// Docker启动
-	lock, err := s.SolidityDockerInit(address)
+	lock, err := s.DockerInit(req.Address)
 	defer lock.Unlock()
 	if err != nil {
 		return tryRunRes, errors.New("UnexpectedError")
@@ -112,8 +106,8 @@ func (s *Service) RunTestSolidity(req request.TryTestRunReq) (tryRunRes response
 	if len(matches) > 1 {
 		functionName = matches[1]
 	}
-	fmt.Println(req.ExampleInput)
-	fmt.Println(req.ExampleOutput)
+	//fmt.Println(req.ExampleInput)
+	//fmt.Println(req.ExampleOutput)
 	runReq := runSolidityReq{
 		Address:       req.Address,
 		InputArray:    req.ExampleInput,
@@ -341,7 +335,7 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 	//	return
 	//}
 	// 测试
-	res, err := s.TestSolidity(request.ForgeTestReq{
+	res, err := s.TestSolidity(request.TestReq{
 		Code:    req.Code,
 		Address: req.Address,
 	}, spjCodeNew.String())
@@ -358,7 +352,7 @@ func (s *Service) RunSpecialSolidity(req runSolidityReq) (tryRunRes response.Try
 
 func (s *Service) RunSpecialHardhatSolidity(req runSolidityReq) (tryRunRes response.TryRunRes, err error) {
 	// 测试
-	res, err := s.HardhatTestSolidity(request.ForgeTestReq{
+	res, err := s.HardhatTestSolidity(request.TestReq{
 		Code:    req.Code,
 		Address: req.Address,
 	}, req.SpjCode)
@@ -448,7 +442,7 @@ func (s *Service) RunTestSpecialSolidity(req request.TryTestRunReq) (tryRunRes r
 }
 
 // SolidityDockerInit 初始化Solidity运行环境
-func (s *Service) SolidityDockerInit(address string) (l *sync.Mutex, err error) {
+func (s *Service) DockerInit(address string) (l *sync.Mutex, err error) {
 	addressParse := common.HexToAddress(address).String()
 	if _, ok := dockerRunning[addressParse]; !ok {
 		dockerRunning[addressParse] = new(sync.Mutex)
@@ -462,8 +456,8 @@ func (s *Service) SolidityDockerInit(address string) (l *sync.Mutex, err error) 
 		return lock, nil
 	}
 	DelDocker(address)
-	hardhatPath := path.Join(s.c.Judge.WorkPath, address, "hardhat")
-	foundryPath := path.Join(s.c.Judge.WorkPath, address, "foundry")
+	hardhatPath := path.Join(s.c.Judge.SolidityWorkPath, address, "hardhat")
+	foundryPath := path.Join(s.c.Judge.SolidityWorkPath, address, "foundry")
 	// 初始化 Hardhat 目录
 	hardhatDirList := []string{"contracts", "test"}
 	var mapping []string
@@ -484,9 +478,9 @@ func (s *Service) SolidityDockerInit(address string) (l *sync.Mutex, err error) 
 		mapping = append(mapping, "-v", path.Join(foundryPath, dir)+":"+path.Join("/foundry", dir))
 	}
 	// Hardhat 缓存目录
-	mapping = append(mapping, "-v", path.Join(s.c.Judge.CachePath, "hardhat/cache")+":/root/.cache")
+	mapping = append(mapping, "-v", path.Join(s.c.Judge.SolidityCachePath, "hardhat/cache")+":/root/.cache")
 	// Foundry 缓存目录
-	mapping = append(mapping, "-v", path.Join(s.c.Judge.CachePath, "foundry/svm")+":/root/.svm")
+	mapping = append(mapping, "-v", path.Join(s.c.Judge.SolidityCachePath, "foundry/svm")+":/root/.svm")
 
 	return lock, CreateDocker(address, "judge:1.0", mapping)
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
+	"backend-go/internal/app/model/response"
 	"backend-go/pkg/log"
 	"go.uber.org/zap"
 )
@@ -36,4 +37,8 @@ func (s *Service) GetProgress(userID uint, req request.GetProgressRequest) (res 
 
 func (s *Service) UpdateProgress(userID uint, req request.UpdateProgressRequest) (err error) {
 	return s.dao.UpdateProgress(userID, req)
+}
+
+func (s *Service) GetProgressList(userID uint, req request.GetProgressListRequest) (res []response.GetProgressListRes, err error) {
+	return s.dao.GetProgressList(userID, req.CatalogueNameList)
 }

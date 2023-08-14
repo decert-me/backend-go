@@ -40,7 +40,7 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 			}
 			reqMap := make(map[string]interface{})
 			reqMap["code"] = gjson.Get(v.String(), "code").String()
-			reqMap["lang"] = gjson.Get(v.String(), "lang").String()
+			reqMap["lang"] = gjson.Get(v.String(), "language").String()
 			reqMap["token_id"] = quest.TokenId
 			reqMap["quest_index"] = i
 			// 检查答案
@@ -94,7 +94,7 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 	return
 }
 
-func (s *Service) AnswerScore(key, answerUser, uri string, quest model.Quest) (userScore int64, pass bool, err error) {
+func (s *Service) AnswerScore(key, answerUser, address string, quest model.Quest) (userScore int64, pass bool, err error) {
 	res := quest.MetaData.String()
 	questData := string(quest.QuestData)
 	version := gjson.Get(res, "version").Float()
@@ -121,6 +121,8 @@ func (s *Service) AnswerScore(key, answerUser, uri string, quest model.Quest) (u
 				reqMap["lang"] = gjson.Get(v.String(), "lang").String()
 				reqMap["token_id"] = quest.TokenId
 				reqMap["quest_index"] = i
+				reqMap["quest"] = quest
+				reqMap["address"] = address
 				// 检查答案
 				if s.CodingCheck(reqMap) {
 					score += scoreList[i].Int()

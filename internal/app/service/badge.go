@@ -76,6 +76,25 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	if !pass {
 		return errors.New("AnswerIncorrect")
 	}
+	if req.TweetUrl == "" {
+		// 保存到数据库
+		exists, err := s.dao.CreateClaimBadgeTweet(&model.ClaimBadgeTweet{
+			Address: address,
+			TokenId: req.TokenId,
+			Score:   req.Score,
+			Url:     req.TweetUrl,
+			AddTs:   time.Now().Unix(),
+			Type:    1,
+		})
+		if err != nil {
+			log.Errorv("CreateClaimBadgeTweet error", zap.Error(err))
+			return errors.New("UnexpectedError")
+		}
+		if exists {
+			return errors.New("AlreadyHoldsBadge")
+		}
+		return nil
+	}
 	// 获取推文ID
 	tweetId := utils.GetTweetIdFromURL(req.TweetUrl)
 	if tweetId == "" {

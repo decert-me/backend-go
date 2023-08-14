@@ -2,8 +2,24 @@ package v1
 
 import (
 	"backend-go/internal/app/model/request"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
+
+func GetProgressList(c *gin.Context) {
+	var req request.GetProgressListRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	userID := c.GetUint("userID")
+	fmt.Println("userID", userID)
+	if data, err := srv.GetProgressList(userID, req); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithData(data, c)
+	}
+}
 
 func GetProgress(c *gin.Context) {
 	var req request.GetProgressRequest

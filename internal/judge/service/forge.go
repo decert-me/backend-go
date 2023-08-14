@@ -16,11 +16,11 @@ import (
 	"time"
 )
 
-func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res response.ForgeTestRes, err error) {
+func (s *Service) TestSolidity(req request.TestReq, spjCode string) (res response.TestRes, err error) {
 	if req.Address == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
-	foundryPath := path.Join(s.c.Judge.WorkPath, req.Address, "foundry")
+	foundryPath := path.Join(s.c.Judge.SolidityWorkPath, req.Address, "foundry")
 	// 获取合约名称
 	re := regexp.MustCompile(`contract\s+(\w+)\s*{`)
 
@@ -60,12 +60,12 @@ func (s *Service) TestSolidity(req request.ForgeTestReq, spjCode string) (res re
 	}
 	resultArray := gjson.Get(execResList[len(execResList)-2], "*.test_results").Array()
 	res.TotalTestcases = len(resultArray)
-
+	fmt.Println("resultArray", resultArray)
 	for _, v := range resultArray {
-		fmt.Print(gjson.Get(v.String(), "*.success").Bool())
+		fmt.Print(gjson.Get(v.String(), "*.status").String())
 		fmt.Print(gjson.Get(v.String(), "*.reason").String())
 		fmt.Print(gjson.Get(v.String(), "*.decoded_logs").String())
-		if !gjson.Get(v.String(), "*.success").Bool() {
+		if gjson.Get(v.String(), "*.status").String() != "Success" {
 			if gjson.Get(v.String(), "*.reason").String() != "" {
 				res.Output = gjson.Get(v.String(), "*.reason").String()
 			} else {

@@ -1,8 +1,11 @@
 package v1
 
 import (
+	"backend-go/internal/judge/model/request"
+	"backend-go/pkg/log"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -54,4 +57,17 @@ func singleJoiningSlash(a, b string) string {
 		return a
 	}
 	return a + b
+}
+
+func TryRun(c *gin.Context) {
+	var req request.TryRunReq
+	_ = c.ShouldBindJSON(&req)
+	req.Address = c.GetString("address")
+	if res, err := srv.TryRun(req); err != nil {
+		log.Errorv("err", zap.Error(err))
+		Fail(c)
+	} else {
+		c.Header("Content-Type", "application/json")
+		c.String(http.StatusOK, res)
+	}
 }

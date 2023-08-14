@@ -3,9 +3,8 @@ package dao
 import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/job/utils"
-	"fmt"
-
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"time"
@@ -25,11 +24,10 @@ func (d *Dao) CreateClaimBadgeTweet(req *model.ClaimBadgeTweet) (err error) {
 
 func (d *Dao) GetPendingAirdrop() (tokenId []*big.Int, listAddr []string, scores []*big.Int, err error) {
 	var pending []model.ClaimBadgeTweet
-	if err = d.db.Where("status", 0).Find(&pending).Error; err != nil {
+	if err = d.db.Where("status", 0).Where("add_ts < ?", time.Now().Add(-60*time.Second).Unix()).Find(&pending).Error; err != nil {
 		return
 	}
 	for _, v := range pending {
-		// 获取推文内容
 		tweet, err := utils.GetSpyderTweetById(d.c, v.TweetId)
 		if err != nil {
 			if err.Error() == "NETWORK_ERROR" {
@@ -43,9 +41,6 @@ func (d *Dao) GetPendingAirdrop() (tokenId []*big.Int, listAddr []string, scores
 			d.UpdateAirdroppedError(v.TokenId, v.Address, "InconsistentTweet")
 			continue
 		}
-		tokenId = append(tokenId, big.NewInt(v.TokenId))
-		listAddr = append(listAddr, v.Address)
-		scores = append(scores, big.NewInt(v.Score))
 	}
 	if len(tokenId) != len(listAddr) {
 		err = errors.New("token and address len error")

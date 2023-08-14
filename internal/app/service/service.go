@@ -6,15 +6,13 @@ import (
 	"backend-go/internal/app/initialize"
 	"backend-go/pkg/balancer"
 	"context"
-	"github.com/robfig/cron/v3"
 )
 
 // Service struct
 type Service struct {
-	c    *config.Config
-	dao  *dao.Dao
-	cron *cron.Cron
-	W    *balancer.SmoothRoundrobin
+	c   *config.Config
+	dao *dao.Dao
+	W   *balancer.SmoothRoundrobin
 }
 
 // New init.
