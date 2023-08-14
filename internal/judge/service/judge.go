@@ -6,9 +6,9 @@ import (
 	"errors"
 )
 
-func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) TryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
 	if req.Lang == "Solidity" {
-		return s.SolidityTryRun(address, req)
+		return s.SolidityTryRun(req)
 	} else if req.Lang == "JavaScript" {
 		return s.JavaScriptTryRun(req)
 	} else if req.Lang == "Golang" {
@@ -18,16 +18,16 @@ func (s *Service) TryRun(address string, req request.TryRunReq) (tryRunRes respo
 	} else if req.Lang == "TypeScript" {
 		return s.TypeScriptTryRun(req)
 	} else if req.Lang == "Move" {
-		return s.MoveTryRun(address, req)
+		return s.MoveTryRun(req)
 	} else {
 		return tryRunRes, errors.New("暂不支持的语言")
 	}
 	return
 }
 
-func (s *Service) TryTestRun(address string, req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) TryTestRun(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
 	if req.Lang == "Solidity" {
-		return s.SolidityTryTestRun(address, req)
+		return s.SolidityTryTestRun(req)
 	} else if req.Lang == "JavaScript" {
 		return s.JavaScriptTryTestRun(req)
 	} else if req.Lang == "Golang" {
@@ -37,7 +37,7 @@ func (s *Service) TryTestRun(address string, req request.TryTestRunReq) (tryRunR
 	} else if req.Lang == "TypeScript" {
 		return s.TypeScriptTryTestRun(req)
 	} else if req.Lang == "Move" {
-		return s.MoveTryTestRun(address, req)
+		return s.MoveTryTestRun(req)
 	} else {
 		return tryRunRes, errors.New("暂不支持的语言")
 	}

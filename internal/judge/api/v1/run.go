@@ -10,8 +10,10 @@ import (
 func TryRun(c *gin.Context) {
 	var req request.TryRunReq
 	_ = c.ShouldBindJSON(&req)
-	address := c.GetString("address")
-	if res, err := srv.TryRun(address, req); err != nil {
+	if req.Address == "" {
+		req.Address = c.GetString("address")
+	}
+	if res, err := srv.TryRun(req); err != nil {
 		log.Errorv("err", zap.Error(err))
 		Fail(c)
 	} else {
@@ -22,8 +24,10 @@ func TryRun(c *gin.Context) {
 func TryTestRun(c *gin.Context) {
 	var req request.TryTestRunReq
 	_ = c.ShouldBindJSON(&req)
-	address := c.GetString("address")
-	if res, err := srv.TryTestRun(address, req); err != nil {
+	if req.Address == "" {
+		req.Address = c.GetString("address")
+	}
+	if res, err := srv.TryTestRun(req); err != nil {
 		log.Errorv("err", zap.Error(err))
 		Fail(c)
 	} else {

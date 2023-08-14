@@ -60,12 +60,12 @@ func (s *Service) TestSolidity(req request.TestReq, spjCode string) (res respons
 	}
 	resultArray := gjson.Get(execResList[len(execResList)-2], "*.test_results").Array()
 	res.TotalTestcases = len(resultArray)
-
+	fmt.Println("resultArray", resultArray)
 	for _, v := range resultArray {
-		fmt.Print(gjson.Get(v.String(), "*.success").Bool())
+		fmt.Print(gjson.Get(v.String(), "*.status").String())
 		fmt.Print(gjson.Get(v.String(), "*.reason").String())
 		fmt.Print(gjson.Get(v.String(), "*.decoded_logs").String())
-		if !gjson.Get(v.String(), "*.success").Bool() {
+		if gjson.Get(v.String(), "*.status").String() != "Success" {
 			if gjson.Get(v.String(), "*.reason").String() != "" {
 				res.Output = gjson.Get(v.String(), "*.reason").String()
 			} else {

@@ -19,31 +19,26 @@ import (
 	"time"
 )
 
-func (s *Service) MoveTryRun(address string, req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
-	quest, err := s.dao.GetQuest(&model.Quest{TokenId: req.TokenID})
-	if err != nil {
-		return
-	}
+func (s *Service) MoveTryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 默认零地址
-	if address == "" {
-		address = common.HexToAddress("0").String()
+	if req.Address == "" {
+		req.Address = common.HexToAddress("0").String()
 	}
-	req.Address = address
 	// Docker启动
-	lock, err := s.DockerInit(address)
+	lock, err := s.DockerInit(req.Address)
 	defer lock.Unlock()
 	if err != nil {
 		return tryRunRes, errors.New("UnexpectedError")
 	}
-	questType := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
+	questType := gjson.Get(string(req.Quest.QuestData), fmt.Sprintf("questions.%d.type", req.QuestIndex)).String()
 
 	if questType != "coding" {
 		return tryRunRes, errors.New("不是编程题目")
 	}
 	// 普通编程题目
-	input := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.input", req.QuestIndex)).Array()
+	input := gjson.Get(string(req.Quest.QuestData), fmt.Sprintf("questions.%d.input", req.QuestIndex)).Array()
 	if len(input) != 0 {
-		tryRunRes, err = s.RunNormalMove(req, quest)
+		tryRunRes, err = s.RunNormalMove(req, req.Quest)
 		// 错误提前返回
 		if err != nil || tryRunRes.Status != 3 {
 			return
@@ -51,9 +46,9 @@ func (s *Service) MoveTryRun(address string, req request.TryRunReq) (tryRunRes r
 	}
 	var tryRunResTemp response.TryRunRes
 	// 特殊编程题目
-	spjCode := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).Array()
+	spjCode := gjson.Get(string(req.Quest.QuestData), fmt.Sprintf("questions.%d.spj_code", req.QuestIndex)).Array()
 	if len(spjCode) != 0 {
-		tryRunResTemp, err = s.RunNormalSpecialMove(req, quest)
+		tryRunResTemp, err = s.RunNormalSpecialMove(req, req.Quest)
 		if err != nil {
 			return tryRunResTemp, err
 		}
@@ -132,12 +127,11 @@ func (s *Service) RunNormalSpecialMove(req request.TryRunReq, quest model.Quest)
 	return
 }
 
-func (s *Service) MoveTryTestRun(address string, req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
+func (s *Service) MoveTryTestRun(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 默认零地址
-	if address == "" {
-		address = common.HexToAddress("0").String()
+	if req.Address == "" {
+		req.Address = common.HexToAddress("0").String()
 	}
-	req.Address = address
 	// Docker启动
 	//lock, err := s.DockerInit(address)
 	//defer lock.Unlock()

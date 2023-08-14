@@ -1,13 +1,16 @@
 package request
 
+import "backend-go/internal/app/model"
+
 type TryRunReq struct {
-	Lang       string `json:"lang"`
-	TokenID    int64  `json:"token_id"`
-	QuestIndex uint8  `json:"quest_index"`
-	Code       string `json:"code"`
-	Input      string `json:"input"`
-	Type       string `json:"type"`
-	Address    string `json:"-"`
+	Lang       string      `json:"lang"`
+	TokenID    int64       `json:"token_id"`
+	QuestIndex uint8       `json:"quest_index"`
+	Code       string      `json:"code"`
+	Input      string      `json:"input"`
+	Type       string      `json:"type"`
+	Address    string      `json:"address"`
+	Quest      model.Quest `json:"quest"`
 }
 
 type SpjCodeList struct {

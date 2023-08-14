@@ -72,7 +72,7 @@ func (s *Service) ClearDocker() {
 		return
 	}
 	for _, v := range userList {
-		DelDocker(v.Address)
+		DelDocker(v)
 	}
 	// 额外删除
 	if _, ok := dockerRunning[common.HexToAddress("0").String()]; ok {

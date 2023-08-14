@@ -1,7 +1,6 @@
 package service
 
 import (
-	"backend-go/internal/app/model"
 	"backend-go/internal/judge/model/judge"
 	"backend-go/internal/judge/model/request"
 	"backend-go/internal/judge/model/response"
@@ -17,17 +16,13 @@ import (
 )
 
 func (s *Service) PythonTryRun(runReq request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
-	quest, err := s.dao.GetQuest(&model.Quest{TokenId: runReq.TokenID})
-	if err != nil {
-		return
-	}
-	questType := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.type", runReq.QuestIndex)).String()
+	questType := gjson.Get(string(runReq.Quest.QuestData), fmt.Sprintf("questions.%d.type", runReq.QuestIndex)).String()
 	if questType != "coding" {
 		return tryRunRes, errors.New("不是编程题目")
 	}
-	inputArray := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.input", runReq.QuestIndex)).Array()
-	outputArray := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.output", runReq.QuestIndex)).Array()
-	codeSnippetRaw := gjson.Get(string(quest.QuestData), fmt.Sprintf("questions.%d.code_snippets.#(lang=Python).code", runReq.QuestIndex)).String()
+	inputArray := gjson.Get(string(runReq.Quest.QuestData), fmt.Sprintf("questions.%d.input", runReq.QuestIndex)).Array()
+	outputArray := gjson.Get(string(runReq.Quest.QuestData), fmt.Sprintf("questions.%d.output", runReq.QuestIndex)).Array()
+	codeSnippetRaw := gjson.Get(string(runReq.Quest.QuestData), fmt.Sprintf("questions.%d.code_snippets.#(lang=Python).code", runReq.QuestIndex)).String()
 	var inputs, outputs []string
 	for _, v := range inputArray {
 		inputs = append(inputs, v.String())

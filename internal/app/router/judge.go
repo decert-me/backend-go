@@ -9,6 +9,6 @@ import (
 func InitJudgeRouter(Router *gin.RouterGroup) {
 	runRouter := Router.Group("judge").Use(middleware.Addr())
 	{
-		runRouter.Any("/*path", v1.JudgeProxy)
+		runRouter.POST("/run/tryRun", v1.TryRun)
 	}
 }
