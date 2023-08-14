@@ -1,4 +1,4 @@
-FROM ghcr.io/foundry-rs/foundry:latest
+FROM ghcr.io/foundry-rs/foundry:nightly-49080c1424987dd772db73504dbfa575de3cab14
 
 
 # 环境配置
