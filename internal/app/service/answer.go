@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *model.Quest) (pass bool, err error) {
+func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, quest *model.Quest) (pass bool, err error) {
 	res := string(quest.MetaData)
 	questData := string(quest.QuestData)
 	version := gjson.Get(res, "version").Float()
@@ -43,6 +43,8 @@ func (s *Service) AnswerCheck(key, answerUser string, userScore int64, quest *mo
 			reqMap["lang"] = gjson.Get(v.String(), "language").String()
 			reqMap["token_id"] = quest.TokenId
 			reqMap["quest_index"] = i
+			reqMap["quest"] = quest
+			reqMap["address"] = address
 			// 检查答案
 			if s.CodingCheck(reqMap) {
 				score += scoreList[i].Int()
