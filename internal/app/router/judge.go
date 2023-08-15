@@ -10,5 +10,6 @@ func InitJudgeRouter(Router *gin.RouterGroup) {
 	runRouter := Router.Group("judge").Use(middleware.Addr())
 	{
 		runRouter.POST("/run/tryRun", v1.TryRun)
+		runRouter.POST("/run/tryTestRun", v1.TryTestRun)
 	}
 }
