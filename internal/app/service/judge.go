@@ -24,7 +24,7 @@ func (s *Service) TryRun(body request.TryRunReq) (result string, err error) {
 		}
 		w := s.W.Next()
 		item = w.Item
-		res, err := client.R().SetBody(body).Get(strings.Replace(item, "v1", "", 1) + "health")
+		res, err := req.C().SetTimeout(5 * time.Second).R().SetBody(body).Get(strings.Replace(item, "v1", "", 1) + "health")
 		if err == nil && res.String() == "\"ok\"" {
 			w.OnInvokeSuccess()
 			break
@@ -53,7 +53,7 @@ func (s *Service) TryTestRun(body request.TryTestRunReq) (result string, err err
 		}
 		w := s.W.Next()
 		item = w.Item
-		res, err := client.R().SetBody(body).Get(strings.Replace(item, "v1", "", 1) + "health")
+		res, err := req.C().SetTimeout(5 * time.Second).R().SetBody(body).Get(strings.Replace(item, "v1", "", 1) + "health")
 		if err == nil && res.String() == "\"ok\"" {
 			w.OnInvokeSuccess()
 			break
