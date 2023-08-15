@@ -9,6 +9,7 @@ import (
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
+	"strings"
 	"time"
 )
 
@@ -142,7 +143,25 @@ func (s *Service) AnswerScore(key, answerUser, address string, quest model.Quest
 
 func (s *Service) CodingCheck(body interface{}) (correct bool) {
 	client := req.C().SetTimeout(180 * time.Second)
-	url := s.W.Next().Item + "/run/tryRun"
+	i := 0
+	var item string
+	// 存活检测
+	for {
+		if i > 2 {
+			break
+		}
+		w := s.W.Next()
+		item = w.Item
+		res, err := req.C().SetTimeout(5 * time.Second).R().SetBody(body).Get(strings.Replace(item, "v1", "", 1) + "health")
+		if err == nil && res.String() == "\"ok\"" {
+			w.OnInvokeSuccess()
+			break
+		} else {
+			w.OnInvokeFault()
+		}
+		i++
+	}
+	url := item + "/run/tryRun"
 	res, err := client.R().SetBody(body).Post(url)
 	if err != nil {
 		log.Errorv("Post error", zap.Error(err))
