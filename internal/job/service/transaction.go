@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -151,6 +152,18 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 }
 
 func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
+	provider := s.w.Next()
+	defer func() {
+		if err := recover(); err != nil {
+			provider.OnInvokeFault()
+		}
+	}()
+	client, err := ethclient.Dial(provider.Item)
+	if err != nil {
+		log.Error("ethclient dial error")
+		return errors.New("ethclient dial error")
+	}
+
 	var logEvent bool
 	for _, vLog := range Logs {
 		name, ok := s.contractEvent[vLog.Topics[0]]
@@ -168,7 +181,7 @@ func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
 			return nil
 		case "Claimed":
 			logEvent = true
-			if err := s.handleClaimed(hash, vLog); err != nil {
+			if err := s.handleClaimed(client, hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
 				continue
 			}
@@ -191,6 +204,7 @@ func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
 		s.handleTraverseStatus(hash, 5, err.Error())
 		return err
 	}
+	provider.OnInvokeSuccess()
 	//s.handleTraverseStatus(hash, 4, "")
 	return nil
 }

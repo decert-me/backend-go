@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, quest *model.Quest) (pass bool, err error) {
+func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, quest *model.Quest) (userReturnScore int64, pass bool, err error) {
 	res := string(quest.MetaData)
 	questData := string(quest.QuestData)
 	version := gjson.Get(res, "version").Float()
@@ -24,7 +24,7 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 		totalScore += s.Int()
 	}
 	if len(answerU) != len(answerS) || len(scoreList) != len(answerS) {
-		return false, errors.New("unexpect error")
+		return userReturnScore, false, errors.New("unexpect error")
 	}
 	var score int64
 	for i, v := range answerS {
@@ -88,57 +88,19 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 			}
 		}
 	}
-
-	if userScore == (score*10000/totalScore) && score >= passingScore {
-		return true, nil
-	} else {
-		return true, errors.New("not enough scores")
-	}
-	return
-}
-
-func (s *Service) AnswerScore(key, answerUser, address string, quest model.Quest) (userScore int64, pass bool, err error) {
-	res := quest.MetaData.String()
-	questData := string(quest.QuestData)
-	version := gjson.Get(res, "version").Float()
-	answerU, scoreList, answerS, passingScore := utils.GetAnswers(version, key, res, questData, answerUser)
-
-	var totalScore int64
-	for _, s := range scoreList {
-		totalScore += s.Int()
-	}
-	if len(answerU) != len(answerS) || len(scoreList) != len(answerS) {
-		return userScore, false, errors.New("unexpect error")
-	}
-	var score int64
-	for i, v := range answerS {
-		if answerS[i].String() == answerU[i].String() {
-			// 编程题目
-			if gjson.Get(v.String(), "type").String() == "coding" || gjson.Get(v.String(), "type").String() == "special_judge_coding" || answerU[i].String() == "" {
-				// 跳过不正确
-				if gjson.Get(v.String(), "correct").Bool() == false {
-					continue
-				}
-				reqMap := make(map[string]interface{})
-				reqMap["code"] = gjson.Get(v.String(), "code").String()
-				reqMap["lang"] = gjson.Get(v.String(), "lang").String()
-				reqMap["token_id"] = quest.TokenId
-				reqMap["quest_index"] = i
-				reqMap["quest"] = quest
-				reqMap["address"] = address
-				// 检查答案
-				if s.CodingCheck(reqMap) {
-					score += scoreList[i].Int()
-				}
-				continue
-			}
-			score += scoreList[i].Int()
+	if userScore == 0 {
+		if score >= passingScore {
+			return score * 10000 / totalScore, true, nil
+		} else {
+			return score * 10000 / totalScore, false, nil
 		}
 	}
-	if score >= passingScore {
-		return score, true, nil
+	if userScore == (score*10000/totalScore) && score >= passingScore {
+		return userScore, true, nil
+	} else {
+		return userScore, true, errors.New("not enough scores")
 	}
-	return score, false, nil
+	return
 }
 
 func (s *Service) CodingCheck(body interface{}) (correct bool) {

@@ -30,7 +30,7 @@ func init() {
 	questMinterAbi = contractAbi
 }
 
-func (s *Service) handleClaimed(hash string, vLog *types.Log) (err error) {
+func (s *Service) handleClaimed(client *ethclient.Client, hash string, vLog *types.Log) (err error) {
 	var claimed ABI.QuestMinterClaimed
 	if err = questMinterAbi.UnpackIntoInterface(&claimed, "Claimed", vLog.Data); err != nil || len(vLog.Topics) == 0 {
 		return errors.New("unpack error")
@@ -46,13 +46,22 @@ func (s *Service) handleClaimed(hash string, vLog *types.Log) (err error) {
 		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", tokenId))
 		return
 	}
-	//
+	// 获取用户分数
+	badge, err := ABI.NewBadge(common.HexToAddress(s.c.Contract.Badge), client)
+	if err != nil {
+		return
+	}
+	score, err := badge.Scores(nil, big.NewInt(tokenId), common.HexToAddress(vLog.Topics[2].Hex()))
+	if err != nil {
+		return
+	}
 	challenges := model.UserChallenges{
-		Address: common.HexToAddress(vLog.Topics[2].Hex()).String(),
-		TokenId: tokenId,
-		Status:  2,
-		Claimed: true,
-		ClaimTs: time.Now().Unix(),
+		Address:   common.HexToAddress(vLog.Topics[2].Hex()).String(),
+		TokenId:   tokenId,
+		Status:    2,
+		UserScore: score.Int64(),
+		Claimed:   true,
+		ClaimTs:   time.Now().Unix(),
 	}
 	err = s.dao.CreateChallenges(&challenges)
 	if err != nil {
@@ -96,7 +105,7 @@ func (s *Service) AirdropBadge() error {
 	if err := s.dao.UpdateAirdroppedList(tokenIdRes, receivers, hash.String()); err != nil {
 		log.Errorv("updateAirdropStatus", zap.Any("error", err))
 	}
-	if err := s.dao.CreateChallengesList(tokenIdRes, receivers); err != nil {
+	if err := s.dao.CreateChallengesList(tokenIdRes, receivers, scores); err != nil {
 		log.Errorv("updateAirdropStatus", zap.Any("error", err))
 	}
 	provider.OnInvokeSuccess()
