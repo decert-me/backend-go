@@ -21,7 +21,7 @@ import (
 
 func (s *Service) MoveTryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 默认零地址
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 	// Docker启动
@@ -129,7 +129,7 @@ func (s *Service) RunNormalSpecialMove(req request.TryRunReq, quest model.Quest)
 
 func (s *Service) MoveTryTestRun(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 默认零地址
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 	// Docker启动
@@ -263,7 +263,7 @@ func (s *Service) RunSpecialMove(frame string, req runMoveReq) (tryRunRes respon
 }
 
 func (s *Service) TestMove(req request.TestReq, spjCode string) (res response.TestRes, err error) {
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 	movePath := path.Join("/Users/mac/Code/move-test")
@@ -314,7 +314,7 @@ func (s *Service) TestMove(req request.TestReq, spjCode string) (res response.Te
 }
 
 func (s *Service) TestSui(req request.TestReq, spjCode string) (res response.TestRes, err error) {
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 	suiPath := path.Join("/Users/mac/Code/sui-test")
@@ -365,7 +365,7 @@ func (s *Service) TestSui(req request.TestReq, spjCode string) (res response.Tes
 }
 
 func (s *Service) TestAptos(req request.TestReq, spjCode string) (res response.TestRes, err error) {
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 	suiPath := path.Join("/Users/mac/Code/sui-test")

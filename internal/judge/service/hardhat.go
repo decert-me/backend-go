@@ -31,7 +31,7 @@ func SaveCode(path string, fileName string, code string) (err error) {
 
 func (s *Service) HardhatTestSolidity(req request.TestReq, spjCode string) (res response.TestRes, err error) {
 	// 未登陆默认0地址
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 

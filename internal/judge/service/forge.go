@@ -17,7 +17,7 @@ import (
 )
 
 func (s *Service) TestSolidity(req request.TestReq, spjCode string) (res response.TestRes, err error) {
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 	foundryPath := path.Join(s.c.Judge.SolidityWorkPath, req.Address, "foundry")
