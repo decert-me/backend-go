@@ -45,7 +45,7 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 			reqMap["token_id"] = quest.TokenId
 			reqMap["quest_index"] = i
 			reqMap["quest"] = quest
-			reqMap["address"] = address
+			reqMap["address"] = strings.TrimSpace(address)
 			// 检查答案
 			if s.CodingCheck(reqMap) {
 				score += scoreList[i].Int()

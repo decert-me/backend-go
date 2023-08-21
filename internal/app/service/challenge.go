@@ -44,6 +44,7 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 		Answer:    []byte(gjson.Parse(req.Answer).Raw),
 		UserScore: userScore,
 		Pass:      pass,
+		IP:        req.IP,
 	})
 	if err != nil {
 		return errors.New("OperationFailed")
