@@ -26,7 +26,7 @@ func init() {
 }
 func (s *Service) SolidityTryRun(req request.TryRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 默认零地址
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 	// Docker启动
@@ -66,7 +66,7 @@ func (s *Service) SolidityTryRun(req request.TryRunReq) (tryRunRes response.TryR
 
 func (s *Service) SolidityTryTestRun(req request.TryTestRunReq) (tryRunRes response.TryRunRes, err error) {
 	// 默认零地址
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 	// Docker启动

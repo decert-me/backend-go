@@ -7,6 +7,7 @@ import (
 
 func CreateChallengeLog(c *gin.Context) {
 	var add request.SaveChallengeLogRequest
+	add.IP = c.ClientIP()
 	if err := c.ShouldBindJSON(&add); err != nil {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return

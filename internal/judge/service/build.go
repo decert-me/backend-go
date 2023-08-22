@@ -17,7 +17,7 @@ import (
 )
 
 func (s *Service) BuildSolidity(private string, req request.BuildReq) (res response.BuildRes, err error) {
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = common.HexToAddress("0").String()
 	}
 	if private == "" {

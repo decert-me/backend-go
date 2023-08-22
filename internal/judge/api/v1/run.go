@@ -5,12 +5,13 @@ import (
 	"backend-go/pkg/log"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"strings"
 )
 
 func TryRun(c *gin.Context) {
 	var req request.TryRunReq
 	_ = c.ShouldBindJSON(&req)
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = c.GetString("address")
 	}
 	if res, err := srv.TryRun(req); err != nil {
@@ -24,7 +25,7 @@ func TryRun(c *gin.Context) {
 func TryTestRun(c *gin.Context) {
 	var req request.TryTestRunReq
 	_ = c.ShouldBindJSON(&req)
-	if req.Address == "" {
+	if strings.TrimSpace(req.Address) == "" {
 		req.Address = c.GetString("address")
 	}
 	if res, err := srv.TryTestRun(req); err != nil {

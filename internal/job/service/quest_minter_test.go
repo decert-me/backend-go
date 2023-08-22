@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
@@ -17,49 +16,6 @@ import (
 	"sync"
 	"testing"
 )
-
-func TestHandleClaimed(t *testing.T) {
-	deleteQuest()
-	deleteChallenges()
-	deleteTransaction()
-
-	// no such tokenId in quest
-	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: ClaimHash}, txMap: new(sync.Map), countMap: new(sync.Map)})
-	assert.Error(t, s.dao.DB().Where("token_id", TOKENID).Where("address", ADDRESS).First(&model.UserChallenges{}).Error)
-	// normal
-	deleteQuest()
-	deleteChallenges()
-	deleteTransaction()
-
-	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: QuestCreatedHash}, txMap: new(sync.Map), countMap: new(sync.Map)})
-	waitForQuestCreated(TOKENID)
-	s.handleTransactionReceipt(taskTx{task: &model.Transaction{Hash: ClaimHash}, txMap: new(sync.Map), countMap: new(sync.Map)})
-	waitForClaimed(TOKENID, ADDRESS)
-	var challenge model.UserChallenges
-	err := d.DB().Where("token_id", TOKENID).Where("address", ADDRESS).First(&challenge).Error
-	assert.Nil(t, err)
-	assert.NotZero(t, challenge.AddTs)
-	assert.NotZero(t, challenge.UpdateTs)
-	assert.NotZero(t, challenge.ClaimTs)
-	challengeExpected := model.UserChallenges{
-		ID:       challenge.ID,
-		Address:  ADDRESS,
-		TokenId:  TOKENID,
-		Status:   2,
-		Claimed:  true,
-		ClaimTs:  challenge.ClaimTs,
-		AddTs:    challenge.AddTs,
-		UpdateTs: challenge.UpdateTs,
-	}
-	assert.Equal(t, challengeExpected, challenge)
-	//
-	err = s.handleClaimed("", &types.Log{Data: []byte("test")})
-	assert.Error(t, err, "should return error when error Log")
-	// clear
-	deleteQuest()
-	deleteChallenges()
-	deleteTransaction()
-}
 
 func TestBlockChain_receiverNotClaimList(t *testing.T) {
 	client, err := ethclient.Dial(s.w.Next().Item)

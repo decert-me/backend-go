@@ -15,14 +15,15 @@ func (d *Dao) CreateChallenges(challenges *model.UserChallenges) (err error) {
 	return
 }
 
-func (d *Dao) CreateChallengesList(tokenIds []*big.Int, receivers []common.Address) (err error) {
+func (d *Dao) CreateChallengesList(tokenIds []*big.Int, receivers []common.Address, scores []*big.Int) (err error) {
 	var challenge []model.UserChallenges
 	for i, _ := range receivers {
 		challenge = append(challenge, model.UserChallenges{
-			Address: receivers[i].String(),
-			TokenId: tokenIds[i].Int64(),
-			Claimed: true,
-			Status:  2,
+			Address:   receivers[i].String(),
+			TokenId:   tokenIds[i].Int64(),
+			UserScore: scores[i].Int64(),
+			Claimed:   true,
+			Status:    2,
 		})
 	}
 	err = d.db.Clauses(clause.OnConflict{

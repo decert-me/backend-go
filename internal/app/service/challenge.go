@@ -33,7 +33,7 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 	if err != nil {
 		return errors.New("TokenIDInvalid")
 	}
-	userScore, pass, err := s.AnswerScore(s.c.Quest.EncryptKey, req.Answer, req.Address, quest)
+	userScore, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Address, 0, &quest)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return errors.New("UnexpectedError")
@@ -44,6 +44,7 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 		Answer:    []byte(gjson.Parse(req.Answer).Raw),
 		UserScore: userScore,
 		Pass:      pass,
+		IP:        req.IP,
 	})
 	if err != nil {
 		return errors.New("OperationFailed")

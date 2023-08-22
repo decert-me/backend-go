@@ -10,4 +10,5 @@ type UserChallengeLog struct {
 	AddTs     int64          `gorm:"column:add_ts;autoCreateTime" json:"add_ts"`
 	UserScore int64          `gorm:"column:user_score" form:"user_score" json:"user_score"` // 分数
 	Pass      bool           `gorm:"column:pass;default:false" json:"pass" form:"pass"`     // 状态 false 挑战未通过 true 挑战通过
+	IP        string         `gorm:"column:ip" json:"ip" form:"ip"`                         // IP 地址
 }
