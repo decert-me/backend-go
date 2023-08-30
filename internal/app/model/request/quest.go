@@ -34,3 +34,8 @@ type UpdateRecommendRequest struct {
 	TokenId   int64  `json:"token_id" binding:"required"`
 	Recommend string `json:"recommend"` // 推荐
 }
+
+type GetCollectionQuestRequest struct {
+	ID      uint   `json:"id" form:"id"`
+	Address string `json:"-"`
+}
