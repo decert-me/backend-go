@@ -24,11 +24,11 @@ type Quest struct {
 	PassScore      int64          `gorm:"column:pass_score" form:"pass_score" json:"pass_score"`    // 通过分数
 	TotalScore     int64          `gorm:"column:total_score" form:"total_score" json:"total_score"` // 总分
 	Recommend      string         `gorm:"column:recommend;type:text" json:"recommend"`              // 推荐
-	Top            *bool          `gorm:"column:top;default:false" json:"top"`                      // 是否置顶
 	Status         uint8          `gorm:"column:status;default:1" json:"status"`                    // 状态 1 上架 2 未上架
 	CollectionID   uint           `gorm:"column:collection_id;default:0" json:"collection_id"`      // 集合ID
 	CollectionSort int            `gorm:"column:collection_sort;default:0" json:"collection_sort"`  // 集合排序
 	Style          int            `gorm:"style;default:1" json:"style" `                            // 1:单独;2:合辑
 	Cover          string         `gorm:"column:cover;comment:封面图" json:"cover"`
 	Author         string         `gorm:"column:author;type:varchar(64);comment:合辑作者" json:"author"`
+	Sort           int            `gorm:"column:sort;default:0" json:"sort"` // 	排序
 }

@@ -41,13 +41,13 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	offset := req.PageSize * (req.Page - 1)
 
 	db := d.db.Model(&model.Quest{})
-	db.Where("quest.status = 1 AND quest.disabled = false")
+	db.Where("quest.status = 1 AND quest.disabled = false AND collection_id=0")
 	db.Where(&req.Quest)
 	err = db.Count(&total).Error
 	if err != nil {
 		return questList, total, err
 	}
-	db.Order("top desc,add_ts desc")
+	db.Order("sort desc,add_ts desc")
 	//if req.OrderKey == "token_id" {
 	//	fmt.Println(req.OrderKey)
 	//	fmt.Println(req.Desc)

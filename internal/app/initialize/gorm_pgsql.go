@@ -40,7 +40,7 @@ func _config(c *config.Pgsql) *gorm.Config {
 	config := &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, NamingStrategy: schema.NamingStrategy{
 		TablePrefix:   c.Prefix,
 		SingularTable: true,
-	}}
+	}, SkipDefaultTransaction: true}
 	_default := logger.New(newWriter(log.New(os.Stdout, "\r\n", log.LstdFlags)), logger.Config{
 		SlowThreshold: time.Duration(slowThreshold) * time.Millisecond,
 		LogLevel:      logger.Warn,
