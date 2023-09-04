@@ -5,6 +5,7 @@ import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
 	"fmt"
+	"github.com/tidwall/gjson"
 	"gorm.io/gorm"
 )
 
@@ -40,23 +41,24 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	offset := req.PageSize * (req.Page - 1)
 
 	db := d.db.Model(&model.Quest{})
-
+	db.Where("quest.status = 1 AND quest.disabled = false AND collection_id=0")
 	db.Where(&req.Quest)
 	err = db.Count(&total).Error
 	if err != nil {
 		return questList, total, err
 	}
-	if req.OrderKey == "token_id" {
-		fmt.Println(req.OrderKey)
-		fmt.Println(req.Desc)
-		if req.Desc {
-			db.Order("token_id desc")
-		} else {
-			db.Order("token_id asc")
-		}
-	} else {
-		db.Order("token_id desc")
-	}
+	db.Order("sort desc,add_ts desc")
+	//if req.OrderKey == "token_id" {
+	//	fmt.Println(req.OrderKey)
+	//	fmt.Println(req.Desc)
+	//	if req.Desc {
+	//		db.Order("token_id desc")
+	//	} else {
+	//		db.Order("token_id asc")
+	//	}
+	//} else {
+	//	db.Order("token_id desc")
+	//}
 	if req.SearchKey != "" {
 		db.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
 	}
@@ -67,7 +69,33 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 		db.Select("*")
 	}
 	err = db.Limit(limit).Offset(offset).Find(&questList).Error
+	// 查询集合数量
+	for i := 0; i < len(questList); i++ {
+		if questList[i].Style == 2 {
+			if questList[i].ID == 0 {
+				continue
+			}
 
+			// 数量
+			var collectionQuestList []model.Quest
+			err = d.db.Model(&model.Quest{}).Where("collection_id = ?", questList[i].ID).Find(&collectionQuestList).Error
+			if err != nil {
+				return questList, total, err
+			}
+			questList[i].CollectionCount = int64(len(collectionQuestList))
+			// 预估时间
+			var estimateTimeTotal int64
+			for _, quest := range collectionQuestList {
+				estimateTimeTotal += gjson.Get(string(quest.QuestData), "estimateTime").Int()
+				fmt.Println("estimateTimeTotal", estimateTimeTotal)
+			}
+
+			fmt.Println("estimateTimeTotal", estimateTimeTotal)
+			if estimateTimeTotal != 0 {
+				questList[i].EstimateTime = estimateTimeTotal
+			}
+		}
+	}
 	return questList, total, err
 }
 
@@ -166,4 +194,16 @@ func (d *Dao) GetQuestChallengeUserByUUID(uuid string) (res response.GetQuestCha
 
 func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
+}
+
+func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, err error) {
+	db := d.db.Model(&model.Quest{}).Where("collection_id = ?", r.ID)
+	if r.Address != "" {
+		db.Select("quest.*,c.claimed")
+		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
+	} else {
+		db.Select("*")
+	}
+	err = db.Order("collection_sort desc").Find(&questList).Error
+	return
 }
