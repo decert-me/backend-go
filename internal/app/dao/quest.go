@@ -43,7 +43,7 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	db := d.db.Model(&model.Quest{})
 	// Quest
 	questSQL := db.ToSQL(func(tx *gorm.DB) *gorm.DB {
-		tx = tx.Where("quest.status = 1 AND quest.disabled = false")
+		tx = tx.Where("quest.status = 1 AND quest.disabled = false AND collection_status=1")
 		tx = tx.Where(&req.Quest)
 		//tx = tx.Order("sort desc,add_ts desc")
 		if req.SearchKey != "" {
@@ -230,13 +230,14 @@ func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 }
 
 func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, err error) {
-	db := d.db.Model(&model.Quest{}).Where("collection_id = ?", r.ID)
+	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
+		Where("collection_relate.collection_id = ?", r.ID)
 	if r.Address != "" {
 		db.Select("quest.*,c.claimed")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
 	} else {
 		db.Select("*")
 	}
-	err = db.Order("collection_sort desc").Find(&questList).Error
+	err = db.Order("collection_relate.sort desc").Find(&questList).Error
 	return
 }
