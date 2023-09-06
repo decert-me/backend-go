@@ -60,7 +60,7 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	// Collection
 	collectionSQL := d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
 		tx = tx.Select("id,uuid,title,label,disabled,description,dependencies,is_draft,add_ts,token_id,type,difficulty,estimate_time,creator,meta_data,quest_data,extra_data,uri,pass_score,total_score,recommend,status,style,cover,author,sort,collection_status,FALSE as claimed")
-		return tx.Find(&[]response.GetQuestListRes{})
+		return tx.Where("status = 1").Find(&[]response.GetQuestListRes{})
 	})
 	//fmt.Println("questSQL", questSQL)
 	//fmt.Println("collectionSQL", collectionSQL)
