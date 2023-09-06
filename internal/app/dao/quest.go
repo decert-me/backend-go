@@ -231,7 +231,7 @@ func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 
 func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, err error) {
 	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
-		Where("collection_relate.collection_id = ?", r.ID)
+		Where("collection_relate.collection_id = ? AND quest.status=1", r.ID)
 	if r.Address != "" {
 		db.Select("quest.*,c.claimed")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
