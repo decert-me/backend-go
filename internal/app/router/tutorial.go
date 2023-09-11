@@ -12,5 +12,7 @@ func InitTutorialRouter(Router *gin.RouterGroup) {
 		tutorialRouter.POST("progress", v1.GetProgress)
 		tutorialRouter.PUT("progress", v1.UpdateProgress)
 		tutorialRouter.POST("progressList", v1.GetProgressList)
+		tutorialRouter.POST("getTutorialList", v1.GetTutorialList)
+		tutorialRouter.POST("getLabelList", v1.GetLabelList)
 	}
 }

@@ -42,3 +42,23 @@ func (s *Service) UpdateProgress(userID uint, req request.UpdateProgressRequest)
 func (s *Service) GetProgressList(userID uint, req request.GetProgressListRequest) (res []response.GetProgressListRes, err error) {
 	return s.dao.GetProgressList(userID, req.CatalogueNameList)
 }
+
+func (s *Service) GetTutorialList(info request.GetTutorialListStatusRequest) (list interface{}, total int64, err error) {
+	return s.dao.GetTutorialList(info)
+
+}
+
+// LabelLangList 获取语言列表
+func (s *Service) LabelLangList() (language []model.Language, err error) {
+	return s.dao.LabelLangList()
+}
+
+// LabelCategoryList 获取分类标签列表
+func (s *Service) LabelCategoryList() (category []model.Category, err error) {
+	return s.dao.LabelCategoryList()
+}
+
+// LabelThemeList 获取分类标签列表
+func (s *Service) LabelThemeList() (theme []model.Theme, err error) {
+	return s.dao.LabelThemeList()
+}

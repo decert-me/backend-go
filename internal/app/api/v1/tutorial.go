@@ -2,6 +2,7 @@ package v1
 
 import (
 	"backend-go/internal/app/model/request"
+	"backend-go/internal/app/model/response"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
@@ -54,5 +55,51 @@ func UpdateProgress(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "UpdateFailed"), c)
 	} else {
 		Ok(c)
+	}
+}
+
+// GetTutorialList 获取教程列表
+func GetTutorialList(c *gin.Context) {
+	var pageInfo request.GetTutorialListStatusRequest
+	if err := c.ShouldBindJSON(&pageInfo); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+
+	if list, total, err := srv.GetTutorialList(pageInfo); err != nil {
+		FailWithMessage("获取失败", c)
+	} else {
+		OkWithDetailed(response.PageResult{
+			List:     list,
+			Total:    total,
+			Page:     pageInfo.Page,
+			PageSize: pageInfo.PageSize,
+		}, "获取成功", c)
+	}
+}
+
+// GetLabelList 获取标签列表
+func GetLabelList(c *gin.Context) {
+	var label request.GetLabelRequest
+	err := c.ShouldBindJSON(&label)
+	if err != nil {
+		FailWithMessage("参数错误", c)
+		return
+	}
+	var data interface{}
+	if label.Type == "language" {
+		data, err = srv.LabelLangList()
+	} else if label.Type == "category" {
+		data, err = srv.LabelCategoryList()
+	} else if label.Type == "theme" {
+		data, err = srv.LabelThemeList()
+	} else {
+		FailWithMessage("参数错误", c)
+		return
+	}
+	if err != nil {
+		FailWithMessage("获取失败", c)
+	} else {
+		OkWithDetailed(data, "获取成功", c)
 	}
 }

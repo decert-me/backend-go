@@ -1,5 +1,7 @@
 package request
 
+import "backend-go/internal/app/model"
+
 type ProgressData struct {
 	DocId    string `json:"docId"`
 	IsFinish bool   `json:"is_finish"`
@@ -16,4 +18,13 @@ type UpdateProgressRequest struct {
 
 type GetProgressListRequest struct {
 	CatalogueNameList []string `json:"catalogueNameList"  binding:"required"`
+}
+
+type GetTutorialListStatusRequest struct {
+	PageInfo
+	model.Tutorial
+}
+
+type GetLabelRequest struct {
+	Type string `json:"type" binding:"required"`
 }

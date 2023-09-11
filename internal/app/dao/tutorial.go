@@ -181,3 +181,55 @@ func (d *Dao) GetProgressList(userID uint, catalogueNameList []string) (res []re
 	}
 	return res, nil
 }
+
+func (d *Dao) GetTutorialList(info request.GetTutorialListStatusRequest) (list interface{}, total int64, err error) {
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+	db := d.db.Model(&model.Tutorial{})
+	// 语言
+	if info.Language != 0 {
+		db.Where("language = ?", info.Language)
+	}
+	// 状态
+	if info.Status != 0 {
+		db.Where("status = ?", info.Status)
+	}
+	// 根据分类要求过滤
+	if info.Category != nil && len(info.Category) != 0 {
+		db = db.Where("category && ?", info.Category)
+	}
+	// 根据媒体类型过滤
+	if info.DocType != "" {
+		if info.DocType == "video" {
+			db = db.Where("doc_type = 'video'")
+		} else {
+			db = db.Where("doc_type != 'video'")
+		}
+
+	}
+	var tutorialList []model.Tutorial
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Order("top desc,created_at desc").Find(&tutorialList).Error
+	return tutorialList, total, err
+}
+
+func (d *Dao) LabelLangList() (language []model.Language, err error) {
+	db := d.db.Model(&model.Language{})
+	err = db.Order("weight desc,created_at desc").Find(&language).Error
+	return
+}
+
+func (d *Dao) LabelCategoryList() (category []model.Category, err error) {
+	db := d.db.Model(&model.Category{})
+	err = db.Order("weight desc,created_at desc").Find(&category).Error
+	return
+}
+
+func (d *Dao) LabelThemeList() (theme []model.Theme, err error) {
+	db := d.db.Model(&model.Theme{})
+	err = db.Order("weight desc,created_at desc").Find(&theme).Error
+	return
+}
