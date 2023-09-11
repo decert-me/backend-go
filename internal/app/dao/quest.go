@@ -41,34 +41,67 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	offset := req.PageSize * (req.Page - 1)
 
 	db := d.db.Model(&model.Quest{})
-	db.Where("quest.status = 1 AND quest.disabled = false AND collection_id=0")
-	db.Where(&req.Quest)
-	err = db.Count(&total).Error
-	if err != nil {
-		return questList, total, err
-	}
-	db.Order("sort desc,add_ts desc")
-	//if req.OrderKey == "token_id" {
-	//	fmt.Println(req.OrderKey)
-	//	fmt.Println(req.Desc)
-	//	if req.Desc {
-	//		db.Order("token_id desc")
-	//	} else {
-	//		db.Order("token_id asc")
-	//	}
-	//} else {
-	//	db.Order("token_id desc")
-	//}
-	if req.SearchKey != "" {
-		db.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
-	}
-	if req.Address != "" {
-		db.Select("quest.*,c.claimed")
-		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
-	} else {
-		db.Select("*")
-	}
-	err = db.Limit(limit).Offset(offset).Find(&questList).Error
+	// Quest
+	questSQL := db.ToSQL(func(tx *gorm.DB) *gorm.DB {
+		tx = tx.Where("quest.status = 1 AND quest.disabled = false AND collection_status=1")
+		tx = tx.Where(&req.Quest)
+		//tx = tx.Order("sort desc,add_ts desc")
+		if req.SearchKey != "" {
+			tx = tx.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
+		}
+		if req.Address != "" {
+			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed")
+			tx = tx.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
+		} else {
+			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,FALSE as claimed")
+		}
+		return tx.Find(&[]response.GetQuestListRes{})
+	})
+	// Collection
+	collectionSQL := d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
+		tx = tx.Select("id,uuid,title,label,disabled,description,dependencies,is_draft,add_ts,token_id,type,difficulty,estimate_time,creator,meta_data,quest_data,extra_data,uri,pass_score,total_score,recommend,status,style,cover,author,sort,collection_status,FALSE as claimed")
+		return tx.Where("status = 1").Find(&[]response.GetQuestListRes{})
+	})
+	//fmt.Println("questSQL", questSQL)
+	//fmt.Println("collectionSQL", collectionSQL)
+	// 执行 UNION 查询
+	//var questListTest []response.GetQuestListRes
+	unionSQL := fmt.Sprintf("SELECT * FROM((%s) UNION (%s)) as t ORDER BY sort desc,add_ts desc LIMIT %d OFFSET %d", questSQL, collectionSQL, limit, offset)
+	unionCountSQL := fmt.Sprintf("SELECT count(1) FROM((%s) UNION (%s)) as t", questSQL, collectionSQL)
+	db.Raw(unionCountSQL).Scan(&total)
+	db.Raw(unionSQL).Scan(&questList)
+	/*
+		//fmt.Println(questListTest)
+		//
+		db.Where("quest.status = 1 AND quest.disabled = false AND collection_id=0")
+		db.Where(&req.Quest)
+		err = db.Count(&total).Error
+		if err != nil {
+			return questList, total, err
+		}
+		db.Order("sort desc,add_ts desc")
+		//if req.OrderKey == "token_id" {
+		//	fmt.Println(req.OrderKey)
+		//	fmt.Println(req.Desc)
+		//	if req.Desc {
+		//		db.Order("token_id desc")
+		//	} else {
+		//		db.Order("token_id asc")
+		//	}
+		//} else {
+		//	db.Order("token_id desc")
+		//}
+		if req.SearchKey != "" {
+			db.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
+		}
+		if req.Address != "" {
+			db.Select("quest.*,c.claimed")
+			db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
+		} else {
+			db.Select("*")
+		}
+		err = db.Limit(limit).Offset(offset).Find(&questList).Error
+	*/
 	// 查询集合数量
 	for i := 0; i < len(questList); i++ {
 		if questList[i].Style == 2 {
@@ -197,13 +230,14 @@ func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 }
 
 func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, err error) {
-	db := d.db.Model(&model.Quest{}).Where("collection_id = ?", r.ID)
+	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
+		Where("collection_relate.collection_id = ? AND quest.status=1", r.ID)
 	if r.Address != "" {
 		db.Select("quest.*,c.claimed")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
 	} else {
 		db.Select("*")
 	}
-	err = db.Order("collection_sort desc").Find(&questList).Error
+	err = db.Order("collection_relate.sort desc").Find(&questList).Error
 	return
 }
