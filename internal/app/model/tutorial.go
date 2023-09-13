@@ -35,6 +35,7 @@ type Tutorial struct {
 	PackStatus    uint8          `gorm:"column:pack_status;default:1" json:"pack_status,omitempty"` // 状态 1 未打包 2 打包成功 3 打包失败
 	PackLog       string         `gorm:"column:pack_log;type:text" json:"pack_log"`                 // 打包日志
 	Top           *bool          `gorm:"column:top;default:false" json:"top"`                       // 是否置顶
+	TutorialSort  *int           `gorm:"column:tutorial_sort;default:0" json:"tutorial_sort"`       // 教程排序
 }
 
 func (Tutorial) TableName() string {

@@ -212,7 +212,7 @@ func (d *Dao) GetTutorialList(info request.GetTutorialListStatusRequest) (list i
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Order("top desc,created_at desc").Find(&tutorialList).Error
+	err = db.Limit(limit).Offset(offset).Order("tutorial_sort desc,created_at desc").Find(&tutorialList).Error
 	return tutorialList, total, err
 }
 
