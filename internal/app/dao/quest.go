@@ -108,6 +108,10 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 			if questList[i].ID == 0 {
 				continue
 			}
+			// 合辑作者
+			if questList[i].Author != "" {
+				d.db.Model(&model.Users{}).Where("address = ?", questList[i].Author).First(&questList[i].AuthorInfo)
+			}
 
 			// 数量
 			var collectionQuestList []model.Quest
