@@ -9,6 +9,7 @@ type GetQuestListRes struct {
 	Claimed         bool        `gorm:"claimed" json:"claimed"`
 	CollectionCount int64       `gorm:"-" json:"collection_count"`
 	EstimateTime    interface{} `gorm:"-" json:"estimate_time"` // 预估时间/min
+	AuthorInfo      model.Users `gorm:"-" json:"author_info"`
 }
 
 type ChallengeUsers struct {
