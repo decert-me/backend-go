@@ -17,3 +17,7 @@ type AirdropCallbackRequest struct {
 	Params          string `json:"params"`
 	Msg             string `json:"msg"`
 }
+
+type GenerateSubmitAirdropRequest struct {
+	Params string `json:"params"`
+}
