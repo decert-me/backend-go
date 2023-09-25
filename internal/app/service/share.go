@@ -37,7 +37,7 @@ func (s *Service) ShareCallback(shareCode, params string) (err error) {
 		ShareCode: shareCode,
 		Params:    params,
 	}
-	url := s.c.Share.Callback + "/v1/url/save"
+	url := s.c.Share.Callback + "/v1/url/saveAirdrop"
 	// 生成校验hash和时间戳
 	timestamp, hashValue := utils.HashData(body, s.c.Share.VerifyKey)
 	headers := map[string]string{

@@ -148,6 +148,14 @@ func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURI
 }
 
 func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareReq) (res string, err error) {
+	// 校验是否绑定discord
+	if !s.dao.HasDiscord(address) {
+		return res, errors.New("DiscordNotBind")
+	}
+	// 校验是否已经空投
+	if s.dao.HasAirdrop(address, req.TokenId) {
+		return res, errors.New("AlreadyAirdrop")
+	}
 	// 校验分数正确性
 	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
 	if err != nil {

@@ -15,3 +15,7 @@ type ClickCallbackResponse struct {
 	IP        string `json:"ip"`
 	UserAgent string `json:"user_agent"`
 }
+
+type ShareAirdropResponse struct {
+	Params string `json:"params"`
+}

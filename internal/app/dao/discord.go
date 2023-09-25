@@ -96,3 +96,17 @@ func (d *Dao) AirdropFailNotice(address string, tokenID string, reason string) {
 		log.Errorv("ChannelMessageSendComplex error", zap.Error(err))
 	}
 }
+
+func (d *Dao) HasDiscord(address string) bool {
+	var user model.Users
+	err := d.db.Model(&model.Users{}).Select("socials").Where("address = ?", address).First(&user).Error
+	if err != nil {
+		log.Errorv("查询用户失败", zap.String("address", address), zap.Error(err))
+		return false
+	}
+
+	if gjson.Get(string(user.Socials), "discord.id").String() == "" {
+		return false
+	}
+	return true
+}
