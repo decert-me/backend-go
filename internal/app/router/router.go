@@ -74,6 +74,8 @@ func Routers(c *config.Config) *gin.Engine {
 	}
 	// meta
 	Router.GET("/quests/:id", v1.HandleMetaRequest)
+	Router.GET("/claim/:id", v1.HandleMetaRequest)
+	Router.GET("/collection/:id", v1.HandleCollectionMetaRequest)
 
 	fmt.Println("router register success")
 	return Router
