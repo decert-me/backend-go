@@ -24,7 +24,7 @@ func (s *Service) HandleMetaRequest(_tokenID string) []byte {
 		return fileContent
 	}
 	// 需要替换的内容
-	ipfs := "https://ipfs.io/ipfs/" + strings.Replace(gjson.Get(string(quest.MetaData), "image").String(), "ipfs://", "", 1)
+	ipfs := "https://ipfs.decert.me/" + strings.Replace(gjson.Get(string(quest.MetaData), "image").String(), "ipfs://", "", 1)
 	replaceList := map[string]string{
 		"https://decert.me/": fmt.Sprintf("https://decert.me/quests/%s", _tokenID),
 		"DeCert.Me":          quest.Title,
@@ -54,7 +54,7 @@ func (s *Service) HandleCollectionMetaRequest(_id string) []byte {
 		return fileContent
 	}
 	// 需要替换的内容
-	ipfs := "https://ipfs.io/ipfs/" + collection.Cover
+	ipfs := "https://ipfs.decert.me/" + collection.Cover
 	replaceList := map[string]string{
 		"https://decert.me/": fmt.Sprintf("https://decert.me/collection/%s", _id),
 		"DeCert.Me":          collection.Title,
