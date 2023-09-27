@@ -30,7 +30,7 @@ func (s *Service) HandleMetaRequest(_tokenID string) []byte {
 		"https://decert.me/": fmt.Sprintf("https://decert.me/quests/%s", _tokenID),
 		"DeCert.Me":          quest.Title,
 		"Decentralized skills learning and certification platform · Education in the Age of AI · SBT - Proof of Learn.": quest.Description,
-		"/image.png": ipfs,
+		"/decert-social-card.png": ipfs,
 	}
 	// 修改文件内容
 	temp := string(fileContent)
