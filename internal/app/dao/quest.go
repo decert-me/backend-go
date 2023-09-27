@@ -245,3 +245,8 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 	err = db.Order("collection_relate.sort desc").Find(&questList).Error
 	return
 }
+
+func (d *Dao) GetCollectionByID(id int) (collection model.Collection, err error) {
+	err = d.db.Model(&model.Collection{}).Where("id", id).First(&collection).Error
+	return
+}
