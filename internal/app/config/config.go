@@ -19,4 +19,5 @@ type Config struct {
 	Judge      *Judge       `mapstructure:"judge" json:"judge" yaml:"judge"`
 	Share      *Share       `mapstructure:"share" json:"share" yaml:"share"`
 	Discord    *Discord     `mapstructure:"discord" json:"discord" yaml:"discord"`
+	Sentry     *Sentry      `mapstructure:"sentry" json:"sentry" yaml:"sentry"`
 }
