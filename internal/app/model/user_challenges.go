@@ -6,7 +6,7 @@ import (
 
 type UserChallenges struct {
 	ID        uint           `gorm:"primarykey"`
-	Address   string         `gorm:"column:address;type:char(42);index:,unique,composite:challenges_address_tokenId;comment:钱包地址" json:"address" form:"address"`
+	Address   string         `gorm:"column:address;type:char(44);index:,unique,composite:challenges_address_tokenId;comment:钱包地址" json:"address" form:"address"`
 	TokenId   int64          `gorm:"column:token_id;index:,unique,composite:challenges_address_tokenId;" json:"tokenId"`
 	Status    uint8          `gorm:"column:status;default:0;size:30;comment:0 进行中 1 等待验证 2 成功;" json:"status" form:"status"` // 0:进行中;1:等待验证;2:成功;
 	Content   datatypes.JSON `gorm:"column:content" json:"content"`

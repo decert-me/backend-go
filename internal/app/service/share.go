@@ -55,6 +55,8 @@ func (s *Service) ShareCallback(shareCode, params string) (err error) {
 	if gjson.Get(res.String(), "status").Int() != 0 {
 		return errors.New(gjson.Get(res.String(), "message").String())
 	}
+	// 保存到数据库
+	
 	return nil
 }
 

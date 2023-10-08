@@ -2,9 +2,7 @@ package dao
 
 import (
 	"backend-go/internal/app/model"
-	"backend-go/pkg/log"
 	"github.com/ethereum/go-ethereum/common"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"time"
@@ -70,12 +68,19 @@ func (d *Dao) UpdateAirdroppedOne(tokenId int64, receivers string, hash string) 
 }
 
 func (d *Dao) HasAirdrop(address string, tokenId int64) bool {
+	//var total int64
+	//err := d.db.Model(&model.ClaimBadgeTweet{}).
+	//	Where("address = ? AND token_id = ? AND status=1", address, tokenId).
+	//	Count(&total).Error
+	//if err != nil {
+	//	log.Errorv("HasAirdrop error", zap.Error(err))
+	//	return false
+	//}
 	var total int64
-	err := d.db.Model(&model.ClaimBadgeTweet{}).
-		Where("address = ? AND token_id = ? AND status=1", address, tokenId).
+	err := d.db.Model(&model.UserChallenges{}).
+		Where("address = ? AND token_id = ?", address, tokenId).
 		Count(&total).Error
 	if err != nil {
-		log.Errorv("HasAirdrop error", zap.Error(err))
 		return false
 	}
 	return total != 0

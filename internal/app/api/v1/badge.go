@@ -3,6 +3,7 @@ package v1
 import (
 	"backend-go/internal/app/model/request"
 	"github.com/gin-gonic/gin"
+	"strconv"
 )
 
 // PermitClaimBadge claim Badge NFT
@@ -62,5 +63,20 @@ func SubmitClaimShare(c *gin.Context) {
 		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		OkWithData(res, c)
+	}
+}
+
+func HasClaimed(c *gin.Context) {
+	address := c.GetString("address")
+	tokenId := c.Param("tokenID")
+	_tokenId, err := strconv.Atoi(tokenId)
+	if err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	if res, err := srv.HasClaimed(address, int64(_tokenId)); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		OkWithData(map[string]uint8{"status": res}, c)
 	}
 }
