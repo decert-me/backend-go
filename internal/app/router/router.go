@@ -5,6 +5,8 @@ import (
 	"backend-go/internal/app/config"
 	"backend-go/internal/app/middleware"
 	"fmt"
+	"github.com/getsentry/sentry-go"
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -51,6 +53,20 @@ func Routers(c *config.Config) *gin.Engine {
 		Router = gin.New()
 		Router.Use(gin.Recovery())
 	}
+	// sentry
+	if err := sentry.Init(sentry.ClientOptions{
+		Dsn:           c.Sentry.Dsn,
+		EnableTracing: c.Sentry.EnableTracing,
+		// Set TracesSampleRate to 1.0 to capture 100%
+		// of transactions for performance monitoring.
+		// We recommend adjusting this value in production,
+		TracesSampleRate: c.Sentry.TracesSampleRate,
+	}); err != nil {
+		fmt.Printf("Sentry initialization failed: %v\n", err)
+	} else {
+		Router.Use(sentrygin.New(sentrygin.Options{}))
+	}
+
 	Router.Use(middleware.Cors()) // 放行跨域请求
 	PublicGroup := Router.Group("")
 	{
@@ -74,6 +90,8 @@ func Routers(c *config.Config) *gin.Engine {
 	}
 	// meta
 	Router.GET("/quests/:id", v1.HandleMetaRequest)
+	Router.GET("/claim/:id", v1.HandleMetaRequest)
+	Router.GET("/collection/:id", v1.HandleCollectionMetaRequest)
 
 	fmt.Println("router register success")
 	return Router
