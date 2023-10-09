@@ -27,5 +27,7 @@ type GetQuestChallengeUserRes struct {
 
 type GetQuestRes struct {
 	model.Quest
-	Claimed bool `gorm:"claimed" json:"claimed"`
+	Claimed    bool   `gorm:"claimed" json:"claimed"`
+	UserScore  int64  `gorm:"user_score" json:"user_score"`
+	NFTAddress string `gorm:"column:nft_address" json:"nft_address"`
 }
