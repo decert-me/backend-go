@@ -137,7 +137,7 @@ func (d *Dao) GetChallengeList(req *request.GetChallengeListRequest) (res []resp
 	if err != nil {
 		return res, total, err
 	}
-	err = db.Raw("SELECT a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id WHERE address = ? ORDER BY a.add_ts DESC LIMIT ? OFFSET ?",
+	err = db.Raw("SELECT a.nft_address,a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id WHERE address = ? ORDER BY a.add_ts DESC LIMIT ? OFFSET ?",
 		req.Address, limit, offset).Scan(&res).Error
 	if err != nil {
 		return res, total, err
