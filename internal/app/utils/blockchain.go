@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/gagliardetto/solana-go"
 	"regexp"
 )
 
@@ -53,6 +54,27 @@ func VerifySignature(from, sigHex string, msg []byte) bool {
 	recoveredAddr := crypto.PubkeyToAddress(*recovered)
 
 	return from == recoveredAddr.Hex()
+}
+
+// VerifySignatureSolana
+// @description: 验证Solana签名消息
+// @param: from, sigHex string, msg []byte
+// @return: bool
+func VerifySignatureSolana(from, sigHex string, message []byte) bool {
+	signature, err := solana.SignatureFromBase58(sigHex)
+	if err != nil {
+		return false
+	}
+	pubKey, err := solana.PublicKeyFromBase58(from)
+	if err != nil {
+		return false
+	}
+
+	if !signature.Verify(pubKey, message) {
+		return false
+	}
+
+	return true
 }
 
 // IsValidAddress validate hex address

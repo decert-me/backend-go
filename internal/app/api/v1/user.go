@@ -133,10 +133,6 @@ func GetUserChallengeList(c *gin.Context) {
 func GetLoginMessage(c *gin.Context) {
 	var request request.GetLoginMessageRequest
 	_ = c.ShouldBindQuery(&request)
-	if !utils.IsValidAddress(request.Address) {
-		FailWithMessage(GetMessage(c, "AddressError"), c)
-		return
-	}
 	if loginMessage, err := srv.GetLoginMessage(request.Address); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
@@ -156,7 +152,14 @@ func AuthLoginSign(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
-	if token, err := srv.AuthLoginSignRequest(request); err != nil {
+	var token string
+	var err error
+	if utils.IsValidAddress(request.Address) {
+		token, err = srv.AuthLoginSignRequest(request)
+	} else {
+		token, err = srv.AuthLoginSignRequestSolana(request)
+	}
+	if err != nil {
 		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		OkWithDetailed(map[string]string{"token": token}, GetMessage(c, "FetchSuccess"), c)

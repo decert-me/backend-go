@@ -148,7 +148,7 @@ func (d *Dao) GetQuestByUUID(uuid string) (quest model.Quest, err error) {
 
 func (d *Dao) GetQuestWithClaimStatusByTokenID(id int64, address string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).
-		Select("quest.*,b.claimed").
+		Select("quest.*,b.claimed,b.user_score,b.nft_address").
 		Joins("left join user_challenges b ON quest.token_id=b.token_id AND b.address= ?", address).
 		Where("quest.token_id", id).
 		First(&quest).Error
@@ -157,7 +157,7 @@ func (d *Dao) GetQuestWithClaimStatusByTokenID(id int64, address string) (quest 
 
 func (d *Dao) GetQuestWithClaimStatusByUUID(uuid string, address string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).
-		Select("quest.*,b.claimed").
+		Select("quest.*,b.claimed,b.user_score,b.nft_address").
 		Joins("left join user_challenges b ON quest.token_id=b.token_id AND b.address= ?", address).
 		Where("quest.uuid", uuid).
 		First(&quest).Error

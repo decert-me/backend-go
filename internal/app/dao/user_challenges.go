@@ -43,12 +43,14 @@ func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (e
 	return
 }
 
-func (d *Dao) CreateChallengesOne(tokenId int64, receiver string) (err error) {
+func (d *Dao) CreateChallengesOne(tokenId int64, receiver string, uerScore int64, nftAddress string) (err error) {
 	challenge := model.UserChallenges{
-		Address: receiver,
-		TokenId: tokenId,
-		Claimed: true,
-		Status:  2,
+		Address:    receiver,
+		TokenId:    tokenId,
+		Claimed:    true,
+		Status:     2,
+		UserScore:  uerScore,
+		NFTAddress: nftAddress,
 	}
 	err = d.db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "address"}, {Name: "token_id"}},
@@ -103,20 +105,20 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 		}
 	}
 
-	err = db.Raw("SELECT count(1) FROM (SELECT a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id WHERE address = ? "+
+	err = db.Raw("SELECT count(1) FROM (SELECT a.nft_address,a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id WHERE address = ? "+
 		" UNION "+
-		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM claim_badge_tweet a JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0"+
+		"SELECT '' as nft_address,'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM claim_badge_tweet a JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0"+
 		" UNION "+
-		fmt.Sprintf("SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM %s a JOIN quest b ON a.token_id=b.token_id", tempDB)+
+		fmt.Sprintf("SELECT '' as nft_address,'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM %s a JOIN quest b ON a.token_id=b.token_id", tempDB)+
 		") a1", req.Address, req.Address).Scan(&total).Error
 	if err != nil {
 		return res, total, err
 	}
-	err = db.Raw("SELECT * FROM ((SELECT a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id  WHERE address = ? ORDER BY a.add_ts DESC"+
+	err = db.Raw("SELECT * FROM ((SELECT a.nft_address,a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id  WHERE address = ? ORDER BY a.add_ts DESC"+
 		") UNION ("+
-		"SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM claim_badge_tweet a JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0 ORDER BY a.add_ts DESC"+
+		"SELECT '' as nft_address,'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM claim_badge_tweet a JOIN quest b ON a.token_id=b.token_id WHERE a.address = ? AND a.status=0 ORDER BY a.add_ts DESC"+
 		") UNION ("+
-		fmt.Sprintf("SELECT 'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM %s a JOIN quest b ON a.token_id=b.token_id", tempDB)+
+		fmt.Sprintf("SELECT '' as nft_address,'f' as claimed,a.add_ts as complete_ts,b.* as claimed FROM %s a JOIN quest b ON a.token_id=b.token_id", tempDB)+
 		")) a1 ORDER BY complete_ts DESC LIMIT ? OFFSET ? ",
 		req.Address, req.Address, limit, offset).Scan(&res).Error
 	if err != nil {
@@ -135,7 +137,7 @@ func (d *Dao) GetChallengeList(req *request.GetChallengeListRequest) (res []resp
 	if err != nil {
 		return res, total, err
 	}
-	err = db.Raw("SELECT a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id WHERE address = ? ORDER BY a.add_ts DESC LIMIT ? OFFSET ?",
+	err = db.Raw("SELECT a.nft_address,a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id WHERE address = ? ORDER BY a.add_ts DESC LIMIT ? OFFSET ?",
 		req.Address, limit, offset).Scan(&res).Error
 	if err != nil {
 		return res, total, err

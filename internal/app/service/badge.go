@@ -173,13 +173,21 @@ func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareR
 	if !pass {
 		return res, errors.New("AnswerIncorrect")
 	}
+	var app string
+	// 判断地址
+	if utils.IsValidAddress(address) {
+		app = "decert"
+	} else {
+		app = "decert_solana"
+	}
 	// 生成分享码
 	paramsMap := map[string]interface{}{
-		"app": "decert",
+		"app": app,
 		"params": map[string]interface{}{
 			"receiver": address,
 			"tokenId":  req.TokenId,
 			"score":    req.Score,
+			"uri":      quest.Uri,
 		},
 	}
 	// 将Map转换为JSON格式的字节数组
@@ -188,6 +196,26 @@ func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareR
 		log.Errorv("JSON encoding error:", zap.Error(err))
 		return
 	}
+	res, err = s.GenerateShare(request.GenerateShareRequest{Params: string(paramsData)})
+	if err != nil {
+		log.Errorv("GenerateShare error:", zap.Error(err))
+		return
+	}
+	// 保存记录
+	if err = s.dao.CreateUserChallengeClaim(&model.UserChallengeClaim{
+		Address: address,
+		TokenId: req.TokenId,
+	}); err != nil {
+		log.Errorv("CreateUserChallengeClaim error", zap.Error(err))
+		return
+	}
+	return res, err
+}
 
-	return s.GenerateShare(request.GenerateShareRequest{Params: string(paramsData)})
+func (s *Service) HasClaimed(address string, tokenId int64) (res uint8, err error) {
+	// 校验是否已经空投
+	if s.dao.HasAirdrop(address, tokenId) {
+		return 2, nil
+	}
+	return s.dao.HasClaimed(address, tokenId)
 }

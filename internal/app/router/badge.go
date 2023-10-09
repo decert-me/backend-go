@@ -8,10 +8,14 @@ import (
 
 func InitBadgeRouter(Router *gin.RouterGroup) {
 	badgeRouter := Router.Group("badge").Use(middleware.Auth())
+	badgeAddrRouter := Router.Group("badge").Use(middleware.Addr())
 	{
 		badgeRouter.POST("submitClaimTweet", v1.SubmitClaimTweet)
 		badgeRouter.POST("submitClaimShare", v1.SubmitClaimShare)
 		badgeRouter.POST("claim", v1.PermitClaimBadge)
 		badgeRouter.PUT("uri", v1.UpdateBadgeURI)
+	}
+	{
+		badgeAddrRouter.GET("hasClaimed/:tokenID", v1.HasClaimed)
 	}
 }
