@@ -2,7 +2,7 @@ package model
 
 type ClaimBadgeTweet struct {
 	ID          uint   `gorm:"primarykey"`
-	Address     string `gorm:"column:address;type:char(44);index:address_tokenId,UNIQUE;comment:钱包地址" json:"address" form:"address"`
+	Address     string `gorm:"column:address;type:varchar(44);index:address_tokenId,UNIQUE;comment:钱包地址" json:"address" form:"address"`
 	TokenId     int64  `gorm:"column:token_id;index:address_tokenId,UNIQUE" json:"tokenId"` // badgeNFT tokenId
 	Score       int64  `gorm:"column:score" form:"score" json:"score"`                      // badgeNFT score
 	Url         string `gorm:"column:url;type:varchar" json:"url"`                          // 推文链接地址
