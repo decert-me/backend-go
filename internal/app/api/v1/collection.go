@@ -6,6 +6,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetCollectionQuest 获取合辑内挑战
+func GetCollectionQuest(c *gin.Context) {
+	var r request.GetCollectionQuestRequest
+	_ = c.ShouldBindQuery(&r)
+	r.Address = c.GetString("address")
+	if list, collection, err := srv.GetCollectionQuest(r); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithDetailed(response.GetCollectionQuestPageResult{
+			List:       list,
+			Collection: collection,
+		}, GetMessage(c, "FetchSuccess"), c)
+	}
+}
+
 // GetCollectionChallengeUser 获取挑战合辑用户
 func GetCollectionChallengeUser(c *gin.Context) {
 	var r request.GetCollectionChallengeUser

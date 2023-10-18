@@ -36,3 +36,27 @@ func (d *Dao) GetCollectionChallengeUserByID(r request.GetCollectionChallengeUse
 	total = res.Times
 	return res, total, err
 }
+
+func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, collection model.Collection, err error) {
+	// 查询合辑信息
+	err = d.db.Model(&model.Collection{}).Where("id", r.ID).First(&collection).Error
+	if err != nil {
+		return questList, collection, err
+	}
+	// 查询合辑内挑战
+	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
+		Where("collection_relate.collection_id = ? AND quest.status=1", r.ID)
+	if r.Address != "" {
+		db.Select("quest.*,c.claimed")
+		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
+	} else {
+		db.Select("*")
+	}
+	err = db.Order("collection_relate.sort desc").Find(&questList).Error
+	return
+}
+
+func (d *Dao) GetCollectionByID(id int) (collection model.Collection, err error) {
+	err = d.db.Model(&model.Collection{}).Where("id", id).First(&collection).Error
+	return
+}

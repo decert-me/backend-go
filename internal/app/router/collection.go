@@ -11,5 +11,6 @@ func InitCollectionRouter(Router *gin.RouterGroup) {
 	//questRouterAuth := Router.Group("collection").Use(middleware.Auth())
 	{
 		collectionRouter.GET("challengeUsers", v1.GetCollectionChallengeUser)
+		collectionRouter.GET("", v1.GetCollectionQuest)
 	}
 }
