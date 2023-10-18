@@ -84,11 +84,12 @@ func GetCollectionQuest(c *gin.Context) {
 	var r request.GetCollectionQuestRequest
 	_ = c.ShouldBindQuery(&r)
 	r.Address = c.GetString("address")
-	if list, err := srv.GetCollectionQuest(r); err != nil {
+	if list, collection, err := srv.GetCollectionQuest(r); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
-		OkWithDetailed(response.PageResult{
-			List: list,
+		OkWithDetailed(response.GetCollectionQuestPageResult{
+			List:       list,
+			Collection: collection,
 		}, GetMessage(c, "FetchSuccess"), c)
 	}
 }

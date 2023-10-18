@@ -233,7 +233,13 @@ func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
 }
 
-func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, err error) {
+func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, collection model.Collection, err error) {
+	// 查询合辑信息
+	err = d.db.Model(&model.Collection{}).Where("id", r.ID).First(&collection).Error
+	if err != nil {
+		return questList, collection, err
+	}
+	// 查询合辑内挑战
 	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
 		Where("collection_relate.collection_id = ? AND quest.status=1", r.ID)
 	if r.Address != "" {
