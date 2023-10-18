@@ -5,15 +5,25 @@ import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
 	"errors"
+	"github.com/spf13/cast"
 )
 
 func (d *Dao) GetCollectionChallengeUserByID(r request.GetCollectionChallengeUser) (res response.GetCollectionChallengeUserRes, total int64, err error) {
+	// 兼容UUID
+	collectionID, idErr := cast.ToUintE(r.CollectionID)
+	if idErr != nil {
+		// 查询合辑信息
+		err = d.db.Model(&model.Collection{}).Select("id").Where("uuid", r.CollectionID).First(&collectionID).Error
+		if err != nil {
+			return res, total, err
+		}
+	}
 	// 分页
 	limit := r.PageSize
 	offset := r.PageSize * (r.Page - 1)
 	// 查询合辑列表
 	var tokenIDList []uint
-	err = d.db.Model(&model.CollectionRelate{}).Where("collection_id", r.CollectionID).Pluck("token_id", &tokenIDList).Error
+	err = d.db.Model(&model.CollectionRelate{}).Where("collection_id", collectionID).Pluck("token_id", &tokenIDList).Error
 	if err != nil {
 		return res, total, err
 	}
@@ -38,14 +48,24 @@ func (d *Dao) GetCollectionChallengeUserByID(r request.GetCollectionChallengeUse
 }
 
 func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, collection model.Collection, err error) {
-	// 查询合辑信息
-	err = d.db.Model(&model.Collection{}).Where("id", r.ID).First(&collection).Error
-	if err != nil {
-		return questList, collection, err
+	collectionID, idErr := cast.ToUintE(r.ID)
+	if idErr == nil {
+		// 查询合辑信息
+		err = d.db.Model(&model.Collection{}).Where("id", collectionID).First(&collection).Error
+		if err != nil {
+			return questList, collection, err
+		}
+	} else {
+		// 查询合辑信息
+		err = d.db.Model(&model.Collection{}).Where("uuid", collectionID).First(&collection).Error
+		if err != nil {
+			return questList, collection, err
+		}
 	}
+
 	// 查询合辑内挑战
 	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
-		Where("collection_relate.collection_id = ? AND quest.status=1", r.ID)
+		Where("collection_relate.collection_id = ? AND quest.status=1", collection.ID)
 	if r.Address != "" {
 		db.Select("quest.*,c.claimed")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
