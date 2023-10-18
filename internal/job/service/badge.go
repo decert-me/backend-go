@@ -37,7 +37,8 @@ func (s *Service) handleURI(hash string, vLog *types.Log) (err error) {
 		return
 	}
 	var questDataDetail string
-	if gjson.Get(metadata, "version").Float() == 1.1 {
+	version := gjson.Get(metadata, "version").Float()
+	if version == 1.1 || version == 1.2 {
 		questDataDetail, err = s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
 		if err != nil {
 			return

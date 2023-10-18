@@ -24,6 +24,7 @@ func init() {
 	}
 	questAbi = contractAbi
 }
+
 func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	var created ABI.QuestQuestCreated
 	if err = questAbi.UnpackIntoInterface(&created, "QuestCreated", vLog.Data); err != nil {
@@ -33,18 +34,22 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	if err != nil {
 		return
 	}
+	// 获取数据库信息
+	tr, err := s.dao.QueryTransactionByHash(hash)
+	if err != nil {
+		return err
+	}
+	// 获取合辑ID
+	collectionID := gjson.Get(tr.Params.String(), "collection_id").Int()
 	var questDataDetail string
-	if gjson.Get(metadata, "version").Float() == 1.1 {
+	version := gjson.Get(metadata, "version").Float()
+	if (version == 1.1 || version == 1.2) && collectionID == 0 {
 		questDataDetail, err = s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
 		if err != nil {
 			return
 		}
 	}
 
-	tr, err := s.dao.QueryTransactionByHash(hash)
-	if err != nil {
-		return err
-	}
 	questData := created.QuestData
 	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs, Supply: questData.Supply.Uint64()})
 
@@ -68,10 +73,19 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		IsDraft:     false, // 当前发布不审核
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
 	}
-	if err = s.dao.CreateQuest(&quest); err != nil {
-		log.Errorv("CreateQuest error", zap.Error(err), zap.Any("quest", quest))
-		return
+	// 区分合辑和Quest
+	if collectionID == 0 {
+		if err = s.dao.CreateQuest(&quest); err != nil {
+			log.Errorv("CreateQuest error", zap.Error(err), zap.Any("quest", quest))
+			return
+		}
+	} else {
+		if err = s.dao.UpdateCollection(collectionID, quest); err != nil {
+			log.Errorv("UpdateCollection error", zap.Error(err), zap.Any("quest", quest))
+			return
+		}
 	}
+
 	s.handleTraverseStatus(hash, 1, "")
 
 	return
@@ -93,7 +107,8 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 		return
 	}
 	var questDataDetail string
-	if gjson.Get(metadata, "version").Float() == 1.1 {
+	version := gjson.Get(metadata, "version").Float()
+	if version == 1.1 || version == 1.2 {
 		questDataDetail, err = s.GetDataFromCid(strings.Replace(gjson.Get(metadata, "attributes.challenge_ipfs_url").String(), "ipfs://", "", 1))
 		if err != nil {
 			return
