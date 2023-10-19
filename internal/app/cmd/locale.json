@@ -26,7 +26,8 @@
     "UploadSuccess": "Upload Success！",
     "UploadFailed": "Upload Failed！",
     "RecordNotFound": "Record Not Found！",
-    "QuestUpdate": "Question Updated，Please Refresh!"
+    "QuestUpdate": "Question Updated，Please Refresh!",
+    "QuestNotComplete": "Not Complete All Quests！"
   },
   "zh-CN": {
     "OperationSuccess": "操作成功！",
@@ -55,6 +56,7 @@
     "UploadSuccess": "上传成功！",
     "UploadFailed": "上传失败！",
     "RecordNotFound": "记录不存在！",
-    "QuestUpdate": "题目已更新，请重新答题！"
+    "QuestUpdate": "题目已更新，请重新答题！",
+    "QuestNotComplete": "未完成所有挑战！"
   }
 }

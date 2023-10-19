@@ -55,8 +55,14 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 
 	challengeUrl := gjson.Get(metadata, "attributes.challenge_url").String()
 	var uuid string
-	if len(strings.Split(challengeUrl, "/quests/")) >= 2 {
-		uuid = strings.Split(challengeUrl, "/quests/")[1]
+	if collectionID == 0 {
+		if len(strings.Split(challengeUrl, "/quests/")) >= 2 {
+			uuid = strings.Split(challengeUrl, "/quests/")[1]
+		}
+	} else {
+		if len(strings.Split(challengeUrl, "/collection/")) >= 2 {
+			uuid = strings.Split(challengeUrl, "/collection/")[1]
+		}
 	}
 
 	quest := model.Quest{
@@ -80,8 +86,8 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 			return
 		}
 	} else {
-		if err = s.dao.UpdateCollection(collectionID, quest); err != nil {
-			log.Errorv("UpdateCollection error", zap.Error(err), zap.Any("quest", quest))
+		if err = s.dao.UpdateCollectionOnce(collectionID, quest); err != nil {
+			log.Errorv("UpdateCollectionOnce error", zap.Error(err), zap.Any("quest", quest))
 			return
 		}
 	}

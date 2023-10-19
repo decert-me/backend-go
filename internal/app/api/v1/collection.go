@@ -39,3 +39,17 @@ func GetCollectionChallengeUser(c *gin.Context) {
 		}, GetMessage(c, "FetchSuccess"), c)
 	}
 }
+
+// CollectionClaim 领取合辑奖励
+func CollectionClaim(c *gin.Context) {
+	var r request.CollectionClaimRequest
+	if err := c.ShouldBindJSON(&r); err != nil {
+		FailWithMessage("ParameterError", c)
+		return
+	}
+	if err := srv.CollectionClaim(r, c.GetString("address")); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		Ok(c)
+	}
+}

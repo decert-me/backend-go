@@ -47,7 +47,7 @@ func (d *Dao) GetCollectionChallengeUserByID(r request.GetCollectionChallengeUse
 	return res, total, err
 }
 
-func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, collection model.Collection, err error) {
+func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList []response.GetQuestListRes, collection response.GetCollectionRes, err error) {
 	collectionID, idErr := cast.ToUintE(r.ID)
 	if idErr == nil {
 		// 查询合辑信息
@@ -57,12 +57,26 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 		}
 	} else {
 		// 查询合辑信息
-		err = d.db.Model(&model.Collection{}).Where("uuid", collectionID).First(&collection).Error
+		err = d.db.Model(&model.Collection{}).Where("uuid", r.ID).First(&collection).Error
 		if err != nil {
 			return questList, collection, err
 		}
 	}
-
+	// 查询是否领取
+	if r.Address != "" {
+		var claimed int
+		err = d.db.Model(&model.UserChallenges{}).
+			Select("COUNT(1)").
+			Where("token_id = ?", collection.TokenId).
+			Where("address = ?", r.Address).
+			Scan(&claimed).Error
+		if err != nil {
+			return questList, collection, err
+		}
+		if claimed > 0 {
+			collection.Claimed = true
+		}
+	}
 	// 查询合辑内挑战
 	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
 		Where("collection_relate.collection_id = ? AND quest.status=1", collection.ID)
@@ -78,5 +92,17 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 
 func (d *Dao) GetCollectionByID(id int) (collection model.Collection, err error) {
 	err = d.db.Model(&model.Collection{}).Where("id", id).First(&collection).Error
+	return
+}
+
+func (d *Dao) GetCollectionByTokenID(tokenID int64) (collection model.Collection, err error) {
+	err = d.db.Model(&model.Collection{}).Where("token_id", tokenID).First(&collection).Error
+	return
+}
+
+func (d *Dao) GetQuestListByCollectionID(collectionID uint) (questList []model.Quest, err error) {
+	err = d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
+		Where("collection_relate.collection_id = ? AND quest.status=1", collectionID).
+		Order("collection_relate.sort desc").Find(&questList).Error
 	return
 }
