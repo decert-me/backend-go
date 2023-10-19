@@ -58,6 +58,11 @@ func UploadFile(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "FileSizeExceedsLimit"), c)
 		return
 	}
+	// 文件格式限制
+	if !utils.VerifyFileFormat(header.Filename, []string{"jpeg", "jpg", "png", "gif", "svg"}) {
+		FailWithMessage(GetMessage(c, "FileFormatIncorrect"), c)
+		return
+	}
 	err, hash := srv.IPFSUploadFile(header) // 文件上传后拿到文件路径
 	if err != nil {
 		FailWithMessage(GetMessage(c, "UploadFailed"), c)
