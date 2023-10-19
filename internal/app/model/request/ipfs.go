@@ -26,12 +26,12 @@ type UploadJSONCollection struct {
 	Description string `json:"description"`
 	Image       string `json:"image" binding:"required"`
 	Attributes  struct {
-		ChallengeURL   string `json:"challenge_url"`
-		ChallengeTitle string `json:"challenge_title"`
-		ChallengeType  string `json:"challenge_type"`
-		Challenges     []int  `json:"challenges"`
-		Creator        string `json:"creator"`
-		Difficulty     int    `json:"difficulty"`
+		ChallengeURL   string        `json:"challenge_url"`
+		ChallengeTitle string        `json:"challenge_title"`
+		ChallengeType  string        `json:"challenge_type"`
+		Challenges     []interface{} `json:"challenges"`
+		Creator        string        `json:"creator"`
+		Difficulty     int           `json:"difficulty"`
 	} `json:"attributes" binding:"required"`
 	ExternalURL string  `json:"external_url" binding:"required"`
 	Version     float64 `json:"version" binding:"required"`
