@@ -29,4 +29,5 @@ type GetCollectionRes struct {
 
 type CheckQuestInCollectionRes struct {
 	IsInCollection bool `json:"is_in_collection"`
+	CollectionID   int  `json:"collection_id"`
 }

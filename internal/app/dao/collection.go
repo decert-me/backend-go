@@ -6,6 +6,7 @@ import (
 	"backend-go/internal/app/model/response"
 	"errors"
 	"github.com/spf13/cast"
+	"gorm.io/gorm"
 )
 
 func (d *Dao) GetCollectionChallengeUserByID(r request.GetCollectionChallengeUser) (res response.GetCollectionChallengeUserRes, total int64, err error) {
@@ -101,7 +102,8 @@ func (d *Dao) GetCollectionByTokenID(tokenID int64) (collection model.Collection
 }
 
 func (d *Dao) GetQuestListByCollectionID(collectionID uint) (questList []model.Quest, err error) {
-	err = d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
+	err = d.db.Model(&model.CollectionRelate{}).
+		Joins("left join quest ON collection_relate.quest_id=quest.id").
 		Where("collection_relate.collection_id = ? AND quest.status=1", collectionID).
 		Order("collection_relate.sort desc").Find(&questList).Error
 	return
@@ -109,9 +111,18 @@ func (d *Dao) GetQuestListByCollectionID(collectionID uint) (questList []model.Q
 
 // CheckQuestInCollection 查询挑战是否在合辑内
 func (d *Dao) CheckQuestInCollection(r request.CheckQuestInCollectionRequest) (res response.CheckQuestInCollectionRes, err error) {
-	err = d.db.Model(&model.UserChallenges{}).
-		Select("CASE WHEN COUNT(1) > 0 THEN 'true' ELSE 'false' END AS result").
+	err = d.db.Model(&model.CollectionRelate{}).
+		Select("collection_id").
 		Where("token_id = ?", r.TokenID).
-		Scan(&res.IsInCollection).Error
+		First(&res.CollectionID).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return res, nil
+		}
+		return res, err
+	}
+	if res.CollectionID != 0 {
+		res.IsInCollection = true
+	}
 	return
 }
