@@ -81,3 +81,8 @@ func (s *Service) CollectionClaim(r request.CollectionClaimRequest, address stri
 	}
 	return nil
 }
+
+// CheckQuestInCollection 查询挑战是否在合辑内
+func (s *Service) CheckQuestInCollection(r request.CheckQuestInCollectionRequest) (res response.CheckQuestInCollectionRes, err error) {
+	return s.dao.CheckQuestInCollection(r)
+}

@@ -53,3 +53,17 @@ func CollectionClaim(c *gin.Context) {
 		Ok(c)
 	}
 }
+
+// CheckQuestInCollection 查询挑战是否在合辑内
+func CheckQuestInCollection(c *gin.Context) {
+	var r request.CheckQuestInCollectionRequest
+	if err := c.ShouldBindQuery(&r); err != nil {
+		FailWithMessage("ParameterError", c)
+		return
+	}
+	if res, err := srv.CheckQuestInCollection(r); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		OkWithData(res, c)
+	}
+}

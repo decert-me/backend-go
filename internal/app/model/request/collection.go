@@ -8,3 +8,7 @@ type GetCollectionChallengeUser struct {
 type CollectionClaimRequest struct {
 	TokenID int64 `json:"token_id" form:"token_id" binding:"required"`
 }
+
+type CheckQuestInCollectionRequest struct {
+	TokenID int64 `json:"token_id" form:"token_id" binding:"required"`
+}

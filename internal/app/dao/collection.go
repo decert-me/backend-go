@@ -106,3 +106,12 @@ func (d *Dao) GetQuestListByCollectionID(collectionID uint) (questList []model.Q
 		Order("collection_relate.sort desc").Find(&questList).Error
 	return
 }
+
+// CheckQuestInCollection 查询挑战是否在合辑内
+func (d *Dao) CheckQuestInCollection(r request.CheckQuestInCollectionRequest) (res response.CheckQuestInCollectionRes, err error) {
+	err = d.db.Model(&model.UserChallenges{}).
+		Select("CASE WHEN COUNT(1) > 0 THEN 'true' ELSE 'false' END AS result").
+		Where("token_id = ?", r.TokenID).
+		Scan(&res.IsInCollection).Error
+	return
+}

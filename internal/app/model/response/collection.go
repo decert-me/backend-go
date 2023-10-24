@@ -26,3 +26,7 @@ type GetCollectionRes struct {
 	model.Collection
 	Claimed bool `gorm:"-" json:"claimed"`
 }
+
+type CheckQuestInCollectionRes struct {
+	IsInCollection bool `json:"is_in_collection"`
+}
