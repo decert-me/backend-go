@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/tidwall/gjson"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -76,6 +78,18 @@ func VerifyData(data interface{}, key, hash, timestampStr string) (verify bool) 
 	hashValue := hex.EncodeToString(hasher.Sum(nil))
 	if hashValue == hash {
 		return true
+	}
+	return false
+}
+
+// VerifyFileFormat 校验文件格式
+func VerifyFileFormat(fileName string, extList []string) bool {
+	ext := strings.ToLower(filepath.Ext(fileName))
+	ext = strings.TrimPrefix(ext, ".")
+	for _, v := range extList {
+		if ext == v {
+			return true
+		}
 	}
 	return false
 }
