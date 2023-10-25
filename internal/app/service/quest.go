@@ -117,9 +117,3 @@ func (s *Service) UpdateRecommend(address string, modify request.UpdateRecommend
 	}
 	return nil
 }
-
-// GetCollectionQuest
-func (s *Service) GetCollectionQuest(r request.GetCollectionQuestRequest) (res []response.GetQuestListRes, err error) {
-	res, err = s.dao.GetCollectionQuest(r)
-	return
-}

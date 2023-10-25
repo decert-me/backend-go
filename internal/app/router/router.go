@@ -87,6 +87,7 @@ func Routers(c *config.Config) *gin.Engine {
 		InitJudgeRouter(v1Group)
 		InitTutorialRouter(v1Group)
 		InitShareRouter(v1Group)
+		InitCollectionRouter(v1Group)
 	}
 	// meta
 	Router.GET("/quests/:id", v1.HandleMetaRequest)

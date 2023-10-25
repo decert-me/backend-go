@@ -14,6 +14,11 @@ import (
 )
 
 func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, quest *model.Quest) (userReturnScore int64, pass bool, err error) {
+	defer func() {
+		if err != nil {
+			log.Errorv("AnswerCheck error", zap.Error(err))
+		}
+	}()
 	res := string(quest.MetaData)
 	questData := string(quest.QuestData)
 	version := gjson.Get(res, "version").Float()

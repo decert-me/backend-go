@@ -36,6 +36,6 @@ type UpdateRecommendRequest struct {
 }
 
 type GetCollectionQuestRequest struct {
-	ID      uint   `json:"id" form:"id"`
+	ID      string `json:"id" form:"id"`
 	Address string `json:"-"`
 }

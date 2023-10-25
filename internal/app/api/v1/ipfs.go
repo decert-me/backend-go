@@ -21,6 +21,13 @@ func UploadJson(c *gin.Context) {
 			return
 		}
 		uploadJSON = uploadJSONChallenge
+	} else if types == "collection" {
+		var uploadJSONNFT request.UploadJSONCollection
+		if err := c.ShouldBindJSON(&uploadJSONNFT); err != nil {
+			FailWithMessage(GetMessage(c, "ParameterError"), c)
+			return
+		}
+		uploadJSON = uploadJSONNFT
 	} else if types == "nft" {
 		var uploadJSONNFT request.UploadJSONNFT
 		if err := c.ShouldBindJSON(&uploadJSONNFT); err != nil {
