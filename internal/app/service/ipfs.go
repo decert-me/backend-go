@@ -122,11 +122,17 @@ func (s *Service) IPFSUploadFile(header *multipart.FileHeader) (err error, hash 
 	}
 	// Convert the byte slice to an io.Reader
 	reader := bytes.NewReader(content)
-
 	// 发送请求
 	url := fmt.Sprintf("%s/upload/image", s.GetIPFSUploadAPI())
 	client := req.C().SetTimeout(120 * time.Second)
-	res, err := client.R().SetFileReader("file", header.Filename, reader).Post(url)
+	res, err := client.R().SetFileUpload(req.FileUpload{
+		ParamName: "file",
+		FileName:  header.Filename,
+		GetFileContent: func() (io.ReadCloser, error) {
+			return io.NopCloser(reader), nil
+		},
+		ContentType: header.Header.Get("Content-Type"),
+	}).Post(url)
 	if err != nil {
 		go s.BalanceIPFS()
 		return err, hash
