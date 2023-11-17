@@ -258,3 +258,8 @@ func (s *Service) AuthLoginSignRequestSolana(req request.AuthLoginSignRequest) (
 	}
 	return token, nil
 }
+
+// HasOpenQuestPerm 获取用户是否有创建开放题权限
+func (s *Service) HasOpenQuestPerm(address string) (perm bool, beta bool, err error) {
+	return s.dao.HasOpenQuestPerm(address)
+}

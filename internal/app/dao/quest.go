@@ -50,58 +50,26 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 			tx = tx.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
 		}
 		if req.Address != "" {
-			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed")
+			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status")
 			tx = tx.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
+			tx = tx.Joins("LEFT JOIN (SELECT open_quest_review_status,token_id FROM user_open_quest WHERE address = ? AND token_id = ? ORDER BY id DESC LIMIT 1) o ON quest.token_id = o.token_id", req.Address, req.TokenId)
 		} else {
-			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,FALSE as claimed")
+			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,FALSE as claimed,0 as open_quest_review_status")
 		}
 		return tx.Find(&[]response.GetQuestListRes{})
 	})
 	// Collection
 	collectionSQL := d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
-		tx = tx.Select("id,uuid,title,label,disabled,description,dependencies,is_draft,add_ts,token_id,type,difficulty,estimate_time,creator,meta_data,quest_data,extra_data,uri,pass_score,total_score,recommend,status,style,cover,author,sort,collection_status,FALSE as claimed")
+		tx = tx.Select("id,uuid,title,label,disabled,description,dependencies,is_draft,add_ts,token_id,type,difficulty,estimate_time,creator,meta_data,quest_data,extra_data,uri,pass_score,total_score,recommend,status,style,cover,author,sort,collection_status,FALSE as claimed,0 as open_quest_review_status")
 		return tx.Where("status = 1").Find(&[]response.GetQuestListRes{})
 	})
 	//fmt.Println("questSQL", questSQL)
 	//fmt.Println("collectionSQL", collectionSQL)
 	// 执行 UNION 查询
-	//var questListTest []response.GetQuestListRes
 	unionSQL := fmt.Sprintf("SELECT * FROM((%s) UNION (%s)) as t ORDER BY sort desc,add_ts desc LIMIT %d OFFSET %d", questSQL, collectionSQL, limit, offset)
 	unionCountSQL := fmt.Sprintf("SELECT count(1) FROM((%s) UNION (%s)) as t", questSQL, collectionSQL)
 	db.Raw(unionCountSQL).Scan(&total)
 	db.Raw(unionSQL).Scan(&questList)
-	/*
-		//fmt.Println(questListTest)
-		//
-		db.Where("quest.status = 1 AND quest.disabled = false AND collection_id=0")
-		db.Where(&req.Quest)
-		err = db.Count(&total).Error
-		if err != nil {
-			return questList, total, err
-		}
-		db.Order("sort desc,add_ts desc")
-		//if req.OrderKey == "token_id" {
-		//	fmt.Println(req.OrderKey)
-		//	fmt.Println(req.Desc)
-		//	if req.Desc {
-		//		db.Order("token_id desc")
-		//	} else {
-		//		db.Order("token_id asc")
-		//	}
-		//} else {
-		//	db.Order("token_id desc")
-		//}
-		if req.SearchKey != "" {
-			db.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
-		}
-		if req.Address != "" {
-			db.Select("quest.*,c.claimed")
-			db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
-		} else {
-			db.Select("*")
-		}
-		err = db.Limit(limit).Offset(offset).Find(&questList).Error
-	*/
 	// 查询集合数量
 	for i := 0; i < len(questList); i++ {
 		if questList[i].Style == 2 {
@@ -148,18 +116,24 @@ func (d *Dao) GetQuestByUUID(uuid string) (quest model.Quest, err error) {
 
 func (d *Dao) GetQuestWithClaimStatusByTokenID(id int64, address string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).
-		Select("quest.*,b.claimed,b.user_score,b.nft_address").
+		Select("quest.*,b.claimed,b.user_score,b.nft_address,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.answer,l.answer) as answer").
 		Joins("left join user_challenges b ON quest.token_id=b.token_id AND b.address= ?", address).
+		Joins("left join user_challenge_log l ON quest.token_id=l.token_id AND l.address= ?", address).
+		Joins("left join user_open_quest o ON quest.token_id=o.token_id AND o.address= ?", address).
 		Where("quest.token_id", id).
+		Order("l.add_ts desc,o.id desc").
 		First(&quest).Error
 	return
 }
 
 func (d *Dao) GetQuestWithClaimStatusByUUID(uuid string, address string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).
-		Select("quest.*,b.claimed,b.user_score,b.nft_address").
+		Select("quest.*,b.claimed,b.user_score,b.nft_address,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.answer,l.answer) as answer").
 		Joins("left join user_challenges b ON quest.token_id=b.token_id AND b.address= ?", address).
+		Joins("left join user_challenge_log l ON quest.token_id=l.token_id AND l.address= ?", address).
+		Joins("left join user_open_quest o ON quest.token_id=o.token_id AND o.address= ?", address).
 		Where("quest.uuid", uuid).
+		Order("l.add_ts desc,o.id desc").
 		First(&quest).Error
 	return
 }

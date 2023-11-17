@@ -165,3 +165,12 @@ func AuthLoginSign(c *gin.Context) {
 		OkWithDetailed(map[string]string{"token": token}, GetMessage(c, "FetchSuccess"), c)
 	}
 }
+
+// HasCreateOpenQuestPerm 获取用户是否有创建开放题权限
+func HasCreateOpenQuestPerm(c *gin.Context) {
+	if perm, beta, err := srv.HasOpenQuestPerm(c.GetString("address")); err != nil {
+		Fail(c)
+	} else {
+		OkWithData(map[string]interface{}{"perm": perm, "beta": beta}, c)
+	}
+}

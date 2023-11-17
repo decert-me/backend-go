@@ -38,6 +38,7 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return errors.New("UnexpectedError")
 	}
+	isOpenQuest := IsOpenQuest(req.Answer)
 	err = s.dao.CreateChallengeLog(&model.UserChallengeLog{
 		Address:   req.Address,
 		TokenId:   req.TokenId,
@@ -48,6 +49,17 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 	})
 	if err != nil {
 		return errors.New("OperationFailed")
+	}
+	if isOpenQuest {
+		err = s.dao.CreateUserOpenQuest(&model.UserOpenQuest{
+			Address:               req.Address,
+			TokenId:               req.TokenId,
+			Answer:                []byte(gjson.Parse(req.Answer).Raw),
+			OpenQuestReviewStatus: 1,
+		})
+		if err != nil {
+			return errors.New("OperationFailed")
+		}
 	}
 	return nil
 }

@@ -1,9 +1,12 @@
 package model
 
-import "gorm.io/datatypes"
+import (
+	"gorm.io/datatypes"
+	"gorm.io/gorm"
+)
 
 type UserChallengeLog struct {
-	ID        uint           `gorm:"primarykey"`
+	gorm.Model
 	Address   string         `gorm:"column:address;type:varchar(44);comment:钱包地址" json:"address" form:"address"`
 	TokenId   int64          `gorm:"column:token_id" json:"token_id"`
 	Answer    datatypes.JSON `gorm:"column:answer" json:"answer"`
