@@ -45,14 +45,13 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	questSQL := db.ToSQL(func(tx *gorm.DB) *gorm.DB {
 		tx = tx.Where("quest.status = 1 AND quest.disabled = false AND collection_status=1")
 		tx = tx.Where(&req.Quest)
-		//tx = tx.Order("sort desc,add_ts desc")
 		if req.SearchKey != "" {
 			tx = tx.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
 		}
 		if req.Address != "" {
 			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status")
 			tx = tx.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
-			tx = tx.Joins("LEFT JOIN (SELECT open_quest_review_status,token_id FROM user_open_quest WHERE address = ? AND token_id = ? ORDER BY id DESC LIMIT 1) o ON quest.token_id = o.token_id", req.Address, req.TokenId)
+			tx = tx.Joins("LEFT JOIN (WITH ranked_statuses AS (SELECT token_id, open_quest_review_status,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_open_quest WHERE address=?) SELECT open_quest_review_status,token_id FROM ranked_statuses WHERE rn = 1) o ON quest.token_id = o.token_id", req.Address)
 		} else {
 			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,FALSE as claimed,0 as open_quest_review_status")
 		}
