@@ -136,7 +136,11 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 		log.Errorv("UpdateQuest error", zap.Error(err), zap.Any("quest", quest))
 		return
 	}
-
+	// 清除挑战记录
+	if err = s.dao.DeleteUserChallengeLogByTokenId(quest.TokenId); err != nil {
+		log.Errorv("DeleteUserChallengeLogByTokenId error", zap.Error(err), zap.Any("quest", quest))
+		return
+	}
 	s.handleTraverseStatus(hash, 1, "")
 
 	return
