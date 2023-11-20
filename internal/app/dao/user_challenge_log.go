@@ -18,8 +18,21 @@ func (d *Dao) CreateUserOpenQuest(userOpenQuest *model.UserOpenQuest) (err error
 		Where("open_quest_review_status = 2").
 		Order("id desc").First(&userOpenQuestReviewed).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			// 创建新纪录
-			return d.db.Model(&model.UserOpenQuest{}).Create(&userOpenQuest).Error
+			// 查询是否有未审核的记录
+			var userOpenQuestNotReviewed model.UserOpenQuest
+			if err := d.db.Model(&model.UserOpenQuest{}).
+				Where("address", userOpenQuest.Address).
+				Where("token_id", userOpenQuest.TokenId).
+				Where("open_quest_review_status = 1").
+				Order("id desc").First(&userOpenQuestNotReviewed).Error; err != nil {
+				if err == gorm.ErrRecordNotFound {
+					// 创建新纪录
+					return d.db.Model(&model.UserOpenQuest{}).Create(&userOpenQuest).Error
+				}
+				return err
+			} else {
+				return d.db.Model(&model.UserOpenQuest{}).Where("id = ?", userOpenQuestNotReviewed.ID).Updates(&userOpenQuest).Error
+			}
 		}
 		return err
 	}
