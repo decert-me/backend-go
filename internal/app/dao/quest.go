@@ -129,8 +129,8 @@ func (d *Dao) GetQuestWithClaimStatusByUUID(uuid string, address string) (quest 
 	err = d.db.Model(&model.Quest{}).
 		Select("quest.*,b.claimed,b.user_score,b.nft_address,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.answer,l.answer) as answer").
 		Joins("left join user_challenges b ON quest.token_id=b.token_id AND b.address= ?", address).
-		Joins("left join user_challenge_log l ON quest.token_id=l.token_id AND l.address= ?", address).
-		Joins("left join user_open_quest o ON quest.token_id=o.token_id AND o.address= ?", address).
+		Joins("left join user_challenge_log l ON quest.token_id=l.token_id AND l.address= ? AND l.deleted_at IS NULL", address).
+		Joins("left join user_open_quest o ON quest.token_id=o.token_id AND o.address= ? AND o.deleted_at IS NULL", address).
 		Where("quest.uuid", uuid).
 		Order("l.add_ts desc,o.id desc").
 		First(&quest).Error
