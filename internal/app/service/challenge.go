@@ -14,9 +14,11 @@ func (s *Service) GetUserChallengeList(req request.GetChallengeListRequest) (res
 	if req.Type == 1 { //
 		res, total, err = s.dao.GetChallengeNotClaimList(&req)
 		return
-	}
-	if req.Type == 2 {
+	} else if req.Type == 2 {
 		res, total, err = s.dao.GetChallengeList(&req)
+		return
+	} else if req.Type == 3 {
+		res, total, err = s.dao.GetChallengeWaitReviewList(&req)
 		return
 	}
 	if req.Address == req.ReqAddress { //
