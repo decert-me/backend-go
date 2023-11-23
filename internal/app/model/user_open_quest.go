@@ -8,7 +8,7 @@ import (
 
 type UserOpenQuest struct {
 	gorm.Model
-	Address               string         `gorm:"column:address;type:char(44);comment:钱包地址;index:address_tokenId" json:"address" form:"address"`
+	Address               string         `gorm:"column:address;type:varchar(44);comment:钱包地址;index:address_tokenId" json:"address" form:"address"`
 	TokenId               int64          `gorm:"column:token_id;index:address_tokenId" json:"token_id"`
 	Answer                datatypes.JSON `gorm:"column:answer" json:"answer"`
 	OpenQuestScore        int64          `gorm:"column:open_quest_score;default:0;comment:开放题分数" json:"open_quest_score" form:"open_quest_score"`                                       // 开放题分数
