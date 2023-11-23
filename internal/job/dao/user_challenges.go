@@ -32,3 +32,15 @@ func (d *Dao) CreateChallengesList(tokenIds []*big.Int, receivers []common.Addre
 	}).Create(&challenge).Error
 	return
 }
+
+func (d *Dao) DeleteUserChallengeLogByTokenId(tokenId int64) (err error) {
+	err = d.db.Where("token_id = ?", tokenId).Delete(&model.UserChallengeLog{}).Error
+	if err != nil {
+		return err
+	}
+	err = d.db.Where("token_id = ?", tokenId).Delete(&model.UserOpenQuest{}).Error
+	if err != nil {
+		return err
+	}
+	return
+}

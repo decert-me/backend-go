@@ -48,6 +48,7 @@ func UploadJson(c *gin.Context) {
 }
 
 func UploadFile(c *gin.Context) {
+	types := c.Query("type")
 	_, header, err := c.Request.FormFile("file")
 	if err != nil {
 		FailWithMessage(GetMessage(c, "ReceiveFileFailed"), c)
@@ -59,9 +60,11 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 	// 文件格式限制
-	if !utils.VerifyFileFormat(header.Filename, []string{"jpeg", "jpg", "png", "gif", "svg"}) {
-		FailWithMessage(GetMessage(c, "FileFormatIncorrect"), c)
-		return
+	if types != "open_quest" {
+		if !utils.VerifyFileFormat(header.Filename, []string{"jpeg", "jpg", "png", "gif", "svg"}) {
+			FailWithMessage(GetMessage(c, "FileFormatIncorrect"), c)
+			return
+		}
 	}
 	err, hash := srv.IPFSUploadFile(header) // 文件上传后拿到文件路径
 	if err != nil {

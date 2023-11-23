@@ -23,6 +23,14 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 	questData := string(quest.QuestData)
 	version := gjson.Get(res, "version").Float()
 
+	// 判断是否有开放题目
+	if IsOpenQuest(answerUser) {
+		// 获取数据库已审核最新数据
+		userOpenQuest, err := s.dao.GetUserOpenQuestReviewed(address, quest.TokenId)
+		if err == nil {
+			answerUser = string(userOpenQuest.Answer)
+		}
+	}
 	answerU, scoreList, answerS, passingScore := utils.GetAnswers(version, key, res, questData, answerUser)
 	var totalScore int64
 	for _, s := range scoreList {
@@ -59,6 +67,9 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 		}
 		// 单选题
 		if questType == "multiple_choice" || questType == "fill_blank" {
+			fmt.Println("multiple_choice")
+			fmt.Println("questValue", questValue)
+			fmt.Println("answerU[i].String()", answerU[i].String())
 			if questValue == answerU[i].String() {
 				score += scoreList[i].Int()
 			}
@@ -92,7 +103,16 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 				score += scoreList[i].Int()
 			}
 		}
+		if questType == "open_quest" {
+			if gjson.Get(v.String(), "correct").Bool() == true {
+				score += scoreList[i].Int()
+			}
+		}
 	}
+
+	fmt.Println("score", score)
+	fmt.Println("passingScore", passingScore)
+	fmt.Println("userScore", userScore)
 	if userScore == 0 {
 		if score >= passingScore {
 			return score * 10000 / totalScore, true, nil
@@ -135,6 +155,17 @@ func (s *Service) CodingCheck(body interface{}) (correct bool) {
 	}
 	if gjson.Get(res.String(), "data.correct").Bool() {
 		return true
+	}
+	return false
+}
+
+// IsOpenQuest 判断是否开放题
+func IsOpenQuest(answerUser string) bool {
+	answerU := gjson.Get(answerUser, "@this").Array()
+	for _, v := range answerU {
+		if v.Get("type").String() == "open_quest" {
+			return true
+		}
 	}
 	return false
 }

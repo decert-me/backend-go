@@ -15,6 +15,7 @@ func InitUserRouter(Router *gin.RouterGroup) {
 		userRouter.GET("/:address", v1.GetUserInfo)
 		userRouter.GET("/challenge/:address", v1.GetUserChallengeList)
 		userRouter.GET("/quests/:address", v1.GetUserQuestList)
+		userRouter.GET("/hasCreateOpenQuestPerm", v1.HasCreateOpenQuestPerm)
 	}
 	{
 		userRouterAuth.GET("discord", v1.GetDiscordInfo)

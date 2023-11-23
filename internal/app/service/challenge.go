@@ -14,9 +14,11 @@ func (s *Service) GetUserChallengeList(req request.GetChallengeListRequest) (res
 	if req.Type == 1 { //
 		res, total, err = s.dao.GetChallengeNotClaimList(&req)
 		return
-	}
-	if req.Type == 2 {
+	} else if req.Type == 2 {
 		res, total, err = s.dao.GetChallengeList(&req)
+		return
+	} else if req.Type == 3 {
+		res, total, err = s.dao.GetChallengeWaitReviewList(&req)
 		return
 	}
 	if req.Address == req.ReqAddress { //
@@ -38,16 +40,29 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return errors.New("UnexpectedError")
 	}
+	isOpenQuest := IsOpenQuest(req.Answer)
 	err = s.dao.CreateChallengeLog(&model.UserChallengeLog{
-		Address:   req.Address,
-		TokenId:   req.TokenId,
-		Answer:    []byte(gjson.Parse(req.Answer).Raw),
-		UserScore: userScore,
-		Pass:      pass,
-		IP:        req.IP,
+		Address:     req.Address,
+		TokenId:     req.TokenId,
+		Answer:      []byte(gjson.Parse(req.Answer).Raw),
+		UserScore:   userScore,
+		Pass:        pass,
+		IP:          req.IP,
+		IsOpenQuest: isOpenQuest,
 	})
 	if err != nil {
 		return errors.New("OperationFailed")
+	}
+	if isOpenQuest {
+		err = s.dao.CreateUserOpenQuest(&model.UserOpenQuest{
+			Address:               req.Address,
+			TokenId:               req.TokenId,
+			Answer:                []byte(gjson.Parse(req.Answer).Raw),
+			OpenQuestReviewStatus: 1,
+		})
+		if err != nil {
+			return errors.New("OperationFailed")
+		}
 	}
 	return nil
 }
