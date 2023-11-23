@@ -16,7 +16,18 @@ func (d *Dao) HasOpenQuestPerm(address string) (perm bool, beta bool, err error)
 	if betaSet == "true" {
 		beta = true
 	}
-	err = d.db.Model(&model.OpenQuestPerm{}).Where("address ILIKE ?", address).First(&model.OpenQuestPerm{}).Error
+	// 查询是否管理员
+	if err := d.db.Model(&model.AdminUser{}).Where("address ILIKE ?", address).First(&model.AdminUser{}).Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			return false, beta, err
+		}
+	} else {
+		return true, beta, err
+	}
+
+	err = d.db.Model(&model.OpenQuestPerm{}).
+		Where("address ILIKE ?", address).
+		First(&model.OpenQuestPerm{}).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false, beta, nil
