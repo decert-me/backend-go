@@ -49,17 +49,18 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 			tx = tx.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
 		}
 		if req.Address != "" {
-			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status")
+			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.pass,p.pass,false) as claimable")
 			tx = tx.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
-			tx = tx.Joins("LEFT JOIN (WITH ranked_statuses AS (SELECT token_id, open_quest_review_status,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_open_quest WHERE address=?) SELECT open_quest_review_status,token_id FROM ranked_statuses WHERE rn = 1) o ON quest.token_id = o.token_id", req.Address)
+			tx = tx.Joins("LEFT JOIN (WITH ranked_statuses AS (SELECT token_id, open_quest_review_status,pass,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_open_quest WHERE address=?) SELECT open_quest_review_status,token_id,pass FROM ranked_statuses WHERE rn = 1) o ON quest.token_id = o.token_id", req.Address)
+			tx = tx.Joins("LEFT JOIN (WITH ranked_log AS (SELECT token_id,pass,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_challenge_log WHERE address = ?) SELECT token_id,pass FROM ranked_log WHERE rn = 1) p ON quest.token_id = p.token_id", req.Address)
 		} else {
-			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,FALSE as claimed,0 as open_quest_review_status")
+			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,FALSE as claimed,0 as open_quest_review_status,false as claimable")
 		}
 		return tx.Find(&[]response.GetQuestListRes{})
 	})
 	// Collection
 	collectionSQL := d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
-		tx = tx.Select("id,uuid,title,label,disabled,description,dependencies,is_draft,add_ts,token_id,type,difficulty,estimate_time,creator,meta_data,quest_data,extra_data,uri,pass_score,total_score,recommend,status,style,cover,author,sort,collection_status,FALSE as claimed,0 as open_quest_review_status")
+		tx = tx.Select("id,uuid,title,label,disabled,description,dependencies,is_draft,add_ts,token_id,type,difficulty,estimate_time,creator,meta_data,quest_data,extra_data,uri,pass_score,total_score,recommend,status,style,cover,author,sort,collection_status,FALSE as claimed,0 as open_quest_review_status,false as claimable")
 		return tx.Where("status = 1").Find(&[]response.GetQuestListRes{})
 	})
 	//fmt.Println("questSQL", questSQL)

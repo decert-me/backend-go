@@ -42,12 +42,13 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 	}
 	isOpenQuest := IsOpenQuest(req.Answer)
 	err = s.dao.CreateChallengeLog(&model.UserChallengeLog{
-		Address:   req.Address,
-		TokenId:   req.TokenId,
-		Answer:    []byte(gjson.Parse(req.Answer).Raw),
-		UserScore: userScore,
-		Pass:      pass,
-		IP:        req.IP,
+		Address:     req.Address,
+		TokenId:     req.TokenId,
+		Answer:      []byte(gjson.Parse(req.Answer).Raw),
+		UserScore:   userScore,
+		Pass:        pass,
+		IP:          req.IP,
+		IsOpenQuest: isOpenQuest,
 	})
 	if err != nil {
 		return errors.New("OperationFailed")
