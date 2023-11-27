@@ -10,6 +10,6 @@ type Transaction struct {
 	SendAddr  string         `gorm:"column:send_addr;type:varchar(44)" json:"send_addr" form:"send_addr"`
 	Raw       string         `gorm:"column:raw" json:"raw" form:"raw"`
 	Msg       string         `gorm:"column:msg" json:"msg"`
-	Status    uint8          `gorm:"column:status;default:0" json:"status" form:"status"` // 状态 0 处理中 1 交易成功 2 交易失败 3 超过解析次数 4 事件匹配失败 5 出现错误
+	Status    uint8          `gorm:"column:status;default:0" json:"status" form:"status"` // 状态 0 处理中 1 交易成功 2 交易失败 3 超过解析次数 4 事件匹配失败 5 出现错误 6 匹配合约地址失败
 	Params    datatypes.JSON `gorm:"column:params" json:"params"`
 }

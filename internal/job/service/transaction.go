@@ -123,7 +123,13 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 			time.Sleep(time.Second)
 			continue
 		}
-
+		tx, _, err := client.TransactionByHash(context.Background(), common.HexToHash(hash))
+		// 待交易
+		if err != nil {
+			fmt.Println("wait for transaction", hash)
+			time.Sleep(time.Second)
+			continue
+		}
 		// 交易失败
 		if res.Status == 0 {
 			fmt.Println("fail for transaction", hash)
@@ -132,11 +138,30 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 			task.countMap.Delete(hash)
 			return
 		}
+		v1ContractAddresses := map[string]bool{
+			s.c.Contract.V1.Badge:       true,
+			s.c.Contract.V1.Quest:       true,
+			s.c.Contract.V1.QuestMinter: true,
+		}
+		v2ContractAddresses := map[string]bool{
+			s.c.Contract.V2.Badge:       true,
+			s.c.Contract.V2.Quest:       true,
+			s.c.Contract.V2.QuestMinter: true,
+			s.c.Contract.V2.BadgeMinter: true,
+		}
 		// 交易成功
 		if res.Status == 1 {
 			fmt.Println("success for transaction", hash)
-			if err = s.eventsParser(hash, res.Logs); err != nil {
-				log.Errorv("EventsParser", zap.Any("err", err))
+			if v1ContractAddresses[tx.To().String()] {
+				if err = s.eventsParser(hash, res.Logs); err != nil {
+					log.Errorv("EventsParser", zap.Any("err", err))
+				}
+			} else if v2ContractAddresses[tx.To().String()] {
+				if err = s.eventsParserV2(hash, res.Logs); err != nil {
+					log.Errorv("EventsParser", zap.Any("err", err))
+				}
+			} else {
+				s.handleTraverseStatus(hash, 6, "")
 			}
 			task.txMap.Delete(hash)
 			task.countMap.Delete(hash)
@@ -259,5 +284,49 @@ func (s *Service) handleDefaultEvent(hash string) (err error) {
 	case "modifyQuest":
 		s.handleModifyQuest(hash, resJson)
 	}
+	return nil
+}
+
+func (s *Service) eventsParserV2(hash string, Logs []*types.Log) (err error) {
+	provider := s.w.Next()
+	defer func() {
+		if err := recover(); err != nil {
+			provider.OnInvokeFault()
+		}
+	}()
+	client, err := ethclient.Dial(provider.Item)
+	if err != nil {
+		log.Error("ethclient dial error")
+		return errors.New("ethclient dial error")
+	}
+	for _, vLog := range Logs {
+		name, ok := s.contractEvent[vLog.Topics[0]]
+		if !ok {
+			continue
+		}
+		fmt.Println(name)
+		switch name {
+		case "QuestCreated":
+			if err := s.handleQuestCreatedV2(hash, vLog); err != nil {
+				s.handleTraverseStatus(hash, 5, err.Error())
+				continue
+			}
+			return nil
+		case "Claimed":
+			if err := s.handleClaimedV2(client, hash, vLog); err != nil {
+				s.handleTraverseStatus(hash, 5, err.Error())
+				continue
+			}
+			return nil
+		case "QuestModified":
+			if err := s.handleModifyQuestV2(hash, vLog); err != nil {
+				s.handleTraverseStatus(hash, 5, err.Error())
+				continue
+			}
+			return nil
+		}
+
+	}
+	provider.OnInvokeSuccess()
 	return nil
 }

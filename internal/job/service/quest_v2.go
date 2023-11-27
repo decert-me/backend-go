@@ -2,10 +2,10 @@ package service
 
 import (
 	ABI "backend-go/abi"
+	ABIV2 "backend-go/abi/v2"
 	"backend-go/internal/app/model"
 	"backend-go/pkg/log"
 	"encoding/json"
-	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -14,20 +14,20 @@ import (
 	"strings"
 )
 
-var questAbi abi.ABI
+var questAbiV2 abi.ABI
 
 // initialize contract abi
 func init() {
-	contractAbi, err := abi.JSON(strings.NewReader(ABI.QuestMetaData.ABI))
+	contractAbi, err := abi.JSON(strings.NewReader(ABIV2.QuestV2MetaData.ABI))
 	if err != nil {
 		panic(err)
 	}
-	questAbi = contractAbi
+	questAbiV2 = contractAbi
 }
 
-func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
-	var created ABI.QuestQuestCreated
-	if err = questAbi.UnpackIntoInterface(&created, "QuestCreated", vLog.Data); err != nil {
+func (s *Service) handleQuestCreatedV2(hash string, vLog *types.Log) (err error) {
+	var created ABIV2.QuestV2QuestCreated
+	if err = questAbiV2.UnpackIntoInterface(&created, "QuestCreated", vLog.Data); err != nil {
 		return
 	}
 	metadata, err := s.GetDataFromCid(strings.Replace(created.QuestData.Uri, "ipfs://", "", 1))
@@ -51,7 +51,7 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	}
 
 	questData := created.QuestData
-	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs, Supply: questData.Supply.Uint64()})
+	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs})
 
 	challengeUrl := gjson.Get(metadata, "attributes.challenge_url").String()
 	var uuid string
@@ -78,7 +78,7 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		QuestData:   []byte(questDataDetail),
 		IsDraft:     false, // 当前发布不审核
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
-		Version:     "1",
+		Version:     "2",
 	}
 	// 区分合辑和Quest
 	if collectionID == 0 {
@@ -98,21 +98,20 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 	return
 }
 
-func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
+func (s *Service) handleModifyQuestV2(hash string, vLog *types.Log) (err error) {
+	var modified ABIV2.QuestV2QuestModified
+	if err = questAbiV2.UnpackIntoInterface(&modified, "QuestModified", vLog.Data); err != nil {
+		return
+	}
+	metadata, err := s.GetDataFromCid(strings.Replace(modified.QuestData.Uri, "ipfs://", "", 1))
+	if err != nil {
+		return
+	}
 	tr, err := s.dao.QueryTransactionByHash(hash)
 	if err != nil {
 		return err
 	}
 	var questData ABI.IQuestQuestData
-	err = json.Unmarshal([]byte(gjson.Get(string(resJson), "questData").String()), &questData)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	metadata, err := s.GetDataFromCid(strings.Replace(questData.Uri, "ipfs://", "", 1))
-	if err != nil {
-		return
-	}
 	var questDataDetail string
 	version := gjson.Get(metadata, "version").Float()
 	if version == 1.1 || version == 1.2 {
@@ -125,13 +124,14 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 	quest := model.Quest{
 		Title:       questData.Title,
 		Description: gjson.Get(metadata, "description").String(),
-		TokenId:     gjson.Get(string(resJson), "tokenId").Int(),
+		TokenId:     vLog.Topics[2].Big().Int64(),
 		Uri:         questData.Uri,
 		Type:        0, // TODO
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").Raw,
 		QuestData:   []byte(questDataDetail),
+		Version:     "2",
 	}
 	if err = s.dao.UpdateQuest(&quest); err != nil {
 		log.Errorv("UpdateQuest error", zap.Error(err), zap.Any("quest", quest))

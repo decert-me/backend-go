@@ -30,4 +30,5 @@ type Quest struct {
 	Author           string         `gorm:"column:author;type:varchar(64);comment:合辑作者" json:"author"`
 	Sort             int            `gorm:"column:sort;default:0" json:"sort"`           // 	排序
 	CollectionStatus uint8          `gorm:"column:collection_status;default:1" json:"-"` // 	合辑状态 1 独立 2 合辑
+	Version          string         `gorm:"column:version;default:'1''" json:"version"`  // 	版本
 }

@@ -63,3 +63,8 @@ func (d *Dao) GetQuest(req *model.Quest) (quest model.Quest, err error) {
 func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
 }
+
+func (d *Dao) GetQuestByTokenID(tokenID int64) (quest model.Quest, err error) {
+	err = d.db.Model(&model.Quest{}).Where("token_id", tokenID).First(&quest).Error
+	return
+}

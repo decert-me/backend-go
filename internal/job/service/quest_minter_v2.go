@@ -1,80 +1,33 @@
 package service
 
 import (
-	ABI "backend-go/abi"
-	"backend-go/internal/app/model"
+	ABIV2 "backend-go/abi/v2"
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"go.uber.org/zap"
 	"math/big"
 	"strings"
-	"time"
 )
 
-var questMinterAbi abi.ABI
+var questMinterAbiV2 abi.ABI
 
 // initialize contract abi
 func init() {
-	contractAbi, err := abi.JSON(strings.NewReader(ABI.QuestMinterMetaData.ABI))
+	contractAbi, err := abi.JSON(strings.NewReader(ABIV2.BadgeMinterV2MetaData.ABI))
 	if err != nil {
 		panic(err)
 	}
-	questMinterAbi = contractAbi
+	questMinterAbiV2 = contractAbi
 }
 
-func (s *Service) handleClaimed(client *ethclient.Client, hash string, vLog *types.Log) (err error) {
-	var claimed ABI.QuestMinterClaimed
-	if err = questMinterAbi.UnpackIntoInterface(&claimed, "Claimed", vLog.Data); err != nil || len(vLog.Topics) == 0 {
-		return errors.New("unpack error")
-	}
-	tokenId := vLog.Topics[1].Big().Int64()
-	// no such tokenId in quest
-	exist, err := s.dao.HasTokenId(tokenId)
-	if err != nil {
-		log.Errorv("HasTokenId error", zap.Int64("tokenId", tokenId), zap.Error(err))
-		return
-	}
-	if !exist {
-		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", tokenId))
-		return
-	}
-	// 获取用户分数
-	badge, err := ABI.NewBadge(common.HexToAddress(s.c.Contract.V1.Badge), client)
-	if err != nil {
-		return
-	}
-	score, err := badge.Scores(nil, big.NewInt(tokenId), common.HexToAddress(vLog.Topics[2].Hex()))
-	if err != nil {
-		return
-	}
-	challenges := model.UserChallenges{
-		Address:   common.HexToAddress(vLog.Topics[2].Hex()).String(),
-		TokenId:   tokenId,
-		Status:    2,
-		UserScore: score.Int64(),
-		Claimed:   true,
-		ClaimTs:   time.Now().Unix(),
-	}
-	err = s.dao.CreateChallenges(&challenges)
-	if err != nil {
-		log.Errorv("CreateChallenges error", zap.Any("challenges", challenges), zap.Error(err))
-		return err
-	}
-	// 如果有空投记录则删除
-	s.dao.UpdateAirdroppedError(tokenId, common.HexToAddress(vLog.Topics[2].Hex()).String(), "already claimed")
-	s.handleTraverseStatus(hash, 1, "")
-	return
-}
-
-func (s *Service) AirdropBadge() error {
+func (s *Service) AirdropBadgeV2() error {
 	provider := s.w.Next()
 	defer func() {
 		if err := recover(); err != nil {
@@ -95,7 +48,7 @@ func (s *Service) AirdropBadge() error {
 	if len(tokenIds) == 0 { // no task return
 		return nil
 	}
-	tokenIdRes, receivers, scores := s.receiverNotClaimList(client, tokenIds, listAddr, scores)
+	tokenIdRes, receivers, scores := s.receiverNotClaimListV2(client, tokenIds, listAddr, scores)
 	log.Warn("AirdropBadge Run")
 	hash, err := s._airdropBadge(client, tokenIdRes, receivers, scores)
 	if err != nil {
@@ -112,7 +65,7 @@ func (s *Service) AirdropBadge() error {
 	return nil
 }
 
-func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, receivers []common.Address, scores []*big.Int) (txHash common.Hash, err error) {
+func (s *Service) _airdropBadgeV2(client *ethclient.Client, tokenIDs []*big.Int, receivers []common.Address, scores []*big.Int) (txHash common.Hash, err error) {
 	signPrivateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return
@@ -127,17 +80,17 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 	}
 	hash := solsha3.SoliditySHA3(
 		// types
-		[]string{"string", "uint256[]", "address", "address"},
+		[]string{"string", "uint256[]", "address[]", "address", "address"},
 		// values
 		[]interface{}{
-			"airdropBadge", tokenIDs, s.c.Contract.V1.Badge, airdropAddress,
+			"airdropBadge", tokenIDs, receivers, s.c.Contract.V2.BadgeMinter, airdropAddress,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
 	signature, err := crypto.Sign(prefixedHash, signPrivateKey)
 	signature[64] += 27
 
-	questMinter, err := ABI.NewQuestMinter(common.HexToAddress(s.c.Contract.V1.QuestMinter), client)
+	badgeMinter, err := ABIV2.NewBadgeMinterV2(common.HexToAddress(s.c.Contract.V2.BadgeMinter), client)
 	if err != nil {
 		return
 	}
@@ -155,7 +108,23 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 		Context:  auth.Context,
 		NoSend:   false,
 	}
-	tx, err := questMinter.AirdropBadge(transactOpts, tokenIDs, receivers, scores, signature)
+	// TODO: uris
+	var uris []string
+	// 获取Quest MetaData
+	for _, tokenID := range tokenIDs {
+		quest, err := s.dao.GetQuestByTokenID(tokenID.Int64())
+		if err != nil {
+			log.Errorv("GetQuestByTokenID error", zap.Any("tokenID", tokenID), zap.Error(err))
+			continue
+		}
+		// TODO
+		// 处理Metadata
+
+		// 上传到IPFS
+
+		uris = append(uris, quest.Uri)
+	}
+	tx, err := badgeMinter.AirdropBadge(transactOpts, tokenIDs, receivers, uris, signature)
 	if err != nil {
 		log.Errorv("questMinter.AirdropBadge error", zap.Any("tokenIDs", tokenIDs), zap.Any("receivers", receivers), zap.Any("signature", signature), zap.Error(err))
 		return
@@ -164,8 +133,8 @@ func (s *Service) _airdropBadge(client *ethclient.Client, tokenIDs []*big.Int, r
 	return tx.Hash(), nil
 }
 
-func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.Int, receivers []string, scores []*big.Int) (tokenIdRes []*big.Int, receiversNotClaim []common.Address, scoresRes []*big.Int) {
-	badge, err := ABI.NewBadge(common.HexToAddress(s.c.Contract.V1.Badge), client)
+func (s *Service) receiverNotClaimListV2(client *ethclient.Client, tokenId []*big.Int, receivers []string, scores []*big.Int) (tokenIdRes []*big.Int, receiversNotClaim []common.Address, scoresRes []*big.Int) {
+	badge, err := ABIV2.NewBadgeV2(common.HexToAddress(s.c.Contract.V2.Badge), client)
 	if err != nil {
 		return
 	}
@@ -173,7 +142,7 @@ func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.
 		if !utils.IsValidAddress(receivers[i]) {
 			continue
 		}
-		res, err := badge.BalanceOf(nil, common.HexToAddress(receivers[i]), tokenId[i])
+		res, err := badge.AddrToQuestToBadge(nil, common.HexToAddress(receivers[i]), tokenId[i])
 		if err != nil {
 			continue
 		}
