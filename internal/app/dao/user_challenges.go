@@ -58,10 +58,10 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 		WITH ranked_logs AS (
 		  SELECT *,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn
 		  FROM user_challenge_log
-		  WHERE address = ?
+		  WHERE address = ? AND deleted_at IS NULL
 		),ranked_logs2 AS (SELECT *,ROW_NUMBER () OVER (PARTITION BY token_id ORDER BY id DESC) AS rn 
 		FROM user_open_quest
-		WHERE address= ?)
+		WHERE address= ? AND deleted_at IS NULL)
 		SELECT COUNT(1) FROM quest A
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id 
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
@@ -77,10 +77,10 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 		WITH ranked_logs AS (
 		  SELECT *,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn
 		  FROM user_challenge_log
-		  WHERE address = ?
+		  WHERE address = ? AND deleted_at IS NULL
 		),ranked_logs2 AS (SELECT *,ROW_NUMBER () OVER (PARTITION BY token_id ORDER BY id DESC) AS rn 
 		FROM user_open_quest
-		WHERE address= ?)
+		WHERE address= ? AND deleted_at IS NULL)
 		SELECT a.*,COALESCE(c.pass,b.pass) as claimable,COALESCE(c.open_quest_review_status,0) as open_quest_review_status,b.is_open_quest,COALESCE(d.nft_address,'') as nft_address,COALESCE(d.claimed,false) as claimed FROM quest A
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id 
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
