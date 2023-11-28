@@ -60,7 +60,7 @@ func (s *Service) AddQuest(address string, add request.AddQuestRequest) (res str
 		[]string{"uint32", "uint32", "uint192", "string", "string", "address", "address"},
 		// values
 		[]interface{}{
-			add.StartTs, add.EndTs, add.Supply, add.Title, add.Uri, s.c.Contract.QuestMinter, address,
+			add.StartTs, add.EndTs, add.Supply, add.Title, add.Uri, s.c.Contract.V1.QuestMinter, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
@@ -79,7 +79,7 @@ func (s *Service) UpdateQuest(address string, modify request.UpdateQuestRequest)
 		[]string{"uint256", "uint32", "uint32", "uint192", "string", "string", "address", "address"},
 		// values
 		[]interface{}{
-			big.NewInt(modify.TokenId), modify.StartTs, modify.EndTs, modify.Supply, modify.Title, modify.Uri, s.c.Contract.QuestMinter, address,
+			big.NewInt(modify.TokenId), modify.StartTs, modify.EndTs, modify.Supply, modify.Title, modify.Uri, s.c.Contract.V1.QuestMinter, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)

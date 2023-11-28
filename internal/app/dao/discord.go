@@ -39,7 +39,7 @@ func (d *Dao) AirdropSuccessNotice(address string, tokenID string) {
 		return
 	}
 	// 拼接信息
-	link := fmt.Sprintf("https://polygonscan.com/token/%s?a=%s", d.c.Contract.Badge, tokenID)
+	link := fmt.Sprintf("https://polygonscan.com/token/%s?a=%s", d.c.Contract.V1.Badge, tokenID)
 	description := fmt.Sprintf("Address: %s \n TokenID: %s \n %s \n <@%s>", address, tokenID, link, gjson.Get(string(user.Socials), "discord.id"))
 	footer := discordgo.MessageEmbedFooter{Text: "decertme-bot"}
 	embeds := []*discordgo.MessageEmbed{

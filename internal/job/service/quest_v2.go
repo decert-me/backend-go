@@ -6,6 +6,7 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/pkg/log"
 	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -99,10 +100,13 @@ func (s *Service) handleQuestCreatedV2(hash string, vLog *types.Log) (err error)
 }
 
 func (s *Service) handleModifyQuestV2(hash string, vLog *types.Log) (err error) {
+	fmt.Println("run")
 	var modified ABIV2.QuestV2QuestModified
 	if err = questAbiV2.UnpackIntoInterface(&modified, "QuestModified", vLog.Data); err != nil {
+		fmt.Println(err)
 		return
 	}
+	fmt.Println("run2")
 	metadata, err := s.GetDataFromCid(strings.Replace(modified.QuestData.Uri, "ipfs://", "", 1))
 	if err != nil {
 		return

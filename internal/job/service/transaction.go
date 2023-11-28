@@ -45,6 +45,7 @@ func (s *Service) StartTransaction() {
 
 	var txMap sync.Map
 	var countMap sync.Map
+	fmt.Println("hohsofs")
 	// 循环
 	for {
 		fmt.Println("Transaction")
@@ -68,6 +69,7 @@ func (s *Service) StartTransaction() {
 		for _, trans := range transHashList {
 			trans.Hash = strings.TrimSpace(trans.Hash)
 			_, loaded := txMap.LoadOrStore(trans.Hash, trans)
+			fmt.Println("trans.Hash", loaded)
 			if loaded == false {
 				s.TaskChain <- taskTx{task: &trans, txMap: &txMap, countMap: &countMap}
 			}
@@ -157,12 +159,15 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 					log.Errorv("EventsParser", zap.Any("err", err))
 				}
 			} else if v2ContractAddresses[tx.To().String()] {
+				fmt.Println("v2ContractAddresses")
 				if err = s.eventsParserV2(hash, res.Logs); err != nil {
 					log.Errorv("EventsParser", zap.Any("err", err))
 				}
 			} else {
+				fmt.Println("未匹配合约")
 				s.handleTraverseStatus(hash, 6, "")
 			}
+			fmt.Println("to delete")
 			task.txMap.Delete(hash)
 			task.countMap.Delete(hash)
 			return
@@ -170,7 +175,7 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 
 		time.Sleep(delay * time.Second)
 	}
-	task.txMap.Delete(hash)
+	//task.txMap.Delete(hash)
 	task.countMap.Delete(hash)
 	// 超出尝试次数
 	s.handleTraverseStatus(hash, 3, "")
@@ -299,33 +304,40 @@ func (s *Service) eventsParserV2(hash string, Logs []*types.Log) (err error) {
 		log.Error("ethclient dial error")
 		return errors.New("ethclient dial error")
 	}
+	var logEvent bool
 	for _, vLog := range Logs {
-		name, ok := s.contractEvent[vLog.Topics[0]]
+		name, ok := s.contractEventV2[vLog.Topics[0]]
 		if !ok {
 			continue
 		}
 		fmt.Println(name)
 		switch name {
 		case "QuestCreated":
+			logEvent = true
 			if err := s.handleQuestCreatedV2(hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
 				continue
 			}
 			return nil
 		case "Claimed":
+			logEvent = true
 			if err := s.handleClaimedV2(client, hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
 				continue
 			}
 			return nil
 		case "QuestModified":
+			logEvent = true
 			if err := s.handleModifyQuestV2(hash, vLog); err != nil {
 				s.handleTraverseStatus(hash, 5, err.Error())
 				continue
 			}
+			fmt.Println("QuestModified done")
 			return nil
 		}
-
+	}
+	if !logEvent {
+		s.handleTraverseStatus(hash, 6, err.Error())
 	}
 	provider.OnInvokeSuccess()
 	return nil

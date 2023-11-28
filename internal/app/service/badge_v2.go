@@ -15,41 +15,7 @@ import (
 	"time"
 )
 
-func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeReq) (res string, err error) {
-	// 校验分数正确性
-	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
-	if err != nil {
-		return res, errors.New("TokenIDInvalid")
-	}
-	// 校验题目
-	if req.Uri != "" && req.Uri != quest.Uri {
-		return res, errors.New("QuestUpdate")
-	}
-	_, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, req.Score, &quest)
-	if err != nil {
-		log.Errorv("AnswerCheck error", zap.Error(err))
-		return res, errors.New("UnexpectedError")
-	}
-	if !pass {
-		return res, errors.New("AnswerIncorrect")
-	}
-	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
-	if err != nil {
-		return
-	}
-	hash := solsha3.SoliditySHA3(
-		[]string{"string", "uint256", "uint256", "address", "address"},
-		[]interface{}{
-			"claim", big.NewInt(req.TokenId), big.NewInt(req.Score), s.c.Contract.V1.Badge, address,
-		},
-	)
-	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
-	signature, err := crypto.Sign(prefixedHash, privateKey)
-	signature[64] += 27
-	return hexutil.Encode(signature), err
-}
-
-func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetReq) (err error) {
+func (s *Service) SubmitClaimTweetV2(address string, req request.SubmitClaimTweetReq) (err error) {
 	// 检查tokenId是否存在以及可用
 	valid, err := s.dao.ValidTokenId(req.TokenId)
 	if err != nil {
@@ -128,7 +94,7 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	return nil
 }
 
-func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURIRequest) (res string, err error) {
+func (s *Service) UpdateBadgeURIV2(address string, badgeURI request.UpdateBadgeURIRequest) (res string, err error) {
 	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return
@@ -138,7 +104,7 @@ func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURI
 		[]string{"uint256", "string", "address", "address"},
 		// values
 		[]interface{}{
-			big.NewInt(badgeURI.TokenId), badgeURI.Uri, s.c.Contract.V1.Badge, address,
+			big.NewInt(badgeURI.TokenId), badgeURI.Uri, s.c.Contract.V2.Badge, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
@@ -147,7 +113,7 @@ func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURI
 	return hexutil.Encode(signature), err
 }
 
-func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareReq) (res string, err error) {
+func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShareReq) (res string, err error) {
 	// 校验是否绑定discord
 	if !s.dao.HasDiscord(address) {
 		return res, errors.New("DiscordNotBind")
@@ -210,12 +176,4 @@ func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareR
 		return
 	}
 	return res, err
-}
-
-func (s *Service) HasClaimed(address string, tokenId int64) (res uint8, err error) {
-	// 校验是否已经空投
-	if s.dao.HasAirdrop(address, tokenId) {
-		return 2, nil
-	}
-	return s.dao.HasClaimed(address, tokenId)
 }

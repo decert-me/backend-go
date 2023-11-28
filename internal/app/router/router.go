@@ -90,6 +90,11 @@ func Routers(c *config.Config) *gin.Engine {
 		InitCollectionRouter(v1Group)
 		InitMessageRouter(v1Group)
 	}
+	V2Group := Router.Group("v2")
+	V2Group.Use(middleware.I18n())
+	{
+		InitQuestV2Router(V2Group)
+	}
 	// meta
 	Router.GET("/quests/:id", v1.HandleMetaRequest)
 	Router.GET("/claim/:id", v1.HandleMetaRequest)
