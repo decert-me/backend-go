@@ -66,7 +66,7 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id 
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
 		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = b.address
-		WHERE b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND ((d.claimed=true OR b.pass=true) OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true OR c.pass=false AND c.open_quest_review_status=1)
+		WHERE b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND ((d.claimed=true OR b.pass=true) OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true OR (c.pass=false AND c.open_quest_review_status=1 AND A.status = 1))
 	`
 	// 查询记录条数
 	if err = d.db.Raw(countSQL, req.Address, req.Address).Scan(&total).Error; err != nil {
@@ -85,7 +85,7 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id 
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
 		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = b.address
-		WHERE b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND ((d.claimed=true OR b.pass=true) OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true OR c.pass=false AND c.open_quest_review_status=1)
+		WHERE b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND ((d.claimed=true OR b.pass=true) OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true OR (c.pass=false AND c.open_quest_review_status=1 AND A.status = 1))
 		ORDER BY b.ID DESC LIMIT ? OFFSET ?
 	`
 	// 查询数据
@@ -131,7 +131,7 @@ func (d *Dao) GetChallengeNotClaimList(req *request.GetChallengeListRequest) (re
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
 		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = b.address
-		WHERE b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND (b.pass=true OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true) AND d.claimed is null
+		WHERE b.rn = 1 AND (C.rn IS NULL or C.rn = 1) AND (b.pass=true OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true) AND d.claimed is null
 	`
 	// 查询记录条数
 	if err = d.db.Raw(countSQL, req.Address, req.Address).Scan(&total).Error; err != nil {

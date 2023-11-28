@@ -158,6 +158,7 @@ func (d *Dao) GetUserQuestListWithClaimed(req *request.GetUserQuestListRequest) 
 	db := d.db.Model(&response.QuestWithClaimed{})
 	db.Select("quest.*,EXISTS (SELECT 1 FROM user_challenges WHERE quest.token_id = user_challenges.token_id) AS has_claim")
 	db.Where(&req.Quest)
+	db.Where("quest.status = 1")
 	err = db.Count(&total).Error
 	if err != nil {
 		return questList, total, err
