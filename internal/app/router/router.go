@@ -94,6 +94,7 @@ func Routers(c *config.Config) *gin.Engine {
 	V2Group.Use(middleware.I18n())
 	{
 		InitQuestV2Router(V2Group)
+		InitBadgeV2Router(V2Group)
 	}
 	// meta
 	Router.GET("/quests/:id", v1.HandleMetaRequest)

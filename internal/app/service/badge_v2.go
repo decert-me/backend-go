@@ -10,89 +10,10 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
+	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"math/big"
-	"time"
 )
-
-func (s *Service) SubmitClaimTweetV2(address string, req request.SubmitClaimTweetReq) (err error) {
-	// 检查tokenId是否存在以及可用
-	valid, err := s.dao.ValidTokenId(req.TokenId)
-	if err != nil {
-		log.Errorv("ValidTokenId error", zap.Int64("TokenId", req.TokenId), zap.Error(err))
-		return errors.New("TokenIDInvalid")
-	}
-	if !valid {
-		return errors.New("TokenIDInvalid")
-	}
-	// 校验分数正确性
-	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
-	if err != nil {
-		return errors.New("TokenIDInvalid")
-	}
-	// 校验题目
-	if req.Uri != "" && req.Uri != quest.Uri {
-		return errors.New("QuestUpdate")
-	}
-	_, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, req.Score, &quest)
-	if err != nil {
-		log.Errorv("AnswerCheck error", zap.Error(err))
-		return errors.New("UnexpectedError")
-	}
-	if !pass {
-		return errors.New("AnswerIncorrect")
-	}
-	if req.TweetUrl == "" {
-		// 保存到数据库
-		exists, err := s.dao.CreateClaimBadgeTweet(&model.ClaimBadgeTweet{
-			Address: address,
-			TokenId: req.TokenId,
-			Score:   req.Score,
-			Url:     req.TweetUrl,
-			AddTs:   time.Now().Unix(),
-			Type:    1,
-		})
-		if err != nil {
-			log.Errorv("CreateClaimBadgeTweet error", zap.Error(err))
-			return errors.New("UnexpectedError")
-		}
-		if exists {
-			return errors.New("AlreadyHoldsBadge")
-		}
-		return nil
-	}
-	// 获取推文ID
-	tweetId := utils.GetTweetIdFromURL(req.TweetUrl)
-	if tweetId == "" {
-		return errors.New("BrokenLink")
-	}
-	// 检查是否重复使用
-	used, err := s.dao.HasTweet(tweetId)
-	if err != nil {
-		log.Errorv("HasTweet error", zap.Int64("TokenId", req.TokenId), zap.Error(err))
-		return errors.New("UnexpectedError")
-	}
-	if used {
-		return errors.New("TweetRepeated")
-	}
-	// 保存到数据库
-	exists, err := s.dao.CreateClaimBadgeTweet(&model.ClaimBadgeTweet{
-		Address: address,
-		TokenId: req.TokenId,
-		Score:   req.Score,
-		Url:     req.TweetUrl,
-		TweetId: tweetId,
-		AddTs:   time.Now().Unix(),
-	})
-	if err != nil {
-		log.Errorv("CreateClaimBadgeTweet error", zap.Error(err))
-		return errors.New("UnexpectedError")
-	}
-	if exists {
-		return errors.New("AlreadyHoldsBadge")
-	}
-	return nil
-}
 
 func (s *Service) UpdateBadgeURIV2(address string, badgeURI request.UpdateBadgeURIRequest) (res string, err error) {
 	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
@@ -113,7 +34,7 @@ func (s *Service) UpdateBadgeURIV2(address string, badgeURI request.UpdateBadgeU
 	return hexutil.Encode(signature), err
 }
 
-func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShareReq) (res string, err error) {
+func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShareV2Req) (res string, err error) {
 	// 校验是否绑定discord
 	if !s.dao.HasDiscord(address) {
 		return res, errors.New("DiscordNotBind")
@@ -142,7 +63,7 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 	var app string
 	// 判断地址
 	if utils.IsValidAddress(address) {
-		app = "decert"
+		app = "decert_v2"
 	} else {
 		app = "decert_solana"
 	}
@@ -154,6 +75,11 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 			"tokenId":  req.TokenId,
 			"score":    req.Score,
 			"uri":      quest.Uri,
+			"answer":   req.Answer,
+			"title":    quest.Title,
+			"startTs":  gjson.Get(string(quest.ExtraData), "startTs").Int(),
+			"endTs":    gjson.Get(string(quest.ExtraData), "endTs").Int(),
+			"creator":  quest.Creator,
 		},
 	}
 	// 将Map转换为JSON格式的字节数组

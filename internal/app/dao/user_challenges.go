@@ -34,14 +34,15 @@ func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (e
 	return
 }
 
-func (d *Dao) CreateChallengesOne(tokenId int64, receiver string, uerScore int64, nftAddress string) (err error) {
+func (d *Dao) CreateChallengesOne(tokenId int64, receiver string, uerScore int64, nftAddress string, badgeTokenId int64) (err error) {
 	challenge := model.UserChallenges{
-		Address:    receiver,
-		TokenId:    tokenId,
-		Claimed:    true,
-		Status:     2,
-		UserScore:  uerScore,
-		NFTAddress: nftAddress,
+		Address:      receiver,
+		TokenId:      tokenId,
+		Claimed:      true,
+		Status:       2,
+		UserScore:    uerScore,
+		NFTAddress:   nftAddress,
+		BadgeTokenId: badgeTokenId,
 	}
 	err = d.db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "address"}, {Name: "token_id"}},
