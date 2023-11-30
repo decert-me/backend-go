@@ -17,4 +17,5 @@ type SaveChallengeLogRequest struct {
 	TokenId int64  `json:"token_id" binding:"required"`
 	Answer  string `json:"answer" binding:"required"`
 	IP      string `json:"-"`
+	URI     string `json:"uri"`
 }
