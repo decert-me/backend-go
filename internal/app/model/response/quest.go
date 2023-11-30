@@ -13,6 +13,7 @@ type GetQuestListRes struct {
 	AuthorInfo            model.Users `gorm:"-" json:"author_info"`
 	OpenQuestReviewStatus uint8       `gorm:"column:open_quest_review_status" json:"open_quest_review_status"` // 评阅开放题状态 1 未审核 2 已审核
 	Claimable             bool        `gorm:"claimable" json:"claimable"`                                      // 是否可领取
+	BadgeTokenId          int64       `gorm:"column:badge_token_id" json:"badge_token_id"`
 }
 
 type ChallengeUsers struct {
@@ -35,4 +36,5 @@ type GetQuestRes struct {
 	NFTAddress            string         `gorm:"column:nft_address" json:"nft_address"`
 	Answer                datatypes.JSON `gorm:"column:answer" json:"answer"`
 	OpenQuestReviewStatus uint8          `gorm:"column:open_quest_review_status" json:"open_quest_review_status"` // 评阅开放题状态 1 未审核 2 已审核
+	BadgeTokenId          int64          `gorm:"column:badge_token_id" json:"badge_token_id"`
 }

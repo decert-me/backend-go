@@ -52,7 +52,9 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 	collectionID, idErr := cast.ToUintE(r.ID)
 	if idErr == nil {
 		// 查询合辑信息
-		err = d.db.Model(&model.Collection{}).Where("id", collectionID).First(&collection).Error
+		err = d.db.Model(&model.Collection{}).
+			Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address).
+			Where("id", collectionID).First(&collection).Error
 		if err != nil {
 			return questList, collection, err
 		}
@@ -82,7 +84,7 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
 		Where("collection_relate.collection_id = ? AND quest.status=1", collection.ID)
 	if r.Address != "" {
-		db.Select("quest.*,c.claimed")
+		db.Select("quest.*,c.claimed,COALESCE(c.badge_token_id,quest.token_id) as badge_token_id")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
 	} else {
 		db.Select("*")
