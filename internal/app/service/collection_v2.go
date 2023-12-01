@@ -3,25 +3,16 @@ package service
 import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
-	"backend-go/internal/app/model/response"
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"encoding/json"
 	"errors"
+	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 )
 
-func (s *Service) GetCollectionChallengeUser(r request.GetCollectionChallengeUser) (data response.GetCollectionChallengeUserRes, total int64, err error) {
-	return s.dao.GetCollectionChallengeUserByID(r)
-}
-
-// GetCollectionQuest
-func (s *Service) GetCollectionQuest(r request.GetCollectionQuestRequest) (res []response.GetQuestListRes, collection response.GetCollectionRes, err error) {
-	return s.dao.GetCollectionQuest(r)
-}
-
-// CollectionClaim 领取合辑奖励
-func (s *Service) CollectionClaim(r request.CollectionClaimRequest, address string) error {
+// CollectionClaimV2 领取合辑奖励
+func (s *Service) CollectionClaimV2(r request.CollectionClaimRequest, address string) error {
 	// 查询合辑信息
 	collection, err := s.dao.GetCollectionByTokenID(r.TokenID)
 	if err != nil {
@@ -46,7 +37,7 @@ func (s *Service) CollectionClaim(r request.CollectionClaimRequest, address stri
 	var app string
 	// 判断地址
 	if utils.IsValidAddress(address) {
-		app = "decert"
+		app = "decert_v2"
 	} else {
 		app = "decert_solana"
 	}
@@ -58,6 +49,10 @@ func (s *Service) CollectionClaim(r request.CollectionClaimRequest, address stri
 			"tokenId":        collection.TokenId,
 			"challenge_type": "collection",
 			"uri":            collection.Uri,
+			"title":          collection.Title,
+			"startTs":        gjson.Get(string(collection.ExtraData), "startTs").Int(),
+			"endTs":          gjson.Get(string(collection.ExtraData), "endTs").Int(),
+			"creator":        collection.Creator,
 		},
 	}
 	// 将Map转换为JSON格式的字节数组
@@ -80,9 +75,4 @@ func (s *Service) CollectionClaim(r request.CollectionClaimRequest, address stri
 		return err
 	}
 	return nil
-}
-
-// CheckQuestInCollection 查询挑战是否在合辑内
-func (s *Service) CheckQuestInCollection(r request.CheckQuestInCollectionRequest) (res response.CheckQuestInCollectionRes, err error) {
-	return s.dao.CheckQuestInCollection(r)
 }

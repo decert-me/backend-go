@@ -53,8 +53,9 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 	if idErr == nil {
 		// 查询合辑信息
 		err = d.db.Model(&model.Collection{}).
-			Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address).
-			Where("id", collectionID).First(&collection).Error
+			Select("collection.*,c.claimed,c.badge_token_id").
+			Joins("LEFT JOIN user_challenges c ON collection.token_id = c.token_id AND c.address = ?", r.Address).
+			Where("collection.id", collectionID).First(&collection).Error
 		if err != nil {
 			return questList, collection, err
 		}
@@ -84,8 +85,12 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
 		Where("collection_relate.collection_id = ? AND quest.status=1", collection.ID)
 	if r.Address != "" {
-		db.Select("quest.*,c.claimed,COALESCE(c.badge_token_id,quest.token_id) as badge_token_id")
+		db.Select("quest.id,quest.version,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.pass,p.pass,false) as claimable")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
+		db.Joins("LEFT JOIN (WITH ranked_statuses AS (SELECT token_id, open_quest_review_status,pass,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_open_quest WHERE address=? AND deleted_at IS NULL) SELECT open_quest_review_status,token_id,pass FROM ranked_statuses WHERE rn = 1) o ON quest.token_id = o.token_id", r.Address)
+		db.Joins("LEFT JOIN (WITH ranked_log AS (SELECT token_id,pass,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_challenge_log WHERE address = ? AND deleted_at IS NULL) SELECT token_id,pass FROM ranked_log WHERE rn = 1) p ON quest.token_id = p.token_id", r.Address)
+		//db.Select("quest.*,c.claimed,COALESCE(c.badge_token_id,quest.token_id) as badge_token_id")
+		//db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
 	} else {
 		db.Select("*")
 	}
