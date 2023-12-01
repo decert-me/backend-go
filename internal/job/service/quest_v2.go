@@ -1,7 +1,6 @@
 package service
 
 import (
-	ABI "backend-go/abi"
 	ABIV2 "backend-go/abi/v2"
 	"backend-go/internal/app/model"
 	"backend-go/pkg/log"
@@ -113,7 +112,6 @@ func (s *Service) handleModifyQuestV2(hash string, vLog *types.Log) (err error) 
 	if err != nil {
 		return err
 	}
-	var questData ABI.IQuestQuestData
 	var questDataDetail string
 	version := gjson.Get(metadata, "version").Float()
 	if version == 1.1 || version == 1.2 {
@@ -122,12 +120,12 @@ func (s *Service) handleModifyQuestV2(hash string, vLog *types.Log) (err error) 
 			return
 		}
 	}
-	extraData, _ := json.Marshal(model.Extradata{StartTs: questData.StartTs, EndTs: questData.EndTs})
+	extraData, _ := json.Marshal(model.Extradata{StartTs: modified.QuestData.StartTs, EndTs: modified.QuestData.EndTs})
 	quest := model.Quest{
-		Title:       questData.Title,
+		Title:       modified.QuestData.Title,
 		Description: gjson.Get(metadata, "description").String(),
 		TokenId:     vLog.Topics[2].Big().Int64(),
-		Uri:         questData.Uri,
+		Uri:         modified.QuestData.Uri,
 		Type:        0, // TODO
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
