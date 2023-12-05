@@ -67,6 +67,12 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 	} else {
 		app = "decert_solana"
 	}
+	// 解析用户答案
+	answer, err := AnswerParse(req.Answer, &quest)
+	if err != nil {
+		log.Errorv("AnswerParse error", zap.Error(err))
+		return res, errors.New("UnexpectedError")
+	}
 	// 生成分享码
 	paramsMap := map[string]interface{}{
 		"app": app,
@@ -75,7 +81,7 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 			"tokenId":  req.TokenId,
 			"score":    req.Score,
 			"uri":      quest.Uri,
-			"answer":   req.Answer,
+			"answer":   answer,
 			"title":    quest.Title,
 			"startTs":  gjson.Get(string(quest.ExtraData), "startTs").Int(),
 			"endTs":    gjson.Get(string(quest.ExtraData), "endTs").Int(),

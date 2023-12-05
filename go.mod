@@ -24,7 +24,7 @@ require (
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
-	github.com/tidwall/gjson v1.14.4
+	github.com/tidwall/gjson v1.17.0
 	github.com/wealdtech/go-ens/v3 v3.5.5
 	go.uber.org/zap v1.24.0
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
@@ -135,7 +135,8 @@ require (
 	github.com/supranational/blst v0.3.11 // indirect
 	github.com/teris-io/shortid v0.0.0-20201117134242-e59966efd125 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
-	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect

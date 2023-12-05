@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"go.uber.org/zap"
 	"strings"
 	"time"
@@ -168,4 +169,34 @@ func IsOpenQuest(answerUser string) bool {
 		}
 	}
 	return false
+}
+
+// AnswerParse 解析用户答案
+func AnswerParse(answerUser string, quest *model.Quest) (answerUserParse string, err error) {
+	answerS := gjson.Get(answerUser, "@this").Array()
+
+	questList := utils.GetQuest(gjson.Get(string(quest.MetaData), "version").Float(), string(quest.MetaData), string(quest.QuestData))
+	for i, v := range answerS {
+		if v.String() == "" {
+			continue
+		}
+		questType := gjson.Get(v.String(), "type").String()
+		// 单选题
+		if questType == "multiple_choice" {
+			index := gjson.Get(v.String(), "value").Int()
+			answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.value", i), gjson.Get(questList[i].String(), fmt.Sprintf("options.%d", index)).String())
+			continue
+		}
+		// 多选题
+		if questType == "multiple_response" {
+			indexList := gjson.Get(v.String(), "value").Array()
+			var answer []string
+			for _, index := range indexList {
+				answer = append(answer, gjson.Get(questList[i].String(), fmt.Sprintf("options.%d", index.Int())).String())
+			}
+			answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.value", i), answer)
+		}
+	}
+
+	return answerUser, nil
 }
