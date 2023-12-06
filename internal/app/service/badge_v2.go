@@ -68,7 +68,7 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 		app = "decert_solana"
 	}
 	// 解析用户答案
-	answer, err := AnswerParse(req.Answer, &quest)
+	answer, err := s.AnswerParse(s.c.Quest.EncryptKey, req.Answer, address, &quest)
 	if err != nil {
 		log.Errorv("AnswerParse error", zap.Error(err))
 		return res, errors.New("UnexpectedError")
