@@ -89,3 +89,11 @@ func IsValidAddress(address interface{}) bool {
 		return false
 	}
 }
+
+// IsValidSolanaAddress 验证Solana地址
+func IsValidSolanaAddress(address string) bool {
+	// Solana 地址是一个 Base58 编码的字符串，长度为 44
+	pattern := `^[1-9A-HJ-NP-Za-km-z]{44}$`
+	match, _ := regexp.MatchString(pattern, address)
+	return match
+}

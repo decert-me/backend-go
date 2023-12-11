@@ -10,5 +10,6 @@ func InitCallbackRouter(Router *gin.RouterGroup) {
 	callbackRouter := Router.Group("callback").Use(middleware.Auth())
 	{
 		callbackRouter.POST("twitter", v1.TwitterCallback)
+		callbackRouter.POST("discord", v1.DiscordCallback)
 	}
 }

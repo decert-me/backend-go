@@ -58,6 +58,7 @@ func Routers(c *config.Config) *gin.Engine {
 		PublicGroup.GET("/health", func(c *gin.Context) {
 			v1.Ping(c)
 		})
+		InitWechatRouter(PublicGroup)
 	}
 	v1Group := Router.Group("v1")
 	v1Group.Use(middleware.I18n())
@@ -66,7 +67,6 @@ func Routers(c *config.Config) *gin.Engine {
 		InitCallbackRouter(v1Group)
 		InitTwitterRouter(v1Group)
 	}
-
 	fmt.Println("router register success")
 	return Router
 }
