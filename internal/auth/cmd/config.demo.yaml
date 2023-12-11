@@ -39,11 +39,6 @@ auth:
     signing-key: "Decert"
     expires-time: 86400
     issuer: "Decert"
-  twitter:
-    consumer-key: ""
-    consumer-secret: ""
-    callback-url: "https://decert.me/callback/twitter"
-    bearer-token: ""
   wechat:
     app-id: ""                    # wechat app id
     app-secret: ""                # wechat app secret
@@ -52,4 +47,3 @@ auth:
   discord:
     client-id: ""
     client-secret: ""
-    callback-url: "https://decert.me/callback/discord"
