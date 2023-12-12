@@ -3,7 +3,7 @@ FROM ghcr.io/foundry-rs/foundry:nightly-49080c1424987dd772db73504dbfa575de3cab14
 
 # 环境配置
 RUN apk update && apk add --no-cache git bash && git config --global user.email "you@example.com" && git config --global user.name "Your Name" && \
-    mkdir /foundry && cd /foundry && forge init && forge test && \
+    mkdir /foundry && cd /foundry && forge init && forge install OpenZeppelin/openzeppelin-contracts && echo "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/" > remappings.txt && forge test && \
     rm -r script src test
 
 RUN apk add --no-cache nodejs && apk add --no-cache npm && \
