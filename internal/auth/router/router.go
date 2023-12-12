@@ -13,7 +13,6 @@ import (
 )
 
 func New(c *config.Config) {
-	middleware.Init(c)
 	Router := Routers(c)
 	Host := "0.0.0.0"
 	if c.System.Env == "public" {
@@ -61,7 +60,6 @@ func Routers(c *config.Config) *gin.Engine {
 		InitWechatRouter(PublicGroup)
 	}
 	v1Group := Router.Group("v1")
-	v1Group.Use(middleware.I18n())
 	{
 		InitAuthRouter(v1Group)
 		InitCallbackRouter(v1Group)

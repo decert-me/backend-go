@@ -24,10 +24,10 @@ func DiscordCallback(c *gin.Context) {
 	}
 	var discordCallback DiscordCallback
 	_ = c.ShouldBindJSON(&discordCallback)
-	address := c.GetString("address")
-	if err := srv.DiscordCallback(address, discordCallback.Code, discordCallback.Callback); err != nil {
+
+	if id, username, err := srv.DiscordCallback(discordCallback.Code, discordCallback.Callback); err != nil {
 		FailWithMessage(err.Error(), c)
 	} else {
-		Ok(c)
+		OkWithData(map[string]interface{}{"id": id, "username": username}, c)
 	}
 }

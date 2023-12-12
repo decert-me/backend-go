@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/imroc/req/v3"
 	"github.com/silenceper/wechat/v2"
 	"github.com/silenceper/wechat/v2/cache"
 	"github.com/silenceper/wechat/v2/officialaccount/basic"
 	offConfig "github.com/silenceper/wechat/v2/officialaccount/config"
 	"github.com/silenceper/wechat/v2/officialaccount/message"
+	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"strings"
 	"time"
@@ -61,8 +63,15 @@ func (s *Service) WechatService(c *gin.Context) (err error) {
 }
 
 // GetWechatQrcode 获取关注二维码
-func (s *Service) GetWechatQrcode(address string) (data string, err error) {
-	tq := basic.NewTmpQrRequest(time.Second*120, fmt.Sprintf("bind::%s", address))
+func (s *Service) GetWechatQrcode(c *gin.Context, app, address string) (data string, err error) {
+	// 项目配置
+	wechatConfig := s.c.Project[app]
+	// 校验key
+	if c.GetHeader("x-api-key") != wechatConfig.APIKey {
+		log.Errorv("非法请求", zap.String("x-api-key", c.GetHeader("x-api-key")))
+		return "", errors.New("非法请求")
+	}
+	tq := basic.NewTmpQrRequest(time.Second*120, fmt.Sprintf("%s::bind::%s", app, address))
 	wc := wechat.NewWechat()
 	memory := cache.NewMemory()
 	cfg := &offConfig.Config{
@@ -84,28 +93,34 @@ func (s *Service) GetWechatQrcode(address string) (data string, err error) {
 // WechatBindAddress 处理地址绑定
 func (s *Service) WechatBindAddress(eventKey, fromUserName string) (msg string, err error) {
 	// 判断是否为绑定事件
-	if !strings.Contains(strings.Split(eventKey, "::")[0], "bind") {
+	if !strings.Contains(strings.Split(eventKey, "::")[1], "bind") {
 		log.Errorv("非绑定事件", zap.String("eventKey", eventKey))
 		return "", errors.New("非绑定事件")
 	}
 	// 地址
-	address := strings.Split(eventKey, "::")[1]
-	// 判断是否已经绑定过
-	wechatData, err := s.dao.WechatQueryByAddress(address)
-	if err != nil {
-		return "服务器内部错误", err
+	address := strings.Split(eventKey, "::")[2]
+	// 项目配置
+	project := strings.Split(eventKey, "::")[0]
+	wechatConfig := s.c.Project[project]
+	// 发送请求
+	client := req.C().SetCommonHeader("x-api-key", wechatConfig.APIKey)
+	type WechatBind struct {
+		Address string `json:"address" form:"address" binding:"required"`
+		Code    string `json:"code" form:"code" binding:"required"`
 	}
-	if wechatData != "{}" {
-		return "钱包地址已绑定，请勿重复操作", errors.New("钱包地址已绑定，请勿重复操作")
+	wechatBind := WechatBind{
+		Address: address,
+		Code:    fromUserName,
 	}
-	// 判断微信是否被别的地址绑定过
-	isBinding, err := s.dao.WechatIsBinding(fromUserName)
-	if err != nil {
-		return "服务器内部错误", err
+	r, err := client.R().SetBodyJsonMarshal(wechatBind).Post(wechatConfig.CallBackURL + "/v1/social/wechatBindAddress")
+	if err != nil || r.StatusCode != 200 {
+		return "绑定失败", errors.New("绑定失败")
 	}
-	if isBinding {
-		return "微信账号已绑定其他钱包地址", errors.New("微信已经绑定过地址")
+	fmt.Println(r.String())
+	// 绑定失败
+	if gjson.Get(r.String(), "status").Int() != 0 {
+		return gjson.Get(r.String(), "message").String(), errors.New("绑定失败")
 	}
-	// 绑定
-	return s.dao.WechatBindAddress(address, fromUserName)
+	// 绑定成功
+	return gjson.Get(r.String(), "data").String(), nil
 }

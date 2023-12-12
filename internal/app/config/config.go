@@ -20,4 +20,5 @@ type Config struct {
 	Share      *Share       `mapstructure:"share" json:"share" yaml:"share"`
 	Discord    *Discord     `mapstructure:"discord" json:"discord" yaml:"discord"`
 	Sentry     *Sentry      `mapstructure:"sentry" json:"sentry" yaml:"sentry"`
+	Social     *Social      `mapstructure:"social" json:"social" yaml:"social"`
 }

@@ -6,13 +6,14 @@ import (
 
 // GetWechatQrcode 获取关注二维码
 func GetWechatQrcode(c *gin.Context) {
-	address := c.GetString("address")
-	if address == "" {
+	address, _ := c.GetQuery("address")
+	app, _ := c.GetQuery("app")
+	if address == "" || app == "" {
 		Fail(c)
 		return
 	}
-	if data, err := srv.GetWechatQrcode(address); err != nil {
-		Fail(c)
+	if data, err := srv.GetWechatQrcode(c, app, address); err != nil {
+		FailWithMessage(err.Error(), c)
 	} else {
 		OkWithData(data, c)
 	}

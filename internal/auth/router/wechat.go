@@ -2,13 +2,12 @@ package router
 
 import (
 	v1 "backend-go/internal/auth/api/v1"
-	"backend-go/internal/auth/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 func InitWechatRouter(Router *gin.RouterGroup) {
 	wechatRouter := Router.Group("")
-	wechatRouterWithAuth := Router.Group("wechat").Use(middleware.Auth())
+	wechatRouterWithAuth := Router.Group("wechat")
 	{
 		wechatRouter.Any("/", v1.WechatService) // 微信服务器验证
 	}
