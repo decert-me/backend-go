@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -43,7 +42,6 @@ func WechatBindAddress(c *gin.Context) {
 // DiscordAuthorizationURL 获取 Discord 授权链接
 func DiscordAuthorizationURL(c *gin.Context) {
 	callback := c.Query("callback")
-	fmt.Println(callback)
 	if data, err := srv.DiscordAuthorizationURL(callback); err != nil {
 		Fail(c)
 	} else {

@@ -35,6 +35,7 @@ func (s *Service) WechatService(c *gin.Context) (err error) {
 	officialAccount := wc.GetOfficialAccount(cfg)
 	// 传入request和responseWriter
 	server := officialAccount.GetServer(req, rw)
+	//m := officialAccount.GetMaterial().AddMaterial("image", "/Users/chenzhen/Downloads/1.jpg")
 	//设置接收消息的处理方法
 	server.SetMessageHandler(func(msg *message.MixMessage) *message.Reply {
 		if msg.MsgType == message.MsgTypeEvent {
@@ -48,7 +49,18 @@ func (s *Service) WechatService(c *gin.Context) (err error) {
 				}
 				return &message.Reply{MsgType: message.MsgTypeText, MsgData: message.NewText("钱包地址绑定成功")}
 			}
+
+			if msg.Event == message.EventClick {
+				// 社区二维码
+				image := message.NewImage("hE1FXKcBCLuXNojNQvWrBrvVQgQfoMgW2Eqv6hePAkLC4MZPj7ZjQr0wvHtuIjbB")
+				if msg.EventKey == "V1001_GOOD" {
+					return &message.Reply{MsgType: message.MsgTypeImage, MsgData: image}
+				}
+			}
 		}
+
+		fmt.Println(msg.MsgType)
+		fmt.Println(msg)
 		return nil
 	})
 	//处理消息接收以及回复

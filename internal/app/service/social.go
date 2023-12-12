@@ -18,7 +18,9 @@ func (s *Service) GetWechatQrcode(address string) (data string, err error) {
 	if err != nil {
 		return
 	}
-	fmt.Println(r.String())
+	if r.StatusCode != 200 {
+		return "", errors.New("服务器内部错误")
+	}
 	if gjson.Get(r.String(), "status").Int() != 0 {
 		return "", errors.New(gjson.Get(r.String(), "message").String())
 	}
@@ -55,15 +57,22 @@ func (s *Service) WechatBindAddress(c *gin.Context, address, fromUserName string
 // DiscordAuthorizationURL 获取 Discord 授权链接
 func (s *Service) DiscordAuthorizationURL(callback string) (data string, err error) {
 	// 发送请求
-	client := req.C().SetCommonHeader("x-api-key", s.c.Social.Wechat.APIKey)
-	r, err := client.R().SetQueryParam("callback", callback).Get(s.c.Social.Wechat.CallURL)
+	client := req.C().SetCommonHeader("x-api-key", s.c.Social.Discord.APIKey)
+	r, err := client.R().SetQueryParam("callback", callback).Get(s.c.Social.Discord.CallURL + "/v1/authorization/discord")
 	if err != nil {
 		return
+	}
+	if r.StatusCode != 200 {
+		return "", errors.New("服务器内部错误")
 	}
 	if gjson.Get(r.String(), "status").Int() != 0 {
 		return "", errors.New(gjson.Get(r.String(), "message").String())
 	}
-	return gjson.Get(r.String(), "data").String(), err
+	data = gjson.Get(r.String(), "data").String()
+	if data == "" {
+		return "", errors.New("服务器内部错误")
+	}
+	return data, err
 }
 
 // DiscordCallback Discord 回调绑定
