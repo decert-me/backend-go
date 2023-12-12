@@ -8,7 +8,6 @@ import (
 func InitCallbackRouter(Router *gin.RouterGroup) {
 	callbackRouter := Router.Group("callback")
 	{
-		callbackRouter.POST("twitter", v1.TwitterCallback)
 		callbackRouter.POST("discord", v1.DiscordCallback)
 	}
 }

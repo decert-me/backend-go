@@ -20,10 +20,8 @@ func main() {
 	log.Init(config.Log)
 	// 初始化service
 	s := service.New(config)
-	// 国际化
-	i18n := initialize.InitI18n(config)
 	// 初始化api
-	v1.Init(s, i18n)
+	v1.Init(s)
 	// 初始化router
 	router.New(config)
 
@@ -31,10 +29,10 @@ func main() {
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		si := <-c
-		log.Infov("backend-app get a signal", zap.String("signal", si.String()))
+		log.Infov("backend-auth get a signal", zap.String("signal", si.String()))
 		switch si {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			log.Info("backend-app exit")
+			log.Info("backend-auth exit")
 			s.Close()
 			time.Sleep(2 * time.Second)
 			return

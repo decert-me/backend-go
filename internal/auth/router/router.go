@@ -63,7 +63,6 @@ func Routers(c *config.Config) *gin.Engine {
 	{
 		InitAuthRouter(v1Group)
 		InitCallbackRouter(v1Group)
-		InitTwitterRouter(v1Group)
 	}
 	fmt.Println("router register success")
 	return Router
