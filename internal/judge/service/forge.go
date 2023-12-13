@@ -22,11 +22,10 @@ func (s *Service) TestSolidity(req request.TestReq, spjCode string) (res respons
 	}
 	foundryPath := path.Join(s.c.Judge.SolidityWorkPath, req.Address, "foundry")
 	// 获取合约名称
-	re := regexp.MustCompile(`contract\s+(\w+)\s*{`)
-
+	re := regexp.MustCompile(`(?m)^[^\n//]*contract\s+(\w+)`)
 	result := re.FindStringSubmatch(req.Code)
 	if len(result) < 1 {
-		return res, errors.New("contract name no match")
+		return res, errors.New("TestSolidity contract name no match")
 	}
 	// 保存代码
 	fileName := time.Now().Format("20060102150405.000") + ".sol"
@@ -59,23 +58,32 @@ func (s *Service) TestSolidity(req request.TestReq, spjCode string) (res respons
 		return
 	}
 	resultArray := gjson.Get(execResList[len(execResList)-2], "*.test_results").Array()
-	res.TotalTestcases = len(resultArray)
-	fmt.Println("resultArray", resultArray)
+	//fmt.Println("resultArray", resultArray)
 	for _, v := range resultArray {
-		fmt.Print(gjson.Get(v.String(), "*.status").String())
-		fmt.Print(gjson.Get(v.String(), "*.reason").String())
-		fmt.Print(gjson.Get(v.String(), "*.decoded_logs").String())
-		if gjson.Get(v.String(), "*.status").String() != "Success" {
-			if gjson.Get(v.String(), "*.reason").String() != "" {
-				res.Output = gjson.Get(v.String(), "*.reason").String()
-			} else {
-				res.Output = gjson.Get(v.String(), "*.decoded_logs").String()
+		gjson.Parse(v.String()).ForEach(func(key, value gjson.Result) bool {
+			res.TotalTestcases += 1
+			return true
+		})
+		gjson.Parse(v.String()).ForEach(func(key, value gjson.Result) bool {
+			status := gjson.Get(value.String(), "status").String()
+			reason := gjson.Get(value.String(), "reason").String()
+			decodedLogs := gjson.Get(value.String(), "decoded_logs").String()
+			fmt.Println("status", status)
+			fmt.Println("reason", reason)
+			fmt.Println("decodedLogs", decodedLogs)
+			if status != "Success" {
+				if reason != "" {
+					res.Output = fmt.Sprintf("%s: %s", key, reason)
+				} else {
+					res.Output = fmt.Sprintf("%s: %s", key, decodedLogs)
+				}
+				res.Status = 3
+				return false
 			}
-			res.Status = 3
-			return
-		}
-		res.TotalCorrect++
+			res.TotalCorrect++
+			return true // keep iterating
+		})
 	}
-	res.Status = 3
+	res.Status = 3 // 运行成功状态
 	return res, nil
 }

@@ -25,11 +25,12 @@ func (s *Service) BuildSolidity(private string, req request.BuildReq) (res respo
 	}
 	foundryPath := path.Join(s.c.Judge.SolidityWorkPath, req.Address, "foundry")
 	// 获取合约名称
-	re := regexp.MustCompile(`contract\s+(\w+)\s*{`)
+	re := regexp.MustCompile(`(?m)^[^\n//]*contract\s+(\w+)`)
 	result := re.FindStringSubmatch(req.Code)
 	if len(result) < 1 {
-		return res, errors.New("contract name no match")
+		return res, errors.New("BuildSolidity contract name no match")
 	}
+
 	// 保存代码
 	fileName := time.Now().Format("20060102150405.000") + ".sol"
 	relativeFilePath := path.Join("src", fileName)
