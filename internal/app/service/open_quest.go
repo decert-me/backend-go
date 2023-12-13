@@ -74,7 +74,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 		} else {
 			dataSQL += " AND json_element->>'score' IS NULL AND json_element->>'correct' IS NULL"
 		}
-		dataSQL += " ORDER BY id desc OFFSET ? LIMIT ?"
+		dataSQL += " ORDER BY id asc OFFSET ? LIMIT ?"
 		err = db.Raw(dataSQL, address, offset, limit).Scan(&list).Error
 	} else {
 		err = db.Raw(`
@@ -98,8 +98,8 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 					user_open_quest.address,
 					user_open_quest.token_id,
 					CASE 
-						WHEN json_element->>'score' != '0' THEN 2
-						ELSE open_quest_review_status
+						WHEN json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL THEN 2
+						ELSE 1
 					END AS open_quest_review_status,
 					json_element->>'open_quest_review_time' AS open_quest_review_time,
 					user_open_quest.updated_at,
@@ -119,7 +119,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
 					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND quest.creator = ?
-				ORDER BY id desc
+				ORDER BY id asc
 				OFFSET ? LIMIT ?
 		`, address, offset, limit).Scan(&list).Error
 	}
@@ -212,29 +212,32 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 			db.Rollback()
 			return errors.New("写入结果失败")
 		}
-		// 写入Message
-		var message model.UserMessage
-		if pass {
-			message = model.UserMessage{
-				Title:     "恭喜通过挑战",
-				TitleEn:   "Congratulations on passing the challenge!",
-				Content:   "你在《" + quest.Title + "》的挑战成绩为 " + cast.ToString(score) + " 分，可领取一枚NFT！",
-				ContentEn: "Your score for the challenge \"" + quest.Title + "\" is " + cast.ToString(score) + " points, and you can claim an NFT!",
+		// 审核完成发送消息
+		if openQuestReviewStatus == 2 {
+			// 写入Message
+			var message model.UserMessage
+			if pass {
+				message = model.UserMessage{
+					Title:     "恭喜通过挑战",
+					TitleEn:   "Congratulations on passing the challenge!",
+					Content:   "你在《" + quest.Title + "》的挑战成绩为 " + cast.ToString(score) + " 分，可领取一枚NFT！",
+					ContentEn: "Your score for the challenge \"" + quest.Title + "\" is " + cast.ToString(score) + " points, and you can claim an NFT!",
+				}
+			} else {
+				message = model.UserMessage{
+					Title:     "挑战未通过",
+					TitleEn:   "Challenge failed",
+					Content:   "你在《" + quest.Title + "》的挑战成绩为 " + cast.ToString(score) + " 分，请继续加油吧！",
+					ContentEn: "Your score for the challenge \"" + quest.Title + "\" is " + cast.ToString(score) + " points, please continue to working hard.",
+				}
 			}
-		} else {
-			message = model.UserMessage{
-				Title:     "挑战未通过",
-				TitleEn:   "Challenge failed",
-				Content:   "你在《" + quest.Title + "》的挑战成绩为 " + cast.ToString(score) + " 分，请继续加油吧！",
-				ContentEn: "Your score for the challenge \"" + quest.Title + "\" is " + cast.ToString(score) + " points, please continue to working hard.",
+			message.TokenId = quest.TokenId
+			message.Address = userOpenQuest.Address
+			err = db.Model(&model.UserMessage{}).Create(&message).Error
+			if err != nil {
+				db.Rollback()
+				return errors.New("发送消息失败")
 			}
-		}
-		message.TokenId = quest.TokenId
-		message.Address = userOpenQuest.Address
-		err = db.Model(&model.UserMessage{}).Create(&message).Error
-		if err != nil {
-			db.Rollback()
-			return errors.New("发送消息失败")
 		}
 	}
 	return db.Commit().Error
