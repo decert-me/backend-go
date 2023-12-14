@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, quest *model.Quest) (userReturnScore int64, pass bool, err error) {
+func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, quest *model.Quest, useDBOpenQuest bool) (userReturnScore int64, pass bool, err error) {
 	defer func() {
 		if err != nil {
 			log.Errorv("AnswerCheck error", zap.Error(err))
@@ -24,7 +24,7 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 	version := gjson.Get(res, "version").Float()
 
 	// 判断是否有开放题目
-	if IsOpenQuest(answerUser) {
+	if useDBOpenQuest && IsOpenQuest(answerUser) {
 		// 获取数据库已审核最新数据
 		userOpenQuest, err := s.dao.GetUserOpenQuestReviewed(address, quest.TokenId)
 		if err == nil {
@@ -104,7 +104,10 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 			}
 		}
 		if questType == "open_quest" {
-			if gjson.Get(v.String(), "correct").Bool() == true {
+			if gjson.Get(v.String(), "score").Int() != 0 {
+				fmt.Println("score", gjson.Get(v.String(), "score").Int())
+				score += gjson.Get(v.String(), "score").Int()
+			} else if gjson.Get(v.String(), "correct").Bool() == true {
 				score += scoreList[i].Int()
 			}
 		}

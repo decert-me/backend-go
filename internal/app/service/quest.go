@@ -44,7 +44,6 @@ func (s *Service) GetQuest(id string, address string) (quest response.GetQuestRe
 		}
 		quest, err = s.dao.GetQuestWithClaimStatusByTokenID(tokenId, address)
 	}
-
 	return
 }
 

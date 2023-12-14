@@ -39,7 +39,7 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 	if quest.Uri != req.URI {
 		return nil
 	}
-	userScore, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Address, 0, &quest)
+	userScore, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, req.Address, 0, &quest, true)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return errors.New("UnexpectedError")
