@@ -80,27 +80,27 @@ func (s *Service) DiscordCallback(address string, discordCallback interface{}) (
 	// 跳过已绑定地址
 	discordData, _ := s.dao.DiscordQueryByAddress(address)
 	if string(discordData) != "{}" {
-		return errors.New("钱包地址绑定失败：钱包地址已绑定，请勿重复操作")
+		return errors.New("AddressAlreadyLinkedDiscord")
 	}
 	// 发送请求获取 Discord 用户信息
 	client := req.C().SetCommonHeader("x-api-key", s.c.Social.Wechat.APIKey)
 	r, err := client.R().SetBodyJsonMarshal(discordCallback).Post(s.c.Social.Wechat.CallURL + "/v1/callback/discord")
 	if err != nil {
-		return
+		return errors.New("FailedObtainDiscordInfo")
 	}
 	fmt.Println(r.String())
 	if gjson.Get(r.String(), "status").Int() != 0 {
-		return errors.New(gjson.Get(r.String(), "message").String())
+		return errors.New("FailedObtainDiscordInfo")
 	}
 	discordID := gjson.Get(r.String(), "data.id").String()
 	username := gjson.Get(r.String(), "data.username").String()
 	// 跳过已绑定 Discord
 	Binding, err := s.dao.DiscordIsBinding(discordID)
 	if err != nil {
-		return errors.New("钱包地址绑定失败：服务器内部错误")
+		return errors.New("UnexpectedError")
 	}
 	if Binding {
-		return errors.New("钱包地址绑定失败：discord 账号已绑定其他钱包地址")
+		return errors.New("DiscordAlreadyLinked")
 	}
 
 	return s.dao.DiscordBindAddress(discordID, username, address)
