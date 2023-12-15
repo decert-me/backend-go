@@ -59,8 +59,8 @@ func DiscordBindAddress(c *gin.Context) {
 	_ = c.ShouldBindJSON(&discordCallback)
 	address := c.GetString("address")
 	if err := srv.DiscordCallback(address, discordCallback); err != nil {
-		FailWithMessage(err.Error(), c)
+		OkWithMessage(err.Error(), c)
 	} else {
-		Ok(c)
+		OkWithRaw(nil, c)
 	}
 }
