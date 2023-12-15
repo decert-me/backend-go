@@ -63,7 +63,7 @@ func (d *Dao) UpdateAvatar(address string, avatar string) error {
 }
 
 func (d *Dao) GetSocialsInfo(user *model.Users) (socials string, err error) {
-	err = d.db.Model(&model.Users{}).Select("socials").
+	err = d.db.Model(&model.Users{}).Select("COALESCE(socials,'{}')").
 		Where("address = ?", user.Address).
 		First(&socials).Error
 	return

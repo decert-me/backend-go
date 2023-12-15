@@ -109,6 +109,8 @@ func (s *Service) WechatBindAddress(eventKey, fromUserName string) (msg string, 
 		log.Errorv("非绑定事件", zap.String("eventKey", eventKey))
 		return "", errors.New("非绑定事件")
 	}
+	// 清除qrscene_开头
+	eventKey = strings.TrimPrefix(eventKey, "qrscene_")
 	// 地址
 	address := strings.Split(eventKey, "::")[2]
 	// 项目配置
