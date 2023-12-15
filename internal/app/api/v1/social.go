@@ -13,7 +13,7 @@ func GetWechatQrcode(c *gin.Context) {
 		return
 	}
 	if data, err := srv.GetWechatQrcode(address); err != nil {
-		FailWithMessage(err.Error(), c)
+		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		OkWithData(data, c)
 	}
@@ -43,7 +43,7 @@ func WechatBindAddress(c *gin.Context) {
 func DiscordAuthorizationURL(c *gin.Context) {
 	callback := c.Query("callback")
 	if data, err := srv.DiscordAuthorizationURL(callback); err != nil {
-		Fail(c)
+		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		OkWithData(data, c)
 	}

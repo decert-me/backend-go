@@ -19,7 +19,7 @@ func (s *Service) GetWechatQrcode(address string) (data string, err error) {
 		return
 	}
 	if r.StatusCode != 200 {
-		return "", errors.New("服务器内部错误")
+		return "", errors.New("UnexpectedError")
 	}
 	if gjson.Get(r.String(), "status").Int() != 0 {
 		return "", errors.New(gjson.Get(r.String(), "message").String())
@@ -60,19 +60,19 @@ func (s *Service) DiscordAuthorizationURL(callback string) (data string, err err
 	client := req.C().SetCommonHeader("x-api-key", s.c.Social.Discord.APIKey)
 	r, err := client.R().SetQueryParam("callback", callback).Get(s.c.Social.Discord.CallURL + "/v1/authorization/discord")
 	if err != nil {
-		return
+		return "", errors.New("FailedObtainDiscordInfo")
 	}
 	if r.StatusCode != 200 {
-		return "", errors.New("服务器内部错误")
+		return "", errors.New("FailedObtainDiscordInfo")
 	}
 	if gjson.Get(r.String(), "status").Int() != 0 {
-		return "", errors.New(gjson.Get(r.String(), "message").String())
+		return "", errors.New("FailedObtainDiscordInfo")
 	}
 	data = gjson.Get(r.String(), "data").String()
 	if data == "" {
-		return "", errors.New("服务器内部错误")
+		return "", errors.New("FailedObtainDiscordInfo")
 	}
-	return data, err
+	return data, nil
 }
 
 // DiscordCallback Discord 回调绑定
