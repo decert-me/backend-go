@@ -90,6 +90,7 @@ func Routers(c *config.Config) *gin.Engine {
 		InitCollectionRouter(v1Group)
 		InitMessageRouter(v1Group)
 		InitSocialRouter(v1Group)
+		InitOpenQuestRouter(v1Group)
 	}
 	// meta
 	Router.GET("/quests/:id", v1.HandleMetaRequest)
