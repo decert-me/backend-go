@@ -84,7 +84,7 @@ func (s *Service) DiscordCallback(address string, discordCallback interface{}) (
 	}
 	// 发送请求获取 Discord 用户信息
 	client := req.C().SetCommonHeader("x-api-key", s.c.Social.Wechat.APIKey)
-	r, err := client.R().SetBodyJsonMarshal(discordCallback).Post(s.c.Social.Wechat.CallURL + "/v1/callback/discord")
+	r, err := client.R().SetBodyJsonMarshal(discordCallback).Post(s.c.Social.Discord.CallURL + "/v1/callback/discord")
 	if err != nil {
 		return errors.New("FailedObtainDiscordInfo")
 	}
@@ -94,6 +94,9 @@ func (s *Service) DiscordCallback(address string, discordCallback interface{}) (
 	}
 	discordID := gjson.Get(r.String(), "data.id").String()
 	username := gjson.Get(r.String(), "data.username").String()
+	if discordID == "" || username == "" {
+		return errors.New("FailedObtainDiscordInfo")
+	}
 	// 跳过已绑定 Discord
 	Binding, err := s.dao.DiscordIsBinding(discordID)
 	if err != nil {
