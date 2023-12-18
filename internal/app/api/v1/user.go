@@ -174,3 +174,12 @@ func HasCreateOpenQuestPerm(c *gin.Context) {
 		OkWithData(map[string]interface{}{"perm": perm, "beta": beta}, c)
 	}
 }
+
+// HasBindSocialAccount 获取用户是否绑定社交账号
+func HasBindSocialAccount(c *gin.Context) {
+	if wechat, discord, err := srv.HasBindSocialAccount(c.GetString("address")); err != nil {
+		Fail(c)
+	} else {
+		OkWithData(map[string]interface{}{"wechat": wechat, "discord": discord}, c)
+	}
+}

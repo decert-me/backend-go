@@ -23,9 +23,8 @@ type Response struct {
 }
 
 // Init init
-func Init(s *service.Service, i map[string]map[string]string) {
+func Init(s *service.Service) {
 	srv = s
-	i18n = i
 }
 
 func Ping(c *gin.Context) {

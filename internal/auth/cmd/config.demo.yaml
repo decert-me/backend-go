@@ -2,23 +2,6 @@
 system:
   env: develop
   addr: 8889
-  i18n: "locale.json"
-
-# pgsql configuration
-pgsql:
-  path: "127.0.0.1"
-  port: "5432"
-  config: ""
-  db-name: "decert"
-  username: "postgres"
-  password: "123456"
-  auto-migrate: true
-  prefix: ""
-  slow-threshold: 200
-  max-idle-conns: 10
-  max-open-conns: 100
-  log-mode: "info"
-  log-zap: false
 
 # log configuration
 log:
@@ -35,12 +18,17 @@ log:
 
 # auth configuration
 auth:
-  auth:
-    signing-key: "Decert"
-    expires-time: 86400
-    issuer: "Decert"
-  twitter:
-    consumer-key: ""
-    consumer-secret: ""
-    callback-url: "https://decert.me/callback/twitter"
-    bearer-token: ""
+  wechat:
+    app-id: ""                    # wechat app id
+    app-secret: ""                # wechat app secret
+    token: ""                     # wechat token
+    encoding-aes-key: ""          # wechat encoding aes key(可选)
+  discord:
+    client-id: ""
+    client-secret: ""
+
+# project configuration
+project:
+  decert:
+    api-key: "test"
+    callback-url: "http://127.0.0.1:8087/api"

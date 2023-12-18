@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/redis/go-redis/v9"
+	"github.com/tidwall/gjson"
 	"time"
 )
 
@@ -62,8 +63,25 @@ func (d *Dao) UpdateAvatar(address string, avatar string) error {
 }
 
 func (d *Dao) GetSocialsInfo(user *model.Users) (socials string, err error) {
-	err = d.db.Model(&model.Users{}).Select("socials").
+	err = d.db.Model(&model.Users{}).Select("COALESCE(socials,'{}')").
 		Where("address = ?", user.Address).
 		First(&socials).Error
 	return
+}
+
+// HasBindSocialAccount 判断是否已经绑定
+func (d *Dao) HasBindSocialAccount(address string) (wechat bool, discord bool, err error) {
+	socials, err := d.GetSocialsInfo(&model.Users{Address: address})
+	if err != nil {
+		return wechat, discord, nil
+	}
+	id := gjson.Get(socials, "discord.id").String()
+	if id != "" {
+		discord = true
+	}
+	openid := gjson.Get(socials, "wechat.openid").String()
+	if openid != "" {
+		wechat = true
+	}
+	return wechat, discord, err
 }

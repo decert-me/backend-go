@@ -263,3 +263,8 @@ func (s *Service) AuthLoginSignRequestSolana(req request.AuthLoginSignRequest) (
 func (s *Service) HasOpenQuestPerm(address string) (perm bool, beta bool, err error) {
 	return s.dao.HasOpenQuestPerm(address)
 }
+
+// HasBindSocialAccount 获取用户是否绑定社交账号
+func (s *Service) HasBindSocialAccount(address string) (wechat bool, discord bool, err error) {
+	return s.dao.HasBindSocialAccount(address)
+}

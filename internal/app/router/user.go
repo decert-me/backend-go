@@ -22,5 +22,6 @@ func InitUserRouter(Router *gin.RouterGroup) {
 		userRouterAuth.GET("twitter", v1.GetTwitterInfo)
 		userRouterAuth.PUT("/:address", v1.UpdateUserInfo)
 		userRouterAuth.POST("/avatar", v1.UpdateAvatar)
+		userRouterAuth.GET("/hasBindSocialAccount", v1.HasBindSocialAccount)
 	}
 }

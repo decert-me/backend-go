@@ -95,3 +95,12 @@ sentry:
   dsn: "https://xxxx@xxx.ingest.sentry.io/xxxx"
   traces-sample-rate: 1.0       # Percentage of transactions to be traced.
   enable-tracing: true          # Enable performance tracing.
+
+# social configuration
+social:
+  wechat:
+    api-key: "test"
+    call-url: "http://127.0.0.1:8110"
+  discord:
+    api-key: "test"
+    call-url: "http://127.0.0.1:8110"
