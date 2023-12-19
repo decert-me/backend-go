@@ -111,7 +111,7 @@ func GetUserChallengeList(c *gin.Context) {
 	}
 	searchInfo.ReqAddress = c.GetString("address")
 	searchInfo.Address = address
-
+	searchInfo.Language = c.GetString("lang")
 	if list, total, err := srv.GetUserChallengeList(searchInfo); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {

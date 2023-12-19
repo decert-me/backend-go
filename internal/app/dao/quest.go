@@ -45,16 +45,17 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	questSQL := db.ToSQL(func(tx *gorm.DB) *gorm.DB {
 		tx = tx.Where("quest.status = 1 AND quest.disabled = false AND collection_status=1")
 		tx = tx.Where(&req.Quest)
+		tx = tx.Joins("LEFT JOIN quest_translated ON quest.token_id = quest_translated.token_id AND quest_translated.language = ?", req.Language)
 		if req.SearchKey != "" {
 			tx = tx.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
 		}
 		if req.Address != "" {
-			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.pass,p.pass,false) as claimable")
+			tx = tx.Select("quest.id,quest.uuid,COALESCE(quest_translated.title,quest.title) as title,quest.label,quest.disabled,COALESCE(quest_translated.description,quest.description) as description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.pass,p.pass,false) as claimable")
 			tx = tx.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
 			tx = tx.Joins("LEFT JOIN (WITH ranked_statuses AS (SELECT token_id, open_quest_review_status,pass,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_open_quest WHERE address=? AND deleted_at IS NULL) SELECT open_quest_review_status,token_id,pass FROM ranked_statuses WHERE rn = 1) o ON quest.token_id = o.token_id", req.Address)
 			tx = tx.Joins("LEFT JOIN (WITH ranked_log AS (SELECT token_id,pass,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_challenge_log WHERE address = ? AND deleted_at IS NULL) SELECT token_id,pass FROM ranked_log WHERE rn = 1) p ON quest.token_id = p.token_id", req.Address)
 		} else {
-			tx = tx.Select("quest.id,quest.uuid,quest.title,quest.label,quest.disabled,quest.description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,FALSE as claimed,0 as open_quest_review_status,false as claimable")
+			tx = tx.Select("quest.id,quest.uuid,COALESCE(quest_translated.title,quest.title) as title,quest.label,quest.disabled,COALESCE(quest_translated.description,quest.description) as description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,FALSE as claimed,0 as open_quest_review_status,false as claimable")
 		}
 		return tx.Find(&[]response.GetQuestListRes{})
 	})
@@ -104,34 +105,50 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	return questList, total, err
 }
 
+func (d *Dao) GetQuestByTokenIDWithLang(language string, id int64) (quest model.Quest, err error) {
+	err = d.db.Model(&model.Quest{}).Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
+		"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data").
+		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).Where("token_id", id).First(&quest).Error
+	return
+}
+
 func (d *Dao) GetQuestByTokenID(id int64) (quest model.Quest, err error) {
 	err = d.db.Model(&model.Quest{}).Where("token_id", id).First(&quest).Error
 	return
 }
 
-func (d *Dao) GetQuestByUUID(uuid string) (quest model.Quest, err error) {
-	err = d.db.Model(&model.Quest{}).Where("uuid", uuid).First(&quest).Error
+func (d *Dao) GetQuestByUUID(language, uuid string) (quest model.Quest, err error) {
+	err = d.db.Model(&model.Quest{}).Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
+		"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data").
+		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).
+		Where("uuid", uuid).First(&quest).Error
 	return
 }
 
-func (d *Dao) GetQuestWithClaimStatusByTokenID(id int64, address string) (quest response.GetQuestRes, err error) {
+func (d *Dao) GetQuestWithClaimStatusByTokenID(language string, id int64, address string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).
-		Select("quest.*,b.claimed,b.user_score,b.nft_address,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.answer,l.answer) as answer").
+		Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
+			"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data,"+
+			"b.claimed,b.user_score,b.nft_address,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.answer,l.answer) as answer").
 		Joins("left join user_challenges b ON quest.token_id=b.token_id AND b.address= ?", address).
 		Joins("left join user_challenge_log l ON quest.token_id=l.token_id AND l.address= ? AND l.deleted_at IS NULL", address).
 		Joins("left join user_open_quest o ON quest.token_id=o.token_id AND o.address= ? AND o.deleted_at IS NULL", address).
+		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).
 		Where("quest.token_id", id).
 		Order("l.add_ts desc,o.id desc").
 		First(&quest).Error
 	return
 }
 
-func (d *Dao) GetQuestWithClaimStatusByUUID(uuid string, address string) (quest response.GetQuestRes, err error) {
+func (d *Dao) GetQuestWithClaimStatusByUUID(language, uuid string, address string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).
-		Select("quest.*,b.claimed,b.user_score,b.nft_address,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.answer,l.answer) as answer").
+		Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
+			"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data,"+
+			"b.claimed,b.user_score,b.nft_address,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.answer,l.answer) as answer").
 		Joins("left join user_challenges b ON quest.token_id=b.token_id AND b.address= ?", address).
 		Joins("left join user_challenge_log l ON quest.token_id=l.token_id AND l.address= ? AND l.deleted_at IS NULL", address).
 		Joins("left join user_open_quest o ON quest.token_id=o.token_id AND o.address= ? AND o.deleted_at IS NULL", address).
+		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).
 		Where("quest.uuid", uuid).
 		Order("l.add_ts desc,o.id desc").
 		First(&quest).Error

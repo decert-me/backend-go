@@ -81,15 +81,16 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 		),ranked_logs2 AS (SELECT *,ROW_NUMBER () OVER (PARTITION BY token_id ORDER BY id DESC) AS rn 
 		FROM user_open_quest
 		WHERE address= ? AND deleted_at IS NULL)
-		SELECT a.*,COALESCE(c.pass,b.pass) as claimable,COALESCE(c.open_quest_review_status,0) as open_quest_review_status,b.is_open_quest,COALESCE(d.nft_address,'') as nft_address,COALESCE(d.claimed,false) as claimed FROM quest A
+		SELECT a.*,COALESCE(tr.title,a.title) as title,COALESCE(tr.description,a.description) as description,COALESCE(c.pass,b.pass) as claimable,COALESCE(c.open_quest_review_status,0) as open_quest_review_status,b.is_open_quest,COALESCE(d.nft_address,'') as nft_address,COALESCE(d.claimed,false) as claimed FROM quest A
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id 
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
 		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = b.address
+		LEFT JOIN quest_translated tr ON a.token_id = tr.token_id AND tr.language = ?
 		WHERE b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND ((d.claimed=true OR b.pass=true) OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true OR (c.pass=false AND c.open_quest_review_status=1 AND A.status = 1))
 		ORDER BY b.ID DESC LIMIT ? OFFSET ?
 	`
 	// 查询数据
-	db := d.db.Raw(dataSQL, req.Address, req.Address, limit, offset)
+	db := d.db.Raw(dataSQL, req.Address, req.Address, req.Language, limit, offset)
 	if err = db.Scan(&res).Error; err != nil {
 		return res, total, err
 	}
@@ -106,8 +107,8 @@ func (d *Dao) GetChallengeList(req *request.GetChallengeListRequest) (res []resp
 	if err != nil {
 		return res, total, err
 	}
-	err = db.Raw("SELECT a.nft_address,a.claimed,a.add_ts as complete_ts,b.* FROM user_challenges a JOIN quest b ON a.token_id=b.token_id WHERE address = ? ORDER BY a.add_ts DESC LIMIT ? OFFSET ?",
-		req.Address, limit, offset).Scan(&res).Error
+	err = db.Raw("SELECT a.nft_address,a.claimed,a.add_ts as complete_ts,b.*,COALESCE(tr.title,b.title) as title,COALESCE(tr.description,b.description) as description FROM user_challenges a JOIN quest b ON a.token_id=b.token_id LEFT JOIN quest_translated tr ON b.token_id = tr.token_id AND tr.language = ? WHERE address = ? ORDER BY a.add_ts DESC LIMIT ? OFFSET ?",
+		req.Language, req.Address, limit, offset).Scan(&res).Error
 	if err != nil {
 		return res, total, err
 	}
@@ -146,15 +147,16 @@ func (d *Dao) GetChallengeNotClaimList(req *request.GetChallengeListRequest) (re
 		SELECT *,ROW_NUMBER () OVER (PARTITION BY token_id ORDER BY id DESC) AS rn 
 		FROM user_open_quest
 		WHERE address= ?)
-		SELECT a.*,COALESCE(c.pass,b.pass) as claimable,COALESCE(c.open_quest_review_status,0) as open_quest_review_status,b.is_open_quest,COALESCE(d.nft_address,'') as nft_address,COALESCE(d.claimed,false) as claimed FROM quest A
+		SELECT a.*,COALESCE(tr.title,a.title) as title,COALESCE(tr.description,a.description) as description,COALESCE(c.pass,b.pass) as claimable,COALESCE(c.open_quest_review_status,0) as open_quest_review_status,b.is_open_quest,COALESCE(d.nft_address,'') as nft_address,COALESCE(d.claimed,false) as claimed FROM quest A
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
 		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = b.address
+		LEFT JOIN quest_translated tr ON a.token_id = tr.token_id AND tr.language = ?
 		WHERE b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND (b.pass=true OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true) AND d.claimed is null
 		ORDER BY b.ID DESC LIMIT ? OFFSET ?
 	`
 	// 查询数据
-	if err = d.db.Raw(dataSQL, req.Address, req.Address, limit, offset).Scan(&res).Error; err != nil {
+	if err = d.db.Raw(dataSQL, req.Address, req.Address, req.Language, limit, offset).Scan(&res).Error; err != nil {
 		return res, total, err
 	}
 	return res, total, nil
@@ -170,8 +172,8 @@ func (d *Dao) GetChallengeWaitReviewList(req *request.GetChallengeListRequest) (
 	if err != nil {
 		return res, total, err
 	}
-	err = db.Raw("SELECT a.open_quest_review_status,b.* FROM user_open_quest a JOIN quest b ON a.token_id=b.token_id WHERE address = ? AND open_quest_review_status=1 AND a.deleted_at IS NULL ORDER BY a.id DESC LIMIT ? OFFSET ?",
-		req.Address, limit, offset).Scan(&res).Error
+	err = db.Raw("SELECT a.open_quest_review_status,b.*,COALESCE(tr.title,b.title) as title,COALESCE(tr.description,b.description) as description FROM user_open_quest a JOIN quest b ON a.token_id=b.token_id LEFT JOIN quest_translated tr ON b.token_id = tr.token_id AND tr.language = ? WHERE address = ? AND open_quest_review_status=1 AND a.deleted_at IS NULL ORDER BY a.id DESC LIMIT ? OFFSET ?",
+		req.Language, req.Address, limit, offset).Scan(&res).Error
 	if err != nil {
 		return res, total, err
 	}
