@@ -148,9 +148,10 @@ func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURI
 }
 
 func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareReq) (res string, err error) {
-	// 校验是否绑定discord
-	if !s.dao.HasDiscord(address) {
-		return res, errors.New("DiscordNotBind")
+	// 校验是否绑定社交账号
+	wechat, discord, err := s.dao.HasBindSocialAccount(address)
+	if wechat == false && discord == false {
+		return res, errors.New("NoBindingDetected")
 	}
 	// 校验是否已经空投
 	if s.dao.HasAirdrop(address, req.TokenId) {
