@@ -74,7 +74,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 		} else {
 			dataSQL += " AND json_element->>'score' IS NULL AND json_element->>'correct' IS NULL"
 		}
-		dataSQL += " ORDER BY id asc OFFSET ? LIMIT ?"
+		dataSQL += " ORDER BY updated_at asc OFFSET ? LIMIT ?"
 		err = db.Raw(dataSQL, address, offset, limit).Scan(&list).Error
 	} else {
 		err = db.Raw(`
@@ -119,7 +119,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
 					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND quest.creator = ?
-				ORDER BY id asc
+				ORDER BY updated_at asc
 				OFFSET ? LIMIT ?
 		`, address, offset, limit).Scan(&list).Error
 	}
