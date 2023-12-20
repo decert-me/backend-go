@@ -200,13 +200,14 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 		userReturnScoreFloat := big.NewFloat(float64(userReturnScore))
 		scoreFloat := new(big.Float).Quo(userReturnScoreFloat, big.NewFloat(100))
 		score := fmt.Sprintf("%.0f", scoreFloat)
+		openQuestScore, _ := scoreFloat.Int64()
 		// 写入审核结果
 		err = db.Model(&model.UserOpenQuest{}).Where("id = ? AND open_quest_review_status = 1", r.ID).Updates(&model.UserOpenQuest{
 			OpenQuestReviewTime:   openQuestReviewTime,
 			OpenQuestReviewStatus: openQuestReviewStatus,
-			//OpenQuestScore:        score,
-			Answer: datatypes.JSON(answerRes),
-			Pass:   pass,
+			OpenQuestScore:        openQuestScore,
+			Answer:                datatypes.JSON(answerRes),
+			Pass:                  pass,
 		}).Error
 		if err != nil {
 			db.Rollback()
