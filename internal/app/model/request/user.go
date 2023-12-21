@@ -22,4 +22,5 @@ type GetUserQuestListRequest struct {
 	PageInfo
 	model.Quest
 	Language string `json:"-" form:"-"`
+	Address  string `json:"-" form:"-"`
 }

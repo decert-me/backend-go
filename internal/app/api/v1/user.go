@@ -87,7 +87,8 @@ func UpdateUserInfo(c *gin.Context) {
 func GetUserQuestList(c *gin.Context) {
 	var searchInfo request.GetUserQuestListRequest
 	_ = c.ShouldBindQuery(&searchInfo)
-	searchInfo.Creator = c.Param("address")
+	searchInfo.Creator = c.Param("addressCreator")
+	searchInfo.Address = c.GetString("address")
 	searchInfo.Language = c.GetString("lang")
 	if list, total, err := srv.GetUserQuestListWithClaimed(searchInfo); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)

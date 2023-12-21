@@ -186,9 +186,12 @@ func (d *Dao) GetUserQuestListWithClaimed(req *request.GetUserQuestListRequest) 
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
 	db := d.db.Model(&response.QuestWithClaimed{})
-	db.Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,EXISTS (SELECT 1 FROM user_challenges WHERE quest.token_id = user_challenges.token_id) AS has_claim").
-		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", req.Language)
-
+	if req.Creator == req.Address {
+		db.Select("quest.*,EXISTS (SELECT 1 FROM user_challenges WHERE quest.token_id = user_challenges.token_id) AS has_claim")
+	} else {
+		db.Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,EXISTS (SELECT 1 FROM user_challenges WHERE quest.token_id = user_challenges.token_id) AS has_claim").
+			Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", req.Language)
+	}
 	db.Where(&req.Quest)
 	db.Where("quest.status = 1")
 	err = db.Count(&total).Error
