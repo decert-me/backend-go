@@ -61,7 +61,8 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	})
 	// Collection
 	collectionSQL := d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
-		tx = tx.Select("id,uuid,title,label,disabled,description,dependencies,is_draft,add_ts,token_id,type,difficulty,estimate_time,creator,meta_data,quest_data,extra_data,uri,pass_score,total_score,recommend,status,style,cover,author,sort,collection_status,FALSE as claimed,0 as open_quest_review_status,false as claimable")
+		tx = tx.Select("collection.id,uuid,COALESCE(tr.title,collection.title) as title,label,disabled,COALESCE(tr.description,collection.description) as description,dependencies,is_draft,add_ts,token_id,type,difficulty,estimate_time,creator,meta_data,quest_data,extra_data,uri,pass_score,total_score,recommend,status,style,cover,author,sort,collection_status,FALSE as claimed,0 as open_quest_review_status,false as claimable").
+			Joins("LEFT JOIN collection_translated as tr ON collection.id = tr.collection_id AND tr.language = ?", req.Language)
 		return tx.Where("status = 1").Find(&[]response.GetQuestListRes{})
 	})
 	//fmt.Println("questSQL", questSQL)
@@ -125,7 +126,7 @@ func (d *Dao) GetQuestByUUID(language, uuid string) (quest model.Quest, err erro
 	return
 }
 
-func (d *Dao) GetQuestWithClaimStatusByTokenID(language string, id int64, address string) (quest response.GetQuestRes, err error) {
+func (d *Dao) GetQuestWithClaimStatusByTokenIDWithLang(language string, id int64, address string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).
 		Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
 			"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data,"+
@@ -134,6 +135,18 @@ func (d *Dao) GetQuestWithClaimStatusByTokenID(language string, id int64, addres
 		Joins("left join user_challenge_log l ON quest.token_id=l.token_id AND l.address= ? AND l.deleted_at IS NULL", address).
 		Joins("left join user_open_quest o ON quest.token_id=o.token_id AND o.address= ? AND o.deleted_at IS NULL", address).
 		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).
+		Where("quest.token_id", id).
+		Order("l.add_ts desc,o.id desc").
+		First(&quest).Error
+	return
+}
+
+func (d *Dao) GetQuestWithClaimStatusByTokenID(id int64, address string) (quest response.GetQuestRes, err error) {
+	err = d.db.Model(&model.Quest{}).
+		Select("quest.*,b.claimed,b.user_score,b.nft_address,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.answer,l.answer) as answer").
+		Joins("left join user_challenges b ON quest.token_id=b.token_id AND b.address= ?", address).
+		Joins("left join user_challenge_log l ON quest.token_id=l.token_id AND l.address= ? AND l.deleted_at IS NULL", address).
+		Joins("left join user_open_quest o ON quest.token_id=o.token_id AND o.address= ? AND o.deleted_at IS NULL", address).
 		Where("quest.token_id", id).
 		Order("l.add_ts desc,o.id desc").
 		First(&quest).Error
@@ -173,7 +186,9 @@ func (d *Dao) GetUserQuestListWithClaimed(req *request.GetUserQuestListRequest) 
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
 	db := d.db.Model(&response.QuestWithClaimed{})
-	db.Select("quest.*,EXISTS (SELECT 1 FROM user_challenges WHERE quest.token_id = user_challenges.token_id) AS has_claim")
+	db.Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,EXISTS (SELECT 1 FROM user_challenges WHERE quest.token_id = user_challenges.token_id) AS has_claim").
+		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", req.Language)
+
 	db.Where(&req.Quest)
 	db.Where("quest.status = 1")
 	err = db.Count(&total).Error

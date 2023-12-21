@@ -52,13 +52,17 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 	collectionID, idErr := cast.ToUintE(r.ID)
 	if idErr == nil {
 		// 查询合辑信息
-		err = d.db.Model(&model.Collection{}).Where("id", collectionID).First(&collection).Error
+		err = d.db.Model(&model.Collection{}).Select("collection.*,COALESCE(tr.title,collection.title) as title,COALESCE(tr.description,collection.description) as description").
+			Joins("LEFT JOIN collection_translated as tr ON collection.id = tr.collection_id AND tr.language = ?", r.Language).
+			Where("collection.id", collectionID).First(&collection).Error
 		if err != nil {
 			return questList, collection, err
 		}
 	} else {
 		// 查询合辑信息
-		err = d.db.Model(&model.Collection{}).Where("uuid", r.ID).First(&collection).Error
+		err = d.db.Model(&model.Collection{}).Select("collection.*,COALESCE(tr.title,collection.title) as title,COALESCE(tr.description,collection.description) as description").
+			Joins("LEFT JOIN collection_translated as tr ON collection.id = tr.collection_id AND tr.language = ?", r.Language).
+			Where("collection.uuid", r.ID).First(&collection).Error
 		if err != nil {
 			return questList, collection, err
 		}

@@ -24,7 +24,7 @@ func GetQuestList(c *gin.Context) {
 }
 
 func GetQuest(c *gin.Context) {
-	if list, err := srv.GetQuest(c.GetString("lang"), c.Param("id"), c.GetString("address")); err != nil {
+	if list, err := srv.GetQuest(c.GetString("lang"), c.Param("id"), c.GetString("address"), c.Query("original")); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
 		OkWithData(list, c)

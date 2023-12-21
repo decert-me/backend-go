@@ -11,6 +11,7 @@ func GetCollectionQuest(c *gin.Context) {
 	var r request.GetCollectionQuestRequest
 	_ = c.ShouldBindQuery(&r)
 	r.Address = c.GetString("address")
+	r.Language = c.GetString("lang")
 	if list, collection, err := srv.GetCollectionQuest(r); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {

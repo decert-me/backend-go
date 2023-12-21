@@ -37,6 +37,7 @@ type UpdateRecommendRequest struct {
 }
 
 type GetCollectionQuestRequest struct {
-	ID      string `json:"id" form:"id"`
-	Address string `json:"-"`
+	ID       string `json:"id" form:"id"`
+	Address  string `json:"-"`
+	Language string `json:"-"`
 }
