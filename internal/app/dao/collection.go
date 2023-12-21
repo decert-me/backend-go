@@ -83,13 +83,15 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 		}
 	}
 	// 查询合辑内挑战
-	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
+	db := d.db.Model(&model.CollectionRelate{}).
+		Joins("left join quest ON collection_relate.quest_id=quest.id").
+		Joins("left join quest_translated as tr ON quest.token_id = tr.token_id AND tr.language = ?", r.Language).
 		Where("collection_relate.collection_id = ? AND quest.status=1", collection.ID)
 	if r.Address != "" {
-		db.Select("quest.*,c.claimed")
+		db.Select("quest.*,c.claimed,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
 	} else {
-		db.Select("*")
+		db.Select("*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 	}
 	err = db.Order("collection_relate.sort desc").Find(&questList).Error
 	return
