@@ -140,7 +140,7 @@ func (s *Service) GetQuestHighRank(address string, id string) (res response.GetQ
 }
 
 // GetQuestHolderRank 获取持有榜
-func (s *Service) GetQuestHolderRank(address, id string, page int, pageSize int) (res response.GetQuestHolderListRes, total int64, err error) {
+func (s *Service) GetQuestHolderRank(address, id string, page int, pageSize int) (res []response.GetQuestHolderListRes, total int64, err error) {
 	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		res, total, err = s.dao.GetQuestHolderRankByUUID(address, id, page, pageSize)

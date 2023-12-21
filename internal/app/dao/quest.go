@@ -258,13 +258,15 @@ func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res res
 		if err != nil {
 			return res, err
 		}
+		// 直接返回
+		return res, err
 	}
 	// 开放题
 	rankListSQL := `
 		WITH ranked_open_quest AS (
 		 SELECT address,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
 		 FROM user_open_quest
-		 WHERE token_id = 10482 AND pass=true
+		 WHERE token_id = ? AND pass=true
 		 ),
 		ranked_with_rank AS (
 		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
@@ -277,7 +279,7 @@ func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res res
 		ORDER BY rank ASC 
 		LIMIT 10;
 	`
-	err = d.db.Raw(rankListSQL, tokenId, tokenId).Scan(&res.RankList).Error
+	err = d.db.Raw(rankListSQL, tokenId).Scan(&res.RankList).Error
 	if err != nil {
 		return res, err
 	}
@@ -289,7 +291,7 @@ func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res res
 		WITH ranked_open_quest AS (
 		 SELECT address,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
 		 FROM user_open_quest
-		 WHERE token_id = 10482 AND pass=true
+		 WHERE token_id = ? AND pass=true
 		 ),
 		ranked_with_rank AS (
 		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
@@ -302,7 +304,7 @@ func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res res
 		WHERE ranked_with_rank.address = ?
 		LIMIT 1;
 	`
-	err = d.db.Raw(userRankSQL, tokenId, tokenId, address).Scan(&res).Error
+	err = d.db.Raw(userRankSQL, tokenId, address).Scan(&res).Error
 	return res, err
 }
 
@@ -340,11 +342,11 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 	if !IsOpenQuest(gjson.Get(string(quest.QuestData), "questions").String()) {
 		rankListSQL := `
 			WITH ranked AS (
-			 SELECT address,token_id, user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC) as rn
+			 SELECT address,token_id,created_at, user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC) as rn
 			 FROM user_challenge_log
-			 WHERE token_id = 10482 AND address !='' AND pass=true AND deleted_at IS NULL
+			 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
 			)
-			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC) as rank,ranked.address,users.avatar,ranked.user_score/100
+			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC) as rank,ranked.address,users.avatar,created_at as finish_time,ranked.user_score/100 as score
 			FROM ranked
 			LEFT JOIN users ON ranked.address=users.address
 			WHERE rn=1 ORDER BY user_score DESC LIMIT 10;
@@ -359,11 +361,11 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 		}
 		userRankSQL := `
 			WITH ranked AS (
-			 SELECT address,token_id, user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC) as rn
+			 SELECT address,token_id,created_at,user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC) as rn
 			 FROM user_challenge_log
-			 WHERE token_id = 10482 AND address !='' AND pass=true AND deleted_at IS NULL
+			 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
 			)
-			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC) as rank,ranked.address,users.avatar,ranked.user_score/100
+			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC) as rank,ranked.address,users.avatar,created_at as finish_time,ranked.user_score/100 as score
 			FROM ranked
 			LEFT JOIN users ON ranked.address=users.address
 			WHERE ranked.address = ?
@@ -373,6 +375,8 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 		if err != nil {
 			return res, err
 		}
+		// 直接返回
+		return res, err
 	}
 	// 开放题
 	rankListSQL := `
@@ -386,7 +390,7 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 		 FROM ranked_open_quest 
 		 WHERE rn=1
 		)
-		SELECT ranked_with_rank.* ,users.avatar
+		SELECT ranked_with_rank.*,users.avatar
 		FROM ranked_with_rank
 		LEFT JOIN users ON ranked_with_rank.address=users.address
 		ORDER BY score DESC
@@ -433,9 +437,9 @@ func (d *Dao) GetQuestHighRankByUUID(address string, uuid string) (res response.
 }
 
 // GetQuestHolderRankByTokenID 获取持有榜
-func (d *Dao) GetQuestHolderRankByTokenID(address string, tokenId int64, page, pageSize int) (res response.GetQuestHolderListRes, total int64, err error) {
+func (d *Dao) GetQuestHolderRankByTokenID(address string, tokenId int64, page, pageSize int) (res []response.GetQuestHolderListRes, total int64, err error) {
 	// 分页参数
-	limit := page
+	limit := pageSize
 	offset := pageSize * (page - 1)
 	err = d.db.Model(&model.UserChallenges{}).Where("token_id", tokenId).Count(&total).Error
 	if err != nil {
@@ -448,11 +452,12 @@ func (d *Dao) GetQuestHolderRankByTokenID(address string, tokenId int64, page, p
 		Order("user_challenges.add_ts ASC").
 		Limit(limit).Offset(offset).
 		Find(&res).Error
+	fmt.Println(res)
 	return res, total, err
 }
 
 // GetQuestHolderRankByUUID 获取持有榜
-func (d *Dao) GetQuestHolderRankByUUID(address string, uuid string, page, pageSize int) (res response.GetQuestHolderListRes, total int64, err error) {
+func (d *Dao) GetQuestHolderRankByUUID(address string, uuid string, page, pageSize int) (res []response.GetQuestHolderListRes, total int64, err error) {
 	// 获取token_id
 	var quest model.Quest
 	err = d.db.Model(&model.Quest{}).Select("token_id").Where("uuid", uuid).First(&quest).Error
