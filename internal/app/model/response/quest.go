@@ -38,7 +38,7 @@ type GetQuestRes struct {
 	OpenQuestReviewStatus uint8          `gorm:"column:open_quest_review_status" json:"open_quest_review_status"` // 评阅开放题状态 1 未审核 2 已审核
 }
 
-type GetQuestLightningListRes struct {
+type GetQuestFlashListRes struct {
 	RankList []struct {
 		Rank       int64     `gorm:"rank" json:"rank"`
 		Avatar     string    `gorm:"column:avatar" json:"avatar"`

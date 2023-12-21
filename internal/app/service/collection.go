@@ -86,3 +86,8 @@ func (s *Service) CollectionClaim(r request.CollectionClaimRequest, address stri
 func (s *Service) CheckQuestInCollection(r request.CheckQuestInCollectionRequest) (res response.CheckQuestInCollectionRes, err error) {
 	return s.dao.CheckQuestInCollection(r)
 }
+
+// GetCollectionFlashRank 获取合辑闪电榜
+func (s *Service) GetCollectionFlashRank(address string, id string) (res response.GetCollectionFlashRankRes, err error) {
+	return s.dao.GetCollectionFlashRank(address, id)
+}

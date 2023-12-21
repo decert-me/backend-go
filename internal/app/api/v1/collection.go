@@ -67,3 +67,13 @@ func CheckQuestInCollection(c *gin.Context) {
 		OkWithData(res, c)
 	}
 }
+
+// GetCollectionFlashRank 获取合辑闪电榜
+func GetCollectionFlashRank(c *gin.Context) {
+	address := c.GetString("address")
+	if data, err := srv.GetCollectionFlashRank(address, c.Param("id")); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithData(data, c)
+	}
+}

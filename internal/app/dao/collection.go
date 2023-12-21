@@ -126,3 +126,25 @@ func (d *Dao) CheckQuestInCollection(r request.CheckQuestInCollectionRequest) (r
 	}
 	return
 }
+
+// GetCollectionFlashRank 获取合辑闪电榜
+func (d *Dao) GetCollectionFlashRank(address, collectionID string) (res response.GetCollectionFlashRankRes, err error) {
+	// 查询合辑信息
+	var collection model.Collection
+	err = d.db.Model(&model.Collection{}).Where("uuid", collectionID).First(&collection).Error
+	if err != nil {
+		return res, err
+	}
+	// 合辑未完结直接返回
+	if collection.TokenId == 0 {
+		return res, nil
+	}
+	// 查询合辑内挑战列表
+	var tokenIDList []uint
+	err = d.db.Model(&model.CollectionRelate{}).Where("collection_id", collection.ID).Where("status = 1").Pluck("token_id", &tokenIDList).Error
+	if err != nil {
+		return res, err
+	}
+
+	return
+}

@@ -209,7 +209,7 @@ func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 }
 
 // GetQuestFlashRankByTokenID 获取闪电榜
-func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res response.GetQuestLightningListRes, err error) {
+func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res response.GetQuestFlashListRes, err error) {
 	// 查询挑战
 	var quest model.Quest
 	err = d.db.Model(&model.Quest{}).Where("token_id", tokenId).First(&quest).Error
@@ -262,19 +262,13 @@ func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res res
 	// 开放题
 	rankListSQL := `
 		WITH ranked_open_quest AS (
-		 SELECT address,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
+		 SELECT address,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
 		 FROM user_open_quest
-		 WHERE token_id = ? AND pass=true
+		 WHERE token_id = 10482 AND pass=true
 		 ),
-		 ranked AS (
-		 SELECT user_challenge_log.address,user_challenge_log.token_id, created_at,ROW_NUMBER() OVER (PARTITION BY user_challenge_log.address ORDER BY created_at ASC) as rn 
-		 FROM user_challenge_log 
-		 JOIN ranked_open_quest ON ranked_open_quest.address= user_challenge_log.address AND ranked_open_quest.rn=1
-		 WHERE token_id = ? AND user_challenge_log.address !='' AND deleted_at IS NULL
-		),
 		ranked_with_rank AS (
 		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
-		 FROM ranked 
+		 FROM ranked_open_quest 
 		 WHERE rn=1 
 		)
 		SELECT ranked_with_rank.*,users.avatar
@@ -293,22 +287,16 @@ func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res res
 	}
 	userRankSQL := `
 		WITH ranked_open_quest AS (
-		 SELECT address,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
+		 SELECT address,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
 		 FROM user_open_quest
-		 WHERE token_id = ? AND pass=true
+		 WHERE token_id = 10482 AND pass=true
 		 ),
-		 ranked AS (
-		 SELECT user_challenge_log.address,user_challenge_log.token_id, created_at,ROW_NUMBER() OVER (PARTITION BY user_challenge_log.address ORDER BY created_at ASC) as rn 
-		 FROM user_challenge_log 
-		 JOIN ranked_open_quest ON ranked_open_quest.address= user_challenge_log.address AND ranked_open_quest.rn=1
-		 WHERE token_id = ? AND user_challenge_log.address !='' AND deleted_at IS NULL
-		),
 		ranked_with_rank AS (
 		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
-		 FROM ranked 
+		 FROM ranked_open_quest 
 		 WHERE rn=1 
 		)
-		SELECT ranked_with_rank.* ,users.avatar
+		SELECT ranked_with_rank.*,users.avatar
 		FROM ranked_with_rank
 		LEFT JOIN users ON ranked_with_rank.address=users.address
 		WHERE ranked_with_rank.address = ?
@@ -319,7 +307,7 @@ func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res res
 }
 
 // GetQuestFlashRankByUUID 获取闪电榜
-func (d *Dao) GetQuestFlashRankByUUID(address string, uuid string) (res response.GetQuestLightningListRes, err error) {
+func (d *Dao) GetQuestFlashRankByUUID(address string, uuid string) (res response.GetQuestFlashListRes, err error) {
 	// 获取token_id
 	var quest model.Quest
 	err = d.db.Model(&model.Quest{}).Select("token_id").Where("uuid", uuid).First(&quest).Error
