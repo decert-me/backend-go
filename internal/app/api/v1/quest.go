@@ -88,3 +88,30 @@ func GetQuestFlashRank(c *gin.Context) {
 		OkWithData(data, c)
 	}
 }
+
+// GetQuestHighRank 获取高分榜
+func GetQuestHighRank(c *gin.Context) {
+	address := c.GetString("address")
+	if data, err := srv.GetQuestHighRank(address, c.Param("id")); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithData(data, c)
+	}
+}
+
+// GetQuestHolderRank 获取持有榜
+func GetQuestHolderRank(c *gin.Context) {
+	var searchInfo request.GetQuestHolderRankRequest
+	_ = c.ShouldBindQuery(&searchInfo)
+	address := c.GetString("address")
+	if data, total, err := srv.GetQuestHolderRank(address, c.Param("id"), searchInfo.Page, searchInfo.PageSize); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithDetailed(response.PageResult{
+			List:     data,
+			Total:    total,
+			Page:     searchInfo.Page,
+			PageSize: searchInfo.PageSize,
+		}, GetMessage(c, "FetchSuccess"), c)
+	}
+}

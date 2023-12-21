@@ -39,3 +39,7 @@ type GetCollectionQuestRequest struct {
 	ID      string `json:"id" form:"id"`
 	Address string `json:"-"`
 }
+
+type GetQuestHolderRankRequest struct {
+	PageInfo
+}

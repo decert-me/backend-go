@@ -127,3 +127,25 @@ func (s *Service) GetQuestFlashRank(address string, id string) (res response.Get
 	}
 	return
 }
+
+// GetQuestHighRank 获取高分榜
+func (s *Service) GetQuestHighRank(address string, id string) (res response.GetQuestHighScoreListRes, err error) {
+	tokenId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		res, err = s.dao.GetQuestHighRankByUUID(address, id)
+	} else {
+		res, err = s.dao.GetQuestHighRankByTokenID(address, tokenId)
+	}
+	return
+}
+
+// GetQuestHolderRank 获取持有榜
+func (s *Service) GetQuestHolderRank(address, id string, page int, pageSize int) (res response.GetQuestHolderListRes, total int64, err error) {
+	tokenId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		res, total, err = s.dao.GetQuestHolderRankByUUID(address, id, page, pageSize)
+	} else {
+		res, total, err = s.dao.GetQuestHolderRankByTokenID(address, tokenId, page, pageSize)
+	}
+	return
+}
