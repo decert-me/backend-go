@@ -207,3 +207,93 @@ func (d *Dao) GetQuestChallengeUserByUUID(uuid string) (res response.GetQuestCha
 func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
 }
+
+// GetQuestFlashRankByTokenID 获取闪电榜
+func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res response.GetQuestLightningListRes, err error) {
+	rankListSQL := `
+		WITH ranked AS (
+		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY token_id,address ORDER BY created_at ASC) as rn
+	     FROM user_challenge_log
+	     WHERE token_id = ? AND address !='' AND deleted_at IS NULL
+		)
+		SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time
+		FROM ranked
+		WHERE rn=1 ORDER BY created_at ASC LIMIT 10;
+	`
+	err = d.db.Raw(rankListSQL, tokenId).Scan(&res.RankList).Error
+	if err != nil {
+		return res, err
+	}
+	// 地址为空返回结果
+	if address == "" {
+		return res, err
+	}
+	userRankSQL := `
+		WITH ranked AS (
+		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY token_id,address ORDER BY created_at ASC) as rn 
+		 FROM user_challenge_log 
+		 WHERE token_id = ? AND address !='' AND deleted_at IS NULL
+		),
+		ranked_with_rank AS (
+		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
+		 FROM ranked 
+		 WHERE rn=1 
+		)
+		SELECT * 
+		FROM ranked_with_rank
+		WHERE address = ?
+		LIMIT 1;
+	`
+
+	err = d.db.Raw(userRankSQL, tokenId, address).Scan(&res).Error
+	if err != nil {
+		return res, err
+	}
+
+	return res, err
+}
+
+// GetQuestFlashRankByUUID 获取闪电榜
+func (d *Dao) GetQuestFlashRankByUUID(address string, uuid string) (res response.GetQuestLightningListRes, err error) {
+	rankListSQL := `
+		WITH ranked AS (
+		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY token_id,address ORDER BY created_at ASC) as rn
+	     FROM user_challenge_log
+	     WHERE token_id = (SELECT token_id FROM quest WHERE uuid = ?) AND address !='' AND deleted_at IS NULL
+		)
+		SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time
+		FROM ranked
+		WHERE rn=1 ORDER BY created_at ASC LIMIT 10;
+	`
+	err = d.db.Raw(rankListSQL, uuid).Scan(&res.RankList).Error
+	if err != nil {
+		return res, err
+	}
+	// 地址为空返回结果
+	if address == "" {
+		return res, err
+	}
+	userRankSQL := `
+		WITH ranked AS (
+		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY token_id,address ORDER BY created_at ASC) as rn 
+		 FROM user_challenge_log 
+		 WHERE token_id = (SELECT token_id FROM quest WHERE uuid = ?) AND address !='' AND deleted_at IS NULL
+		),
+		ranked_with_rank AS (
+		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
+		 FROM ranked 
+		 WHERE rn=1 
+		)
+		SELECT * 
+		FROM ranked_with_rank
+		WHERE address = ?
+		LIMIT 1;
+	`
+
+	err = d.db.Raw(userRankSQL, uuid, address).Scan(&res).Error
+	if err != nil {
+		return res, err
+	}
+
+	return res, err
+}

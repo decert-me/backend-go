@@ -3,6 +3,7 @@ package response
 import (
 	"backend-go/internal/app/model"
 	"gorm.io/datatypes"
+	"time"
 )
 
 type GetQuestListRes struct {
@@ -35,4 +36,16 @@ type GetQuestRes struct {
 	NFTAddress            string         `gorm:"column:nft_address" json:"nft_address"`
 	Answer                datatypes.JSON `gorm:"column:answer" json:"answer"`
 	OpenQuestReviewStatus uint8          `gorm:"column:open_quest_review_status" json:"open_quest_review_status"` // 评阅开放题状态 1 未审核 2 已审核
+}
+
+type GetQuestLightningListRes struct {
+	RankList []struct {
+		Rank       int64     `gorm:"rank" json:"rank"`
+		Address    string    `gorm:"address" json:"address"`
+		FinishTime time.Time `gorm:"finish_time" json:"finish_time"`
+	} `gorm:"-"`
+	Rank       int64     `gorm:"rank" json:"rank"`
+	Address    string    `gorm:"address" json:"address"`
+	FinishTime time.Time `gorm:"finish_time" json:"finish_time"`
+	//Total      int64     `gorm:"total" json:"total"`
 }

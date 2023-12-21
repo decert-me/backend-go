@@ -78,3 +78,13 @@ func UpdateRecommend(c *gin.Context) {
 		Ok(c)
 	}
 }
+
+// GetQuestFlashRank 获取闪电榜
+func GetQuestFlashRank(c *gin.Context) {
+	address := c.GetString("address")
+	if data, err := srv.GetQuestFlashRank(address, c.Param("id")); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithData(data, c)
+	}
+}

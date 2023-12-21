@@ -116,3 +116,14 @@ func (s *Service) UpdateRecommend(address string, modify request.UpdateRecommend
 	}
 	return nil
 }
+
+// GetQuestFlashRank 获取闪电榜
+func (s *Service) GetQuestFlashRank(address string, id string) (res response.GetQuestLightningListRes, err error) {
+	tokenId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		res, err = s.dao.GetQuestFlashRankByUUID(address, id)
+	} else {
+		res, err = s.dao.GetQuestFlashRankByTokenID(address, tokenId)
+	}
+	return
+}
