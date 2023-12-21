@@ -210,17 +210,80 @@ func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 
 // GetQuestFlashRankByTokenID 获取闪电榜
 func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res response.GetQuestLightningListRes, err error) {
-	rankListSQL := `
+	// 查询挑战
+	var quest model.Quest
+	err = d.db.Model(&model.Quest{}).Where("token_id", tokenId).First(&quest).Error
+	if err != nil {
+		return res, err
+	}
+	// 判断是否是开放题
+	if !IsOpenQuest(gjson.Get(string(quest.QuestData), "questions").String()) {
+		rankListSQL := `
 		WITH ranked AS (
-		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY token_id,address ORDER BY created_at ASC) as rn
+		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn
 	     FROM user_challenge_log
-	     WHERE token_id = ? AND address !='' AND deleted_at IS NULL
+	     WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
 		)
-		SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time
+		SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,ranked.address,users.avatar,ranked.created_at as finish_time
 		FROM ranked
+		LEFT JOIN users ON ranked.address=users.address
 		WHERE rn=1 ORDER BY created_at ASC LIMIT 10;
+		`
+		err = d.db.Raw(rankListSQL, tokenId).Scan(&res.RankList).Error
+		if err != nil {
+			return res, err
+		}
+		// 地址为空返回结果
+		if address == "" {
+			return res, err
+		}
+		userRankSQL := `
+		WITH ranked AS (
+		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
+		 FROM user_challenge_log 
+		 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
+		),
+		ranked_with_rank AS (
+		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
+		 FROM ranked 
+		 WHERE rn=1 
+		)
+		SELECT ranked_with_rank.*,users.avatar
+		FROM ranked_with_rank
+		LEFT JOIN users ON ranked_with_rank.address=users.address
+		WHERE ranked_with_rank.address = ?
+		LIMIT 1;
+		`
+		err = d.db.Raw(userRankSQL, tokenId, address).Scan(&res).Error
+		if err != nil {
+			return res, err
+		}
+	}
+	// 开放题
+	rankListSQL := `
+		WITH ranked_open_quest AS (
+		 SELECT address,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
+		 FROM user_open_quest
+		 WHERE token_id = ? AND pass=true
+		 ),
+		 ranked AS (
+		 SELECT user_challenge_log.address,user_challenge_log.token_id, created_at,ROW_NUMBER() OVER (PARTITION BY user_challenge_log.address ORDER BY created_at ASC) as rn 
+		 FROM user_challenge_log 
+		 JOIN ranked_open_quest ON ranked_open_quest.address= user_challenge_log.address AND ranked_open_quest.rn=1
+		 WHERE token_id = ? AND user_challenge_log.address !='' AND deleted_at IS NULL
+		),
+		ranked_with_rank AS (
+		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
+		 FROM ranked 
+		 WHERE rn=1 
+		)
+		SELECT ranked_with_rank.*,users.avatar
+		FROM ranked_with_rank
+		LEFT JOIN users ON ranked_with_rank.address=users.address
+		ORDER BY rank ASC 
+		LIMIT 10;
 	`
-	err = d.db.Raw(rankListSQL, tokenId).Scan(&res.RankList).Error
+	err = d.db.Raw(rankListSQL, tokenId, tokenId).Scan(&res.RankList).Error
 	if err != nil {
 		return res, err
 	}
@@ -229,71 +292,45 @@ func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res res
 		return res, err
 	}
 	userRankSQL := `
-		WITH ranked AS (
-		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY token_id,address ORDER BY created_at ASC) as rn 
+		WITH ranked_open_quest AS (
+		 SELECT address,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
+		 FROM user_open_quest
+		 WHERE token_id = ? AND pass=true
+		 ),
+		 ranked AS (
+		 SELECT user_challenge_log.address,user_challenge_log.token_id, created_at,ROW_NUMBER() OVER (PARTITION BY user_challenge_log.address ORDER BY created_at ASC) as rn 
 		 FROM user_challenge_log 
-		 WHERE token_id = ? AND address !='' AND deleted_at IS NULL
+		 JOIN ranked_open_quest ON ranked_open_quest.address= user_challenge_log.address AND ranked_open_quest.rn=1
+		 WHERE token_id = ? AND user_challenge_log.address !='' AND deleted_at IS NULL
 		),
 		ranked_with_rank AS (
 		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
 		 FROM ranked 
 		 WHERE rn=1 
 		)
-		SELECT * 
+		SELECT ranked_with_rank.* ,users.avatar
 		FROM ranked_with_rank
-		WHERE address = ?
+		LEFT JOIN users ON ranked_with_rank.address=users.address
+		WHERE ranked_with_rank.address = ?
 		LIMIT 1;
 	`
-
-	err = d.db.Raw(userRankSQL, tokenId, address).Scan(&res).Error
-	if err != nil {
-		return res, err
-	}
-
+	err = d.db.Raw(userRankSQL, tokenId, tokenId, address).Scan(&res).Error
 	return res, err
 }
 
 // GetQuestFlashRankByUUID 获取闪电榜
 func (d *Dao) GetQuestFlashRankByUUID(address string, uuid string) (res response.GetQuestLightningListRes, err error) {
-	rankListSQL := `
-		WITH ranked AS (
-		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY token_id,address ORDER BY created_at ASC) as rn
-	     FROM user_challenge_log
-	     WHERE token_id = (SELECT token_id FROM quest WHERE uuid = ?) AND address !='' AND deleted_at IS NULL
-		)
-		SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time
-		FROM ranked
-		WHERE rn=1 ORDER BY created_at ASC LIMIT 10;
-	`
-	err = d.db.Raw(rankListSQL, uuid).Scan(&res.RankList).Error
-	if err != nil {
-		return res, err
-	}
-	// 地址为空返回结果
-	if address == "" {
-		return res, err
-	}
-	userRankSQL := `
-		WITH ranked AS (
-		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY token_id,address ORDER BY created_at ASC) as rn 
-		 FROM user_challenge_log 
-		 WHERE token_id = (SELECT token_id FROM quest WHERE uuid = ?) AND address !='' AND deleted_at IS NULL
-		),
-		ranked_with_rank AS (
-		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
-		 FROM ranked 
-		 WHERE rn=1 
-		)
-		SELECT * 
-		FROM ranked_with_rank
-		WHERE address = ?
-		LIMIT 1;
-	`
-
-	err = d.db.Raw(userRankSQL, uuid, address).Scan(&res).Error
-	if err != nil {
-		return res, err
-	}
 
 	return res, err
+}
+
+// IsOpenQuest 判断是否开放题
+func IsOpenQuest(answerUser string) bool {
+	answerU := gjson.Get(answerUser, "@this").Array()
+	for _, v := range answerU {
+		if v.Get("type").String() == "open_quest" {
+			return true
+		}
+	}
+	return false
 }

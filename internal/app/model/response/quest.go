@@ -41,10 +41,12 @@ type GetQuestRes struct {
 type GetQuestLightningListRes struct {
 	RankList []struct {
 		Rank       int64     `gorm:"rank" json:"rank"`
+		Avatar     string    `gorm:"column:avatar" json:"avatar"`
 		Address    string    `gorm:"address" json:"address"`
 		FinishTime time.Time `gorm:"finish_time" json:"finish_time"`
 	} `gorm:"-"`
 	Rank       int64     `gorm:"rank" json:"rank"`
+	Avatar     string    `gorm:"column:avatar" json:"avatar"`
 	Address    string    `gorm:"address" json:"address"`
 	FinishTime time.Time `gorm:"finish_time" json:"finish_time"`
 	//Total      int64     `gorm:"total" json:"total"`
