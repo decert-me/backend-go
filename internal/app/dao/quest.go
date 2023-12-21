@@ -109,7 +109,7 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 func (d *Dao) GetQuestByTokenIDWithLang(language string, id int64) (quest model.Quest, err error) {
 	err = d.db.Model(&model.Quest{}).Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
 		"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data").
-		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).Where("token_id", id).First(&quest).Error
+		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).Where("quest.token_id", id).First(&quest).Error
 	return
 }
 
