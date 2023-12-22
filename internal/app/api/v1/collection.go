@@ -77,3 +77,30 @@ func GetCollectionFlashRank(c *gin.Context) {
 		OkWithData(data, c)
 	}
 }
+
+// GetCollectionHighRank 获取合辑高分榜
+func GetCollectionHighRank(c *gin.Context) {
+	address := c.GetString("address")
+	if data, err := srv.GetCollectionHighRank(address, c.Param("id")); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithData(data, c)
+	}
+}
+
+// GetCollectionHolderRank 获取合辑 Holder 榜单
+func GetCollectionHolderRank(c *gin.Context) {
+	var searchInfo request.GetCollectionHolderRankRequest
+	_ = c.ShouldBindQuery(&searchInfo)
+	address := c.GetString("address")
+	if data, total, err := srv.GetCollectionHolderRank(address, c.Param("id"), searchInfo.Page, searchInfo.PageSize); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithDetailed(response.PageResult{
+			List:     data,
+			Total:    total,
+			Page:     searchInfo.Page,
+			PageSize: searchInfo.PageSize,
+		}, GetMessage(c, "FetchSuccess"), c)
+	}
+}

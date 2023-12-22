@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 func (s *Service) GetCollectionChallengeUser(r request.GetCollectionChallengeUser) (data response.GetCollectionChallengeUserRes, total int64, err error) {
@@ -90,4 +91,18 @@ func (s *Service) CheckQuestInCollection(r request.CheckQuestInCollectionRequest
 // GetCollectionFlashRank 获取合辑闪电榜
 func (s *Service) GetCollectionFlashRank(address string, id string) (res response.GetCollectionFlashRankRes, err error) {
 	return s.dao.GetCollectionFlashRank(address, id)
+}
+
+// GetCollectionHighRank 获取合辑高分榜
+func (s *Service) GetCollectionHighRank(address string, id string) (res response.GetCollectionHighRankRes, err error) {
+	return s.dao.GetCollectionHighRank(address, id)
+}
+
+// GetCollectionHolderRank 获取合辑 Holder 榜单
+func (s *Service) GetCollectionHolderRank(address, id string, page int, pageSize int) (res []response.GetCollectionHolderListRes, total int64, err error) {
+	idInt, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return
+	}
+	return s.dao.GetCollectionHolderRank(address, idInt, page, pageSize)
 }

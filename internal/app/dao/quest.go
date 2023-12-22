@@ -346,10 +346,10 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 			 FROM user_challenge_log
 			 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
 			)
-			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC) as rank,ranked.address,users.avatar,created_at as finish_time,ranked.user_score/100 as score
+			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC,created_at ASC) as rank,ranked.address,users.avatar,created_at as finish_time,ranked.user_score/100 as score
 			FROM ranked
 			LEFT JOIN users ON ranked.address=users.address
-			WHERE rn=1 ORDER BY user_score DESC LIMIT 10;
+			WHERE rn=1 ORDER BY user_score DESC,created_at ASC LIMIT 10;
 		`
 		err = d.db.Raw(rankListSQL, tokenId).Scan(&res.RankList).Error
 		if err != nil {
@@ -386,14 +386,14 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 		 WHERE token_id = ? AND pass=true
 		 ),
 		ranked_with_rank AS (
-		 SELECT ROW_NUMBER() OVER (ORDER BY score DESC) as rank,address,score,created_at as finish_time 
+		 SELECT ROW_NUMBER() OVER (ORDER BY score DESC,created_at ASC) as rank,address,score,created_at as finish_time 
 		 FROM ranked_open_quest 
 		 WHERE rn=1
 		)
 		SELECT ranked_with_rank.*,users.avatar
 		FROM ranked_with_rank
 		LEFT JOIN users ON ranked_with_rank.address=users.address
-		ORDER BY score DESC
+		ORDER BY score DESC,ranked_with_rank.finish_time ASC
 		LIMIT 10;
 	`
 	err = d.db.Raw(rankListSQL, tokenId).Scan(&res.RankList).Error
@@ -449,7 +449,7 @@ func (d *Dao) GetQuestHolderRankByTokenID(address string, tokenId int64, page, p
 		Select("ROW_NUMBER() OVER (ORDER BY user_challenges.add_ts ASC) as rank,users.*,to_timestamp(user_challenges.add_ts) as claim_time").
 		Joins("LEFT JOIN users ON user_challenges.address=users.address").
 		Where("user_challenges.token_id", tokenId).
-		Order("user_challenges.add_ts ASC").
+		Order("user_challenges.add_ts DESC").
 		Limit(limit).Offset(offset).
 		Find(&res).Error
 	fmt.Println(res)
