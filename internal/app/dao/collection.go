@@ -91,7 +91,7 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 		db.Select("quest.*,c.claimed,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
 	} else {
-		db.Select("*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
+		db.Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 	}
 	err = db.Order("collection_relate.sort desc").Find(&questList).Error
 	return
