@@ -4,6 +4,7 @@ system:
   addr: 8888
   i18n: "locale.json"
   website: ""
+
 # pgsql configuration
 pgsql:
   path: "127.0.0.1"
