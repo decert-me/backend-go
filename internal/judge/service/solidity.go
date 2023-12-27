@@ -185,6 +185,9 @@ func (s *Service) RunSolidity(req runSolidityReq) (tryRunRes response.TryRunRes,
 		}
 	}
 	// 编译标准答案
+	if correctAnswer == "" {
+		log.Errorv("标准答案获取失败，请检查答案及加密配置")
+	}
 	correctContract, err := s.BuildSolidity(private, request.BuildReq{Code: correctAnswer, Address: req.Address})
 	if err != nil || correctContract.Status == 1 {
 		tryRunRes.Status = 1
