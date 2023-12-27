@@ -33,13 +33,13 @@ func (s *Service) GetQuest(language, id string, address, original string) (quest
 	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		if address == "" {
-			quest.Quest, err = s.dao.GetQuestByUUID(language, id)
+			quest, err = s.dao.GetQuestByUUID(language, id)
 			return
 		}
 		quest, err = s.dao.GetQuestWithClaimStatusByUUID(language, id, address)
 	} else {
 		if address == "" {
-			quest.Quest, err = s.dao.GetQuestByTokenIDWithLang(language, tokenId)
+			quest, err = s.dao.GetQuestByTokenIDWithLang(language, tokenId)
 			return
 		}
 		if original == "true" {

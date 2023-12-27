@@ -106,10 +106,20 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	return questList, total, err
 }
 
-func (d *Dao) GetQuestByTokenIDWithLang(language string, id int64) (quest model.Quest, err error) {
+func (d *Dao) GetQuestByTokenIDWithLang(language string, id int64) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
 		"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data").
-		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).Where("quest.token_id", id).First(&quest).Error
+		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).Where("quest.token_id", id).First(&quest.Quest).Error
+	if err != nil {
+		return quest, err
+	}
+	// 获取所有答案
+	err = d.db.Raw(`SELECT answer AS answers
+		FROM (
+		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
+		UNION
+		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		`, id, id).Scan(&quest.Answers).Error
 	return
 }
 
@@ -118,11 +128,21 @@ func (d *Dao) GetQuestByTokenID(id int64) (quest model.Quest, err error) {
 	return
 }
 
-func (d *Dao) GetQuestByUUID(language, uuid string) (quest model.Quest, err error) {
+func (d *Dao) GetQuestByUUID(language, uuid string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
 		"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data").
 		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).
-		Where("uuid", uuid).First(&quest).Error
+		Where("uuid", uuid).First(&quest.Quest).Error
+	if err != nil {
+		return quest, err
+	}
+	// 获取所有答案
+	err = d.db.Raw(`SELECT answer AS answers
+		FROM (
+		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
+		UNION
+		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		`, quest.Quest.TokenId, quest.Quest.TokenId).Scan(&quest.Answers).Error
 	return
 }
 
@@ -138,6 +158,16 @@ func (d *Dao) GetQuestWithClaimStatusByTokenIDWithLang(language string, id int64
 		Where("quest.token_id", id).
 		Order("l.add_ts desc,o.id desc").
 		First(&quest).Error
+	if err != nil {
+		return quest, err
+	}
+	// 获取所有答案
+	err = d.db.Raw(`SELECT answer AS answers
+		FROM (
+		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
+		UNION
+		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		`, id, id).Scan(&quest.Answers).Error
 	return
 }
 
@@ -150,6 +180,16 @@ func (d *Dao) GetQuestWithClaimStatusByTokenID(id int64, address string) (quest 
 		Where("quest.token_id", id).
 		Order("l.add_ts desc,o.id desc").
 		First(&quest).Error
+	if err != nil {
+		return quest, err
+	}
+	// 获取所有答案
+	err = d.db.Raw(`SELECT answer AS answers
+		FROM (
+		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
+		UNION
+		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		`, id, id).Scan(&quest.Answers).Error
 	return
 }
 
@@ -165,6 +205,16 @@ func (d *Dao) GetQuestWithClaimStatusByUUID(language, uuid string, address strin
 		Where("quest.uuid", uuid).
 		Order("l.add_ts desc,o.id desc").
 		First(&quest).Error
+	if err != nil {
+		return quest, err
+	}
+	// 获取所有答案
+	err = d.db.Raw(`SELECT answer AS answers
+		FROM (
+		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
+		UNION
+		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		`, quest.TokenId, quest.TokenId).Scan(&quest.Answers).Error
 	return
 }
 
@@ -241,4 +291,15 @@ func (d *Dao) GetQuestChallengeUserByUUID(uuid string) (res response.GetQuestCha
 
 func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
+}
+
+// GetQuestAnswersByTokenId 获取挑战多语言答案
+func (d *Dao) GetQuestAnswersByTokenId(tokenId int64) (answers []string, err error) {
+	err = d.db.Raw(`SELECT answer AS answers
+		FROM (
+		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
+		UNION
+		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		`, tokenId, tokenId).Scan(&answers).Error
+	return
 }
