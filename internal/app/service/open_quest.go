@@ -74,7 +74,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 		} else {
 			dataSQL += " AND json_element->>'score' IS NULL AND json_element->>'correct' IS NULL"
 		}
-		dataSQL += " ORDER BY id asc OFFSET ? LIMIT ?"
+		dataSQL += " ORDER BY updated_at asc OFFSET ? LIMIT ?"
 		err = db.Raw(dataSQL, address, offset, limit).Scan(&list).Error
 	} else {
 		err = db.Raw(`
@@ -119,7 +119,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
 					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND quest.creator = ?
-				ORDER BY id asc
+				ORDER BY updated_at asc
 				OFFSET ? LIMIT ?
 		`, address, offset, limit).Scan(&list).Error
 	}
@@ -200,13 +200,14 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 		userReturnScoreFloat := big.NewFloat(float64(userReturnScore))
 		scoreFloat := new(big.Float).Quo(userReturnScoreFloat, big.NewFloat(100))
 		score := fmt.Sprintf("%.0f", scoreFloat)
+		openQuestScore, _ := scoreFloat.Int64()
 		// 写入审核结果
 		err = db.Model(&model.UserOpenQuest{}).Where("id = ? AND open_quest_review_status = 1", r.ID).Updates(&model.UserOpenQuest{
 			OpenQuestReviewTime:   openQuestReviewTime,
 			OpenQuestReviewStatus: openQuestReviewStatus,
-			//OpenQuestScore:        score,
-			Answer: datatypes.JSON(answerRes),
-			Pass:   pass,
+			OpenQuestScore:        openQuestScore,
+			Answer:                datatypes.JSON(answerRes),
+			Pass:                  pass,
 		}).Error
 		if err != nil {
 			db.Rollback()

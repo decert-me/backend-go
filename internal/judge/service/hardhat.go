@@ -65,6 +65,11 @@ func (s *Service) HardhatTestSolidity(req request.TestReq, spjCode string) (res 
 	if err := os.Remove(path.Join(hardhatPath, "contracts", fileName)); err != nil {
 		log.Errorv("os.Remove error", zap.Error(err))
 	}
+	if strings.Contains(cleaned, "Error HH600: Compilation failed") {
+		res.Output = cleaned
+		res.Status = 1
+		return
+	}
 	// 正则匹配结果
 	// 匹配通过数量
 	rePass := regexp.MustCompile(`(\d+)\s+passing`)
