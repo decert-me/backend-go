@@ -364,11 +364,13 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 			 SELECT address,token_id,created_at,user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC) as rn
 			 FROM user_challenge_log
 			 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
+			),ranked_with_rank AS (
+			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC,created_at ASC) as rank,ranked.address,ranked.user_score/100 as score,created_at as finish_time
+			FROM ranked WHERE rn=1
 			)
-			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC) as rank,ranked.address,users.avatar,created_at as finish_time,ranked.user_score/100 as score
-			FROM ranked
-			LEFT JOIN users ON ranked.address=users.address
-			WHERE ranked.address = ?
+			SELECT rank,ranked_with_rank.address,users.avatar,score,finish_time FROM ranked_with_rank
+			LEFT JOIN users ON ranked_with_rank.address=users.address
+			WHERE ranked_with_rank.address = ?
 			LIMIT 1;
 		`
 		err = d.db.Raw(userRankSQL, tokenId, address).Scan(&res).Error
@@ -411,7 +413,7 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 		 WHERE token_id = ? AND pass=true
 		 ),
 		ranked_with_rank AS (
-		 SELECT ROW_NUMBER() OVER (ORDER BY score DESC) as rank,address,score,created_at as finish_time 
+		 SELECT ROW_NUMBER() OVER (ORDER BY score DESC,created_at ASC) as rank,address,score,created_at as finish_time 
 		 FROM ranked_open_quest 
 		 WHERE rn=1
 		)
