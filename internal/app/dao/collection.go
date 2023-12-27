@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cast"
-	"github.com/tidwall/gjson"
 	"gorm.io/gorm"
 )
 
@@ -152,58 +151,26 @@ func (d *Dao) GetCollectionFlashRank(address, collectionID string) (res response
 		return res, err
 	}
 	// 区分开放题
-	var openQuestTokenIDList []int64
-	var tokenIDList []int64
+	var allTokenIDList []int64
 	for _, quest := range questList {
-		if IsOpenQuest(gjson.Get(string(quest.QuestData), "questions").String()) {
-			openQuestTokenIDList = append(openQuestTokenIDList, quest.TokenId)
-		} else {
-			tokenIDList = append(tokenIDList, quest.TokenId)
-		}
+		allTokenIDList = append(allTokenIDList, quest.TokenId)
 	}
-	openQuestTokenIDCount := len(openQuestTokenIDList)
-	tokenIDCount := len(tokenIDList)
+	allTokenIDCount := len(allTokenIDList)
 	var havingSQL string
-	if openQuestTokenIDCount > 0 && tokenIDCount > 0 {
-		rawSQL := `SELECT address
-			FROM user_challenge_log
-			WHERE token_id IN ? AND address !='' AND pass=true AND deleted_at IS NULL
-			GROUP BY address
-			HAVING COUNT(DISTINCT token_id) = ?
-				INTERSECT
-				SELECT address
-			FROM user_open_quest
-				WHERE token_id IN ? AND pass=true AND deleted_at IS NULL
-			GROUP BY address
-			HAVING COUNT(DISTINCT token_id) = ?`
-		havingSQL = d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
-			return tx.Raw(rawSQL, tokenIDList, tokenIDCount, openQuestTokenIDList, openQuestTokenIDCount)
-		})
-	} else if openQuestTokenIDCount > 0 {
-		rawSQL := `SELECT address
-			FROM user_open_quest
-				WHERE token_id IN ? AND pass=true AND deleted_at IS NULL
-			GROUP BY address
-			HAVING COUNT(DISTINCT token_id) = ?`
-		havingSQL = d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
-			return tx.Raw(rawSQL, openQuestTokenIDList, openQuestTokenIDCount)
-		})
-	} else {
-		rawSQL := `SELECT address
+	rawSQL := `SELECT address
 			FROM user_challenge_log
 			WHERE token_id IN ? AND address !='' AND pass=true AND deleted_at IS NULL
 			GROUP BY address
 			HAVING COUNT(DISTINCT token_id) = ?`
-		havingSQL = d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
-			return tx.Raw(rawSQL, tokenIDList, tokenIDCount)
-		})
-	}
+	havingSQL = d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
+		return tx.Raw(rawSQL, allTokenIDList, allTokenIDCount)
+	})
 	// 获取合辑闪电榜
 	rankListSQL := `
 		WITH total AS(
 			SELECT address,token_id, created_at
 			FROM user_challenge_log
-			WHERE token_id IN ? AND user_challenge_log.address !='' AND pass=true AND deleted_at IS NULL
+			WHERE token_id IN ? AND user_challenge_log.address !='' AND pass=true AND is_open_quest=false AND deleted_at IS NULL
 			UNION
 			SELECT address,token_id, created_at
 			FROM user_open_quest
@@ -220,7 +187,7 @@ func (d *Dao) GetCollectionFlashRank(address, collectionID string) (res response
 		LEFT JOIN users ON ranked.address=users.address
 		WHERE rn=1 ORDER BY created_at asc LIMIT 10;
 	`
-	err = d.db.Raw(rankListSQL, tokenIDList, openQuestTokenIDList).Scan(&res.RankList).Error
+	err = d.db.Raw(rankListSQL, allTokenIDList, allTokenIDList).Scan(&res.RankList).Error
 	if err != nil {
 		return res, err
 	}
@@ -229,7 +196,7 @@ func (d *Dao) GetCollectionFlashRank(address, collectionID string) (res response
 		WITH total AS(
 			SELECT address,token_id, created_at
 			FROM user_challenge_log
-			WHERE token_id IN ? AND user_challenge_log.address !='' AND pass=true AND deleted_at IS NULL
+			WHERE token_id IN ? AND user_challenge_log.address !='' AND pass=true AND is_open_quest=false  AND deleted_at IS NULL
 			UNION
 			SELECT address,token_id, created_at
 			FROM user_open_quest
@@ -240,13 +207,17 @@ func (d *Dao) GetCollectionFlashRank(address, collectionID string) (res response
 		INNER JOIN (
 	`
 	userRankSQL = userRankSQL + havingSQL + ` ) AS a ON total.address = a.address
+		),ranked_score_user AS(
+			SELECT ROW_NUMBER() OVER (ORDER BY ranked.created_at ASC) as rank,ranked.address,ranked.created_at as finish_time
+			FROM ranked
+			WHERE rn=1
 		)
-		SELECT ROW_NUMBER() OVER (ORDER BY ranked.created_at ASC) as rank,ranked.address,ranked.created_at as finish_time,users.avatar
-		FROM ranked
-		LEFT JOIN users ON ranked.address=users.address
-		WHERE rn=1 AND ranked.address = ? LIMIT 1;
+		SELECT rank,ranked_score_user.address,ranked_score_user.finish_time,users.avatar
+		FROM ranked_score_user
+		LEFT JOIN users ON ranked_score_user.address=users.address
+		WHERE ranked_score_user.address = ? LIMIT 1;
 	`
-	err = d.db.Raw(userRankSQL, tokenIDList, openQuestTokenIDList, address).Scan(&res).Error
+	err = d.db.Raw(userRankSQL, allTokenIDList, allTokenIDList, address).Scan(&res).Error
 	return
 }
 
@@ -273,58 +244,27 @@ func (d *Dao) GetCollectionHighRank(address, collectionID string) (res response.
 		return res, err
 	}
 	// 区分开放题
-	var openQuestTokenIDList []int64
-	var tokenIDList []int64
+	var allTokenIDList []int64
 	for _, quest := range questList {
-		if IsOpenQuest(gjson.Get(string(quest.QuestData), "questions").String()) {
-			openQuestTokenIDList = append(openQuestTokenIDList, quest.TokenId)
-		} else {
-			tokenIDList = append(tokenIDList, quest.TokenId)
-		}
+		allTokenIDList = append(allTokenIDList, quest.TokenId)
 	}
-	openQuestTokenIDCount := len(openQuestTokenIDList)
-	tokenIDCount := len(tokenIDList)
+	allTokenIDCount := len(allTokenIDList)
 	var havingSQL string
-	if openQuestTokenIDCount > 0 && tokenIDCount > 0 {
-		rawSQL := `SELECT address
-			FROM user_challenge_log
-			WHERE token_id IN ? AND address !='' AND pass=true AND deleted_at IS NULL
-			GROUP BY address
-			HAVING COUNT(DISTINCT token_id) = ?
-				INTERSECT
-				SELECT address
-			FROM user_open_quest
-				WHERE token_id IN ? AND pass=true AND deleted_at IS NULL
-			GROUP BY address
-			HAVING COUNT(DISTINCT token_id) = ?`
-		havingSQL = d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
-			return tx.Raw(rawSQL, tokenIDList, tokenIDCount, openQuestTokenIDList, openQuestTokenIDCount)
-		})
-	} else if openQuestTokenIDCount > 0 {
-		rawSQL := `SELECT address
-			FROM user_open_quest
-				WHERE token_id IN ? AND pass=true AND deleted_at IS NULL
-			GROUP BY address
-			HAVING COUNT(DISTINCT token_id) = ?`
-		havingSQL = d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
-			return tx.Raw(rawSQL, openQuestTokenIDList, openQuestTokenIDCount)
-		})
-	} else {
-		rawSQL := `SELECT address
+	rawSQL := `SELECT address
 			FROM user_challenge_log
 			WHERE token_id IN ? AND address !='' AND pass=true AND deleted_at IS NULL
 			GROUP BY address
 			HAVING COUNT(DISTINCT token_id) = ?`
-		havingSQL = d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
-			return tx.Raw(rawSQL, tokenIDList, tokenIDCount)
-		})
-	}
+	havingSQL = d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
+		return tx.Raw(rawSQL, allTokenIDList, allTokenIDCount)
+	})
+
 	// 获取合辑高分榜
 	rankListSQL := `
 		 WITH total AS(
 		SELECT address,token_id, created_at,user_score/100 as score
 		FROM user_challenge_log
-		WHERE token_id IN ? AND user_challenge_log.address !='' AND pass=true AND deleted_at IS NULL
+		WHERE token_id IN ? AND user_challenge_log.address !='' AND pass=true AND is_open_quest=false AND deleted_at IS NULL
 		UNION
 		SELECT address,token_id, created_at,open_quest_score as score
 		FROM user_open_quest
@@ -345,7 +285,7 @@ func (d *Dao) GetCollectionHighRank(address, collectionID string) (res response.
 		LEFT JOIN users ON ranked_score.address=users.address
 		ORDER BY total_score DESC,ranked_score.created_at ASC LIMIT 10;
 	`
-	err = d.db.Raw(rankListSQL, tokenIDList, openQuestTokenIDList).Scan(&res.RankList).Error
+	err = d.db.Raw(rankListSQL, allTokenIDList, allTokenIDList).Scan(&res.RankList).Error
 	if err != nil {
 		return res, err
 	}
@@ -354,7 +294,7 @@ func (d *Dao) GetCollectionHighRank(address, collectionID string) (res response.
 		 WITH total AS(
 		SELECT address,token_id, created_at,user_score/100 as score
 		FROM user_challenge_log
-		WHERE token_id IN ? AND user_challenge_log.address !='' AND pass=true AND deleted_at IS NULL
+		WHERE token_id IN ? AND user_challenge_log.address !='' AND pass=true AND is_open_quest=false AND deleted_at IS NULL
 		UNION
 		SELECT address,token_id, created_at,open_quest_score as score
 		FROM user_open_quest
@@ -369,13 +309,16 @@ func (d *Dao) GetCollectionHighRank(address, collectionID string) (res response.
 		SELECT ranked.address, SUM(score) as total_score,max(created_at) as created_at
 		FROM ranked WHERE rn=1
 		GROUP BY ranked.address
+		),ranked_score_user AS(
+			SELECT ROW_NUMBER() OVER (ORDER BY ranked_score.total_score DESC,ranked_score.created_at ASC) as rank,total_score as score,ranked_score.address,ranked_score.created_at as finish_time
+			FROM ranked_score
 		)
-		SELECT ROW_NUMBER() OVER (ORDER BY ranked_score.total_score DESC,ranked_score.created_at ASC) as rank,total_score as score,ranked_score.address,ranked_score.created_at as finish_time,users.avatar
-		FROM ranked_score
-		LEFT JOIN users ON ranked_score.address=users.address
-		WHERE ranked_score.address = ? LIMIT 1;
+		SELECT rank,score,ranked_score_user.address,ranked_score_user.finish_time,users.avatar
+		FROM ranked_score_user
+		LEFT JOIN users ON ranked_score_user.address=users.address
+		WHERE ranked_score_user.address = ? LIMIT 1;
 	`
-	err = d.db.Raw(userRankSQL, tokenIDList, openQuestTokenIDList, address).Scan(&res).Error
+	err = d.db.Raw(userRankSQL, allTokenIDList, allTokenIDList, address).Scan(&res).Error
 	return
 }
 
