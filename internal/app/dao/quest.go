@@ -580,6 +580,7 @@ func (d *Dao) GetQuestHolderRankByUUID(address string, uuid string, page, pageSi
 		return res, total, err
 	}
 	return d.GetQuestHolderRankByTokenID(address, quest.TokenId, page, pageSize)
+}
 
 // GetQuestAnswersByTokenId 获取挑战多语言答案
 func (d *Dao) GetQuestAnswersByTokenId(tokenId int64) (answers []string, err error) {
