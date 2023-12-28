@@ -118,7 +118,7 @@ func (d *Dao) GetQuestByTokenIDWithLang(language string, id int64) (quest respon
 		FROM (
 		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
 		UNION
-		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		SELECT answer FROM quest_translated WHERE token_id = ? AND answer IS NOT NULL) AS combined_data
 		`, id, id).Scan(&quest.Answers).Error
 	return
 }
@@ -141,7 +141,7 @@ func (d *Dao) GetQuestByUUID(language, uuid string) (quest response.GetQuestRes,
 		FROM (
 		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
 		UNION
-		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		SELECT answer FROM quest_translated WHERE token_id = ? AND answer IS NOT NULL) AS combined_data
 		`, quest.Quest.TokenId, quest.Quest.TokenId).Scan(&quest.Answers).Error
 	return
 }
@@ -166,7 +166,7 @@ func (d *Dao) GetQuestWithClaimStatusByTokenIDWithLang(language string, id int64
 		FROM (
 		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
 		UNION
-		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		SELECT answer FROM quest_translated WHERE token_id = ? AND answer IS NOT NULL) AS combined_data
 		`, id, id).Scan(&quest.Answers).Error
 	return
 }
@@ -188,7 +188,7 @@ func (d *Dao) GetQuestWithClaimStatusByTokenID(id int64, address string) (quest 
 		FROM (
 		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
 		UNION
-		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		SELECT answer FROM quest_translated WHERE token_id = ? AND answer IS NOT NULL) AS combined_data
 		`, id, id).Scan(&quest.Answers).Error
 	return
 }
@@ -213,7 +213,7 @@ func (d *Dao) GetQuestWithClaimStatusByUUID(language, uuid string, address strin
 		FROM (
 		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
 		UNION
-		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		SELECT answer FROM quest_translated WHERE token_id = ? AND answer IS NOT NULL) AS combined_data
 		`, quest.TokenId, quest.TokenId).Scan(&quest.Answers).Error
 	return
 }
@@ -299,7 +299,7 @@ func (d *Dao) GetQuestAnswersByTokenId(tokenId int64) (answers []string, err err
 		FROM (
 		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
 		UNION
-		SELECT answer FROM quest_translated WHERE token_id = ?) AS combined_data
+		SELECT answer FROM quest_translated WHERE token_id = ? AND answer IS NOT NULL) AS combined_data
 		`, tokenId, tokenId).Scan(&answers).Error
 	return
 }
