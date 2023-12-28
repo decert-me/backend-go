@@ -176,15 +176,18 @@ func (d *Dao) GetCollectionFlashRank(address, collectionID string) (res response
 			FROM user_open_quest
 			WHERE token_id IN ? AND pass=true AND deleted_at IS NULL
 		),ranked AS(
-		SELECT total.address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY total.address ORDER BY created_at DESC) as rn
+		SELECT total.address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY total.address,total.token_id ORDER BY created_at ASC) as rn
 		FROM total
 		INNER JOIN ( 
 	`
 	rankListSQL = rankListSQL + havingSQL + ` ) AS a ON total.address = a.address
+		),ranked_list AS(
+		SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at DESC) as rn
+		FROM ranked WHERE rn=1 
 		)
-		SELECT ROW_NUMBER() OVER (ORDER BY ranked.created_at ASC) as rank,ranked.address,ranked.created_at as finish_time,users.avatar
-		FROM ranked
-		LEFT JOIN users ON ranked.address=users.address
+		SELECT ROW_NUMBER() OVER (ORDER BY ranked_list.created_at ASC) as rank,ranked_list.address,ranked_list.created_at as finish_time,users.avatar
+		FROM ranked_list
+		LEFT JOIN users ON ranked_list.address=users.address
 		WHERE rn=1 ORDER BY created_at asc LIMIT 10;
 	`
 	err = d.db.Raw(rankListSQL, allTokenIDList, allTokenIDList).Scan(&res.RankList).Error
@@ -202,14 +205,17 @@ func (d *Dao) GetCollectionFlashRank(address, collectionID string) (res response
 			FROM user_open_quest
 			WHERE token_id IN ? AND pass=true AND deleted_at IS NULL
 		),ranked AS(
-		SELECT total.address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY total.address ORDER BY created_at DESC) as rn
+		SELECT total.address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY total.address,total.token_id ORDER BY created_at ASC) as rn
 		FROM total
 		INNER JOIN (
 	`
 	userRankSQL = userRankSQL + havingSQL + ` ) AS a ON total.address = a.address
+		),ranked_list AS(
+			SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at DESC) as rn
+			FROM ranked WHERE rn=1 
 		),ranked_score_user AS(
-			SELECT ROW_NUMBER() OVER (ORDER BY ranked.created_at ASC) as rank,ranked.address,ranked.created_at as finish_time
-			FROM ranked
+			SELECT ROW_NUMBER() OVER (ORDER BY ranked_list.created_at ASC) as rank,ranked_list.address,ranked_list.created_at as finish_time
+			FROM ranked_list
 			WHERE rn=1
 		)
 		SELECT rank,ranked_score_user.address,ranked_score_user.finish_time,users.avatar
