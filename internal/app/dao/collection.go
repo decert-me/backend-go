@@ -52,13 +52,17 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 	collectionID, idErr := cast.ToUintE(r.ID)
 	if idErr == nil {
 		// 查询合辑信息
-		err = d.db.Model(&model.Collection{}).Where("id", collectionID).First(&collection).Error
+		err = d.db.Model(&model.Collection{}).Select("collection.*,COALESCE(tr.title,collection.title) as title,COALESCE(tr.description,collection.description) as description").
+			Joins("LEFT JOIN collection_translated as tr ON collection.id = tr.collection_id AND tr.language = ?", r.Language).
+			Where("collection.id", collectionID).First(&collection).Error
 		if err != nil {
 			return questList, collection, err
 		}
 	} else {
 		// 查询合辑信息
-		err = d.db.Model(&model.Collection{}).Where("uuid", r.ID).First(&collection).Error
+		err = d.db.Model(&model.Collection{}).Select("collection.*,COALESCE(tr.title,collection.title) as title,COALESCE(tr.description,collection.description) as description").
+			Joins("LEFT JOIN collection_translated as tr ON collection.id = tr.collection_id AND tr.language = ?", r.Language).
+			Where("collection.uuid", r.ID).First(&collection).Error
 		if err != nil {
 			return questList, collection, err
 		}
@@ -79,13 +83,15 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 		}
 	}
 	// 查询合辑内挑战
-	db := d.db.Model(&model.CollectionRelate{}).Joins("left join quest ON collection_relate.quest_id=quest.id").
+	db := d.db.Model(&model.CollectionRelate{}).
+		Joins("left join quest ON collection_relate.quest_id=quest.id").
+		Joins("left join quest_translated as tr ON quest.token_id = tr.token_id AND tr.language = ?", r.Language).
 		Where("collection_relate.collection_id = ? AND quest.status=1", collection.ID)
 	if r.Address != "" {
-		db.Select("quest.*,c.claimed")
+		db.Select("quest.*,c.claimed,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
 	} else {
-		db.Select("*")
+		db.Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 	}
 	err = db.Order("collection_relate.sort desc").Find(&questList).Error
 	return

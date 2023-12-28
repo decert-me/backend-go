@@ -14,7 +14,7 @@ func InitUserRouter(Router *gin.RouterGroup) {
 		userRouter.POST("authLoginSign", v1.AuthLoginSign)
 		userRouter.GET("/:address", v1.GetUserInfo)
 		userRouter.GET("/challenge/:address", v1.GetUserChallengeList)
-		userRouter.GET("/quests/:address", v1.GetUserQuestList)
+		userRouter.GET("/quests/:addressCreator", v1.GetUserQuestList)
 		userRouter.GET("/hasCreateOpenQuestPerm", v1.HasCreateOpenQuestPerm)
 	}
 	{
