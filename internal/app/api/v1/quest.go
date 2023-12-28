@@ -10,6 +10,7 @@ func GetQuestList(c *gin.Context) {
 	var searchInfo request.GetQuestListRequest
 	_ = c.ShouldBindQuery(&searchInfo)
 	searchInfo.Address = c.GetString("address")
+	searchInfo.Language = c.GetString("lang")
 	if list, total, err := srv.GetQuestList(searchInfo); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
@@ -23,7 +24,7 @@ func GetQuestList(c *gin.Context) {
 }
 
 func GetQuest(c *gin.Context) {
-	if list, err := srv.GetQuest(c.Param("id"), c.GetString("address")); err != nil {
+	if list, err := srv.GetQuest(c.GetString("lang"), c.Param("id"), c.GetString("address"), c.Query("original")); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
 		OkWithData(list, c)

@@ -36,6 +36,7 @@ type GetQuestRes struct {
 	NFTAddress            string         `gorm:"column:nft_address" json:"nft_address"`
 	Answer                datatypes.JSON `gorm:"column:answer" json:"answer"`
 	OpenQuestReviewStatus uint8          `gorm:"column:open_quest_review_status" json:"open_quest_review_status"` // 评阅开放题状态 1 未审核 2 已审核
+	Answers               []string       `gorm:"-" json:"answers"`
 }
 
 type GetQuestFlashListRes struct {

@@ -29,20 +29,25 @@ func (s *Service) GetUserQuestListWithClaimed(searchInfo request.GetUserQuestLis
 	return
 }
 
-func (s *Service) GetQuest(id string, address string) (quest response.GetQuestRes, err error) {
+func (s *Service) GetQuest(language, id string, address, original string) (quest response.GetQuestRes, err error) {
 	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		if address == "" {
-			quest.Quest, err = s.dao.GetQuestByUUID(id)
+			quest, err = s.dao.GetQuestByUUID(language, id)
 			return
 		}
-		quest, err = s.dao.GetQuestWithClaimStatusByUUID(id, address)
+		quest, err = s.dao.GetQuestWithClaimStatusByUUID(language, id, address)
 	} else {
 		if address == "" {
-			quest.Quest, err = s.dao.GetQuestByTokenID(tokenId)
+			quest, err = s.dao.GetQuestByTokenIDWithLang(language, tokenId)
 			return
 		}
-		quest, err = s.dao.GetQuestWithClaimStatusByTokenID(tokenId, address)
+		if original == "true" {
+			quest, err = s.dao.GetQuestWithClaimStatusByTokenID(tokenId, address)
+			return
+		} else {
+			quest, err = s.dao.GetQuestWithClaimStatusByTokenIDWithLang(language, tokenId, address)
+		}
 	}
 	return
 }

@@ -36,7 +36,26 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 	for _, s := range scoreList {
 		totalScore += s.Int()
 	}
+	// 获取多语言答案列表
+	answers, err := s.dao.GetQuestAnswersByTokenId(quest.TokenId)
+	if err != nil {
+		log.Errorv("GetQuestAnswersByTokenId error", zap.Error(err))
+		return userReturnScore, false, err
+	}
+	// 解密答案
+	var answersList [][]gjson.Result
+	for _, v := range answers {
+		temp := gjson.Get(utils.AnswerDecode(key, v), "@this").Array()
+		answersList = append(answersList, temp) // 标准答案
+		if len(answerU) != len(temp) {
+			log.Error("答案数量不相等")
+			return userReturnScore, false, errors.New("unexpect error")
+		}
+	}
+	fmt.Println("answersList", answersList)
+	// 检查答案有效性
 	if len(answerU) != len(answerS) || len(scoreList) != len(answerS) {
+		log.Error("答案数量不相等")
 		return userReturnScore, false, errors.New("unexpect error")
 	}
 	var score int64
@@ -66,12 +85,24 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 			continue
 		}
 		// 单选题
-		if questType == "multiple_choice" || questType == "fill_blank" {
+		if questType == "multiple_choice" {
 			fmt.Println("multiple_choice")
 			fmt.Println("questValue", questValue)
 			fmt.Println("answerU[i].String()", answerU[i].String())
 			if questValue == answerU[i].String() {
 				score += scoreList[i].Int()
+			}
+			continue
+		}
+		// 填空题
+		if questType == "fill_blank" {
+			fmt.Println("questValue", questValue)
+			for _, item := range answersList {
+				fmt.Println("item", item[i].String())
+				if questValue == item[i].String() {
+					score += scoreList[i].Int()
+					break
+				}
 			}
 			continue
 		}
