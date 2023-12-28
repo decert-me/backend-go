@@ -3,6 +3,7 @@ package response
 import (
 	"backend-go/internal/app/model"
 	"gorm.io/datatypes"
+	"time"
 )
 
 type GetQuestListRes struct {
@@ -36,4 +37,40 @@ type GetQuestRes struct {
 	Answer                datatypes.JSON `gorm:"column:answer" json:"answer"`
 	OpenQuestReviewStatus uint8          `gorm:"column:open_quest_review_status" json:"open_quest_review_status"` // 评阅开放题状态 1 未审核 2 已审核
 	Answers               []string       `gorm:"-" json:"answers"`
+}
+
+type GetQuestFlashListRes struct {
+	RankList []struct {
+		Rank       int64     `gorm:"rank" json:"rank"`
+		Avatar     string    `gorm:"column:avatar" json:"avatar"`
+		Address    string    `gorm:"address" json:"address"`
+		FinishTime time.Time `gorm:"finish_time" json:"finish_time"`
+	} `gorm:"-"`
+	Rank       int64     `gorm:"rank" json:"rank"`
+	Avatar     string    `gorm:"column:avatar" json:"avatar"`
+	Address    string    `gorm:"address" json:"address"`
+	FinishTime time.Time `gorm:"finish_time" json:"finish_time"`
+	//Total      int64     `gorm:"total" json:"total"`
+}
+
+type GetQuestHighScoreListRes struct {
+	RankList []struct {
+		Rank       int64     `gorm:"rank" json:"rank"`
+		Avatar     string    `gorm:"column:avatar" json:"avatar"`
+		Score      int64     `gorm:"score" json:"score"`
+		Address    string    `gorm:"address" json:"address"`
+		FinishTime time.Time `gorm:"finish_time" json:"finish_time"`
+	} `gorm:"-"`
+	Rank       int64     `gorm:"rank" json:"rank"`
+	Avatar     string    `gorm:"column:avatar" json:"avatar"`
+	Address    string    `gorm:"address" json:"address"`
+	Score      int64     `gorm:"score" json:"score"`
+	FinishTime time.Time `gorm:"finish_time" json:"finish_time"`
+}
+
+type GetQuestHolderListRes struct {
+	Rank      int64     `gorm:"rank" json:"rank"`
+	Avatar    string    `gorm:"column:avatar" json:"avatar"`
+	Address   string    `gorm:"address" json:"address"`
+	ClaimTime time.Time `gorm:"claim_time" json:"claim_time"`
 }

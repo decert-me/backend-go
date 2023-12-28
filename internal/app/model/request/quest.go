@@ -41,3 +41,7 @@ type GetCollectionQuestRequest struct {
 	Address  string `json:"-"`
 	Language string `json:"-"`
 }
+
+type GetQuestHolderRankRequest struct {
+	PageInfo
+}

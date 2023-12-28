@@ -293,6 +293,295 @@ func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
 }
 
+// GetQuestFlashRankByTokenID 获取闪电榜
+func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res response.GetQuestFlashListRes, err error) {
+	// 查询挑战
+	var quest model.Quest
+	err = d.db.Model(&model.Quest{}).Where("token_id", tokenId).First(&quest).Error
+	if err != nil {
+		return res, err
+	}
+	// 判断是否是开放题
+	if !IsOpenQuest(gjson.Get(string(quest.QuestData), "questions").String()) {
+		rankListSQL := `
+		WITH ranked AS (
+		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn
+	     FROM user_challenge_log
+	     WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
+		)
+		SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,ranked.address,users.avatar,ranked.created_at as finish_time
+		FROM ranked
+		LEFT JOIN users ON ranked.address=users.address
+		WHERE rn=1 ORDER BY created_at ASC LIMIT 10;
+		`
+		err = d.db.Raw(rankListSQL, tokenId).Scan(&res.RankList).Error
+		if err != nil {
+			return res, err
+		}
+		// 地址为空返回结果
+		if address == "" {
+			return res, err
+		}
+		userRankSQL := `
+		WITH ranked AS (
+		 SELECT address,token_id, created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
+		 FROM user_challenge_log 
+		 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
+		),
+		ranked_with_rank AS (
+		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
+		 FROM ranked 
+		 WHERE rn=1 
+		)
+		SELECT ranked_with_rank.*,users.avatar
+		FROM ranked_with_rank
+		LEFT JOIN users ON ranked_with_rank.address=users.address
+		WHERE ranked_with_rank.address = ?
+		LIMIT 1;
+		`
+		err = d.db.Raw(userRankSQL, tokenId, address).Scan(&res).Error
+		if err != nil {
+			return res, err
+		}
+		// 直接返回
+		return res, err
+	}
+	// 开放题
+	rankListSQL := `
+		WITH all_open_quest AS(
+			SELECT address,created_at
+			FROM user_open_quest
+			WHERE token_id = ? AND pass=true
+			UNION
+			SELECT address,created_at
+			FROM user_challenge_log
+			WHERE token_id = ? AND pass=true AND is_open_quest=false
+		),ranked_open_quest AS (
+		 SELECT address,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
+		 FROM all_open_quest
+		 ),
+		ranked_with_rank AS (
+		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
+		 FROM ranked_open_quest 
+		 WHERE rn=1 
+		)
+		SELECT ranked_with_rank.*,users.avatar
+		FROM ranked_with_rank
+		LEFT JOIN users ON ranked_with_rank.address=users.address
+		ORDER BY rank ASC 
+		LIMIT 10;
+	`
+	err = d.db.Raw(rankListSQL, tokenId, tokenId).Scan(&res.RankList).Error
+	if err != nil {
+		return res, err
+	}
+	// 地址为空返回结果
+	if address == "" {
+		return res, err
+	}
+	userRankSQL := `
+		WITH all_open_quest AS(
+			SELECT address,created_at
+			FROM user_open_quest
+			WHERE token_id = ? AND pass=true
+			UNION
+			SELECT address,created_at
+			FROM user_challenge_log
+			WHERE token_id = ? AND pass=true AND is_open_quest=false
+		),ranked_open_quest AS (
+		 SELECT address,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at DESC) as rn 
+		 FROM all_open_quest
+		 ),
+		ranked_with_rank AS (
+		 SELECT ROW_NUMBER() OVER (ORDER BY created_at ASC) as rank,address,created_at as finish_time 
+		 FROM ranked_open_quest 
+		 WHERE rn=1 
+		)
+		SELECT ranked_with_rank.*,users.avatar
+		FROM ranked_with_rank
+		LEFT JOIN users ON ranked_with_rank.address=users.address
+		WHERE ranked_with_rank.address = ?
+		LIMIT 1;
+	`
+	err = d.db.Raw(userRankSQL, tokenId, tokenId, address).Scan(&res).Error
+	return res, err
+}
+
+// GetQuestFlashRankByUUID 获取闪电榜
+func (d *Dao) GetQuestFlashRankByUUID(address string, uuid string) (res response.GetQuestFlashListRes, err error) {
+	// 获取token_id
+	var quest model.Quest
+	err = d.db.Model(&model.Quest{}).Select("token_id").Where("uuid", uuid).First(&quest).Error
+	if err != nil {
+		return res, err
+	}
+	return d.GetQuestFlashRankByTokenID(address, quest.TokenId)
+}
+
+// IsOpenQuest 判断是否开放题
+func IsOpenQuest(answerUser string) bool {
+	answerU := gjson.Get(answerUser, "@this").Array()
+	for _, v := range answerU {
+		if v.Get("type").String() == "open_quest" {
+			return true
+		}
+	}
+	return false
+}
+
+// GetQuestHighRankByTokenID 获取高分榜
+func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res response.GetQuestHighScoreListRes, err error) {
+	// 查询挑战
+	var quest model.Quest
+	err = d.db.Model(&model.Quest{}).Where("token_id", tokenId).First(&quest).Error
+	if err != nil {
+		return res, err
+	}
+	// 判断是否是开放题
+	if !IsOpenQuest(gjson.Get(string(quest.QuestData), "questions").String()) {
+		rankListSQL := `
+			WITH ranked AS (
+			 SELECT address,token_id,created_at, user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC,created_at ASC) as rn
+			 FROM user_challenge_log
+			 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
+			)
+			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC,created_at ASC) as rank,ranked.address,users.avatar,created_at as finish_time,ranked.user_score/100 as score
+			FROM ranked
+			LEFT JOIN users ON ranked.address=users.address
+			WHERE rn=1 ORDER BY user_score DESC,created_at ASC LIMIT 10;
+		`
+		err = d.db.Raw(rankListSQL, tokenId).Scan(&res.RankList).Error
+		if err != nil {
+			return res, err
+		}
+		// 地址为空返回结果
+		if address == "" {
+			return res, err
+		}
+		userRankSQL := `
+			WITH ranked AS (
+			 SELECT address,token_id,created_at,user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC,created_at ASC) as rn
+			 FROM user_challenge_log
+			 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
+			),ranked_with_rank AS (
+			SELECT ROW_NUMBER() OVER (ORDER BY user_score DESC,created_at ASC) as rank,ranked.address,ranked.user_score/100 as score,created_at as finish_time
+			FROM ranked WHERE rn=1
+			)
+			SELECT rank,ranked_with_rank.address,users.avatar,score,finish_time FROM ranked_with_rank
+			LEFT JOIN users ON ranked_with_rank.address=users.address
+			WHERE ranked_with_rank.address = ?
+			LIMIT 1;
+		`
+		err = d.db.Raw(userRankSQL, tokenId, address).Scan(&res).Error
+		if err != nil {
+			return res, err
+		}
+		// 直接返回
+		return res, err
+	}
+	// 开放题
+	rankListSQL := `
+		WITH all_open_quest AS(
+			SELECT address,open_quest_score as score,created_at
+			FROM user_open_quest
+			WHERE token_id = ? AND pass=true
+			UNION
+			SELECT address,user_score/100 as score,created_at
+			FROM user_challenge_log
+			WHERE token_id = ? AND pass=true AND is_open_quest=false
+		),ranked_open_quest AS (
+		 SELECT address,score,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY score DESC,created_at ASC) as rn 
+		 FROM all_open_quest
+		 ),
+		ranked_with_rank AS (
+		 SELECT ROW_NUMBER() OVER (ORDER BY score DESC,created_at ASC) as rank,address,score,created_at as finish_time 
+		 FROM ranked_open_quest 
+		 WHERE rn=1
+		)
+		SELECT ranked_with_rank.*,users.avatar
+		FROM ranked_with_rank
+		LEFT JOIN users ON ranked_with_rank.address=users.address
+		ORDER BY score DESC,ranked_with_rank.finish_time ASC
+		LIMIT 10;
+	`
+	err = d.db.Raw(rankListSQL, tokenId, tokenId).Scan(&res.RankList).Error
+	if err != nil {
+		return res, err
+	}
+	// 地址为空返回结果
+	if address == "" {
+		return res, err
+	}
+	userRankSQL := `
+		WITH all_open_quest AS(
+			SELECT address,open_quest_score as score,created_at
+			FROM user_open_quest
+			WHERE token_id = ? AND pass=true
+			UNION
+			SELECT address,user_score/100 as score,created_at
+			FROM user_challenge_log
+			WHERE token_id = ? AND pass=true AND is_open_quest=false
+		),ranked_open_quest AS (
+		 SELECT address,score,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY score DESC,created_at ASC) as rn 
+		 FROM all_open_quest
+		 ),
+		ranked_with_rank AS (
+		 SELECT ROW_NUMBER() OVER (ORDER BY score DESC,created_at ASC) as rank,address,score,created_at as finish_time 
+		 FROM ranked_open_quest 
+		 WHERE rn=1
+		)
+		SELECT ranked_with_rank.* ,users.avatar
+		FROM ranked_with_rank
+		LEFT JOIN users ON ranked_with_rank.address=users.address
+		WHERE ranked_with_rank.address = ?
+		LIMIT 1;
+	`
+	err = d.db.Raw(userRankSQL, tokenId, tokenId, address).Scan(&res).Error
+	return res, err
+}
+
+// GetQuestHighRankByUUID 获取高分榜
+func (d *Dao) GetQuestHighRankByUUID(address string, uuid string) (res response.GetQuestHighScoreListRes, err error) {
+	// 获取token_id
+	var quest model.Quest
+	err = d.db.Model(&model.Quest{}).Select("token_id").Where("uuid", uuid).First(&quest).Error
+	if err != nil {
+		return res, err
+	}
+	return d.GetQuestHighRankByTokenID(address, quest.TokenId)
+}
+
+// GetQuestHolderRankByTokenID 获取持有榜
+func (d *Dao) GetQuestHolderRankByTokenID(address string, tokenId int64, page, pageSize int) (res []response.GetQuestHolderListRes, total int64, err error) {
+	// 分页参数
+	limit := pageSize
+	offset := pageSize * (page - 1)
+	err = d.db.Model(&model.UserChallenges{}).Where("token_id", tokenId).Count(&total).Error
+	if err != nil {
+		return res, total, err
+	}
+	err = d.db.Model(&model.UserChallenges{}).
+		Select("ROW_NUMBER() OVER (ORDER BY user_challenges.add_ts ASC) as rank,users.*,to_timestamp(user_challenges.add_ts) as claim_time").
+		Joins("LEFT JOIN users ON user_challenges.address=users.address").
+		Where("user_challenges.token_id", tokenId).
+		Order("user_challenges.add_ts DESC").
+		Limit(limit).Offset(offset).
+		Find(&res).Error
+	fmt.Println(res)
+	return res, total, err
+}
+
+// GetQuestHolderRankByUUID 获取持有榜
+func (d *Dao) GetQuestHolderRankByUUID(address string, uuid string, page, pageSize int) (res []response.GetQuestHolderListRes, total int64, err error) {
+	// 获取token_id
+	var quest model.Quest
+	err = d.db.Model(&model.Quest{}).Select("token_id").Where("uuid", uuid).First(&quest).Error
+	if err != nil {
+		return res, total, err
+	}
+	return d.GetQuestHolderRankByTokenID(address, quest.TokenId, page, pageSize)
+}
+
 // GetQuestAnswersByTokenId 获取挑战多语言答案
 func (d *Dao) GetQuestAnswersByTokenId(tokenId int64) (answers []string, err error) {
 	err = d.db.Raw(`SELECT answer AS answers
