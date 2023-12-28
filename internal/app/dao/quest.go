@@ -357,7 +357,7 @@ func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res res
 			FROM user_challenge_log
 			WHERE token_id = ? AND pass=true AND is_open_quest=false
 		),ranked_open_quest AS (
-		 SELECT address,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at DESC) as rn 
+		 SELECT address,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY created_at ASC) as rn 
 		 FROM all_open_quest
 		 ),
 		ranked_with_rank AS (
