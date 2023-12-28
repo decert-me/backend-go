@@ -356,7 +356,7 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 	if !IsOpenQuest(gjson.Get(string(quest.QuestData), "questions").String()) {
 		rankListSQL := `
 			WITH ranked AS (
-			 SELECT address,token_id,created_at, user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC) as rn
+			 SELECT address,token_id,created_at, user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC,created_at ASC) as rn
 			 FROM user_challenge_log
 			 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
 			)
@@ -375,7 +375,7 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 		}
 		userRankSQL := `
 			WITH ranked AS (
-			 SELECT address,token_id,created_at,user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC) as rn
+			 SELECT address,token_id,created_at,user_score,ROW_NUMBER() OVER (PARTITION BY address ORDER BY user_score DESC,created_at ASC) as rn
 			 FROM user_challenge_log
 			 WHERE token_id = ? AND address !='' AND pass=true AND deleted_at IS NULL
 			),ranked_with_rank AS (
@@ -405,7 +405,7 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 			FROM user_challenge_log
 			WHERE token_id = ? AND pass=true AND is_open_quest=false
 		),ranked_open_quest AS (
-		 SELECT address,score,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY score DESC) as rn 
+		 SELECT address,score,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY score DESC,created_at ASC) as rn 
 		 FROM all_open_quest
 		 ),
 		ranked_with_rank AS (
@@ -437,7 +437,7 @@ func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res resp
 			FROM user_challenge_log
 			WHERE token_id = ? AND pass=true AND is_open_quest=false
 		),ranked_open_quest AS (
-		 SELECT address,score,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY score DESC) as rn 
+		 SELECT address,score,created_at,ROW_NUMBER() OVER (PARTITION BY address ORDER BY score DESC,created_at ASC) as rn 
 		 FROM all_open_quest
 		 ),
 		ranked_with_rank AS (
