@@ -561,10 +561,10 @@ func (d *Dao) GetQuestHolderRankByTokenID(address string, tokenId int64, page, p
 		return res, total, err
 	}
 	err = d.db.Model(&model.UserChallenges{}).
-		Select("ROW_NUMBER() OVER (ORDER BY user_challenges.add_ts ASC) as rank,users.*,to_timestamp(user_challenges.add_ts) as claim_time").
+		Select("ROW_NUMBER() OVER (ORDER BY user_challenges.add_ts ASC,user_challenges.id ASC) as rank,users.*,to_timestamp(user_challenges.add_ts) as claim_time").
 		Joins("LEFT JOIN users ON user_challenges.address=users.address").
 		Where("user_challenges.token_id", tokenId).
-		Order("user_challenges.add_ts DESC").
+		Order("user_challenges.add_ts ASC,user_challenges.id ASC").
 		Limit(limit).Offset(offset).
 		Find(&res).Error
 	fmt.Println(res)
