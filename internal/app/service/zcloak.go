@@ -11,6 +11,7 @@ import (
 	reqV3 "github.com/imroc/req/v3"
 	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"go.uber.org/zap"
 	"gorm.io/datatypes"
 	"strings"
@@ -132,8 +133,14 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 	if highestScore >= score {
 		return nil
 	}
-	// 将答案上传到IPFS
-	err, hash := s.IPFSUploadJSON(req.Answer)
+	// 将用户答案写入metadata
+	metadata, err := sjson.Set(string(quest.MetaData), "attributes.user_answer", gjson.Parse(req.Answer).Value())
+	if err != nil {
+		log.Errorv("sjson set error", zap.Error(err))
+		return errors.New("UnexpectedError")
+	}
+	// 将metadata上传到IPFS
+	err, hash := s.IPFSUploadJSON(gjson.Parse(metadata).Value())
 	if err != nil {
 		log.Errorv("IPFSUploadJSON error", zap.Error(err))
 		return errors.New("UnexpectedError")
