@@ -46,10 +46,11 @@ func GetVcInfo(c *gin.Context) {
 func GetDidSignMessage(c *gin.Context) {
 	var request request.GetDidSignMessageRequest
 	_ = c.ShouldBindQuery(&request)
-	if loginMessage, nonce, err := srv.GetDidSignMessage(request.Did); err != nil {
+	ethAddress := c.GetString("address")
+	if loginMessage, err := srv.GetDidSignMessage(request.Did, ethAddress); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
-		OkWithDetailed(map[string]string{"loginMessage": loginMessage, "nonce": nonce}, GetMessage(c, "FetchSuccess"), c)
+		OkWithDetailed(map[string]string{"loginMessage": loginMessage}, GetMessage(c, "FetchSuccess"), c)
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *Dao) SaveSignAndDid(address, nonce string, request request.SaveSignAndDidRequest) (err error) {
+func (d *Dao) SaveSignAndDid(address string, request request.SaveSignAndDidRequest) (err error) {
 	if address == "" {
 		return errors.New("ParameterError")
 	}
@@ -33,7 +33,6 @@ func (d *Dao) SaveSignAndDid(address, nonce string, request request.SaveSignAndD
 		return errors.New("AddressAlreadyBoundDid")
 	}
 	zcloakDid := model.ZcloakDid{
-		Nonce:      nonce,
 		Signature:  request.Sign,
 		KeyFile:    request.KeyFile,
 		Address:    address,

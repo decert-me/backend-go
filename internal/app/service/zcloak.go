@@ -3,55 +3,39 @@ package service
 import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
+	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	reqV3 "github.com/imroc/req/v3"
-	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"gorm.io/datatypes"
 	"strings"
+	"time"
 )
 
 // SaveSignAndDid 保存签名和DID账号
 func (s *Service) SaveSignAndDid(address string, req request.SaveSignAndDidRequest) (err error) {
-
-	// 获取Nonce
-	indexNonce := strings.LastIndex(req.Sign, "Nonce:")
-	if indexNonce == -1 {
-		return errors.New("SignatureExpired")
+	if !utils.VerifySignature(address, req.SignHash, []byte(req.Sign)) {
+		return errors.New("SignatureVerificationFailed")
 	}
-	nonce := req.Sign[indexNonce+7:]
-	/*
-		// 校验Nonce
-		hasNonce, err := s.dao.HasNonce(context.Background(), nonce)
-		if err != nil {
-			log.Errorv("HasNonce error", zap.String("nonce", nonce))
-			return errors.New("SignatureExpired")
-		}
-		if !hasNonce {
-			return errors.New("SignatureExpired")
-		}
-		// 删除Nonce
-		if err = s.dao.DelNonce(context.Background(), nonce); err != nil {
-			log.Errorv("DelNonce error", zap.String("nonce", nonce)) // not important and continue
-		}
-
-	*/
+	// 校验Address
+	if req.Sign[0:42] != address {
+		return errors.New("AddressError")
+	}
 	// 校验did账号
-	//indexAddress := strings.LastIndex(req.Sign, "did:zk:")
-	//if indexAddress == -1 {
-	//	return errors.New("AddressError")
-	//}
-	//did := req.Sign[indexAddress : indexAddress+49]
-	//if strings.TrimSpace(did) != req.DidAddress {
-	//	return errors.New("AddressError")
-	//}
-	err = s.dao.SaveSignAndDid(address, nonce, req)
+	indexAddress := strings.LastIndex(req.Sign, "did:zk:")
+	if indexAddress == -1 {
+		return errors.New("AddressError")
+	}
+	did := req.Sign[indexAddress : indexAddress+49]
+	if strings.TrimSpace(did) != req.DidAddress {
+		return errors.New("AddressError")
+	}
+	err = s.dao.SaveSignAndDid(address, req)
 	if err != nil {
 		return err
 	}
@@ -203,15 +187,9 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 }
 
 // GetDidSignMessage 获取DID签名信息
-func (s *Service) GetDidSignMessage(address string) (message string, nonce string, err error) {
-	message = fmt.Sprintf("zkID: Enable W3C DID\n%s\n\nMore information: https://github.com/zCloak-Network/zk-did-method-specs\n\n", address)
-	UUID := uuid.NewV4() // 生成UUID
-	// 存到Local Cache里
-	if err = s.dao.SetNonce(context.Background(), UUID.String()); err != nil {
-		log.Errorv("set nonce error: ", zap.Error(err))
-		return message, nonce, err
-	}
-	return fmt.Sprintf(message+"Nonce:\n%s", UUID), UUID.String(), nil
+func (s *Service) GetDidSignMessage(did, ethAddress string) (message string, err error) {
+	message = fmt.Sprintf("%s\n\n%s\n\n%d", did, ethAddress, time.Now().UnixNano()/1000000)
+	return message, nil
 }
 
 type SaveCardInfoRequest struct {
