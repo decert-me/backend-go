@@ -166,12 +166,12 @@ func (d *Dao) GetChallengeList(req *request.GetChallengeListRequest) (res []resp
 	// 查询领取状态
 	for i, v := range res {
 		// 查询证书领取状态
-		if err := d.db.Model(&model.ZcloakCard{}).Where("address = ? AND quest_id = ?", req.Address, v.ID).First(&v).Error; err != nil {
+		if err := d.db.Model(&model.ZcloakCard{}).Where("address = ? AND quest_id = ?", req.Address, v.ID).First(&model.ZcloakCard{}).Error; err != nil {
 			res[i].ClaimStatus = 1
 			continue
 		}
 		// 查询NFT领取状态
-		if err := d.db.Model(&model.UserChallenges{}).Where("address = ? AND token_id = ?", req.Address, v.TokenId).First(&v).Error; err != nil {
+		if err := d.db.Model(&model.UserChallenges{}).Where("address = ? AND token_id = ?", req.Address, v.TokenId).First(&model.UserChallenges{}).Error; err != nil {
 			res[i].ClaimStatus = 2
 			continue
 		}
