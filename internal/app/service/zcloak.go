@@ -145,7 +145,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 			Title:       quest.Title,
 			ChallengeID: req.TokenId,
 			Pass:        pass,
-			Score:       score / 100,
+			Score:       score,
 			Content:     "ipfs://" + hash,
 		},
 	}
