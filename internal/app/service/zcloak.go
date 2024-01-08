@@ -188,7 +188,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 
 // GetDidSignMessage 获取DID签名信息
 func (s *Service) GetDidSignMessage(did, ethAddress string) (message string, err error) {
-	message = fmt.Sprintf("%s\n\n%s\n\n%d", did, ethAddress, time.Now().UnixNano()/1000000)
+	message = fmt.Sprintf("%s\n\n%s\n\n%d", ethAddress, did, time.Now().UnixNano()/1000000)
 	return message, nil
 }
 
