@@ -91,6 +91,7 @@ func Routers(c *config.Config) *gin.Engine {
 		InitMessageRouter(v1Group)
 		InitSocialRouter(v1Group)
 		InitOpenQuestRouter(v1Group)
+		InitZcloakRouter(v1Group)
 	}
 	// meta
 	Router.GET("/quests/:id", v1.HandleMetaRequest)

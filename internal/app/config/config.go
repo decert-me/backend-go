@@ -21,4 +21,6 @@ type Config struct {
 	Discord    *Discord     `mapstructure:"discord" json:"discord" yaml:"discord"`
 	Sentry     *Sentry      `mapstructure:"sentry" json:"sentry" yaml:"sentry"`
 	Social     *Social      `mapstructure:"social" json:"social" yaml:"social"`
+	ZCloak     *ZCloak      `mapstructure:"zcloak" json:"zcloak" yaml:"zcloak"`
+	NFT        *NFT         `mapstructure:"nft" json:"nft" yaml:"nft"`
 }

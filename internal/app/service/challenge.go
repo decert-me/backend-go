@@ -57,6 +57,15 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 	if err != nil {
 		return errors.New("OperationFailed")
 	}
+	// 创建证书
+	if !isOpenQuest && pass {
+		go func() {
+			s.GenerateCardInfo(req.Address, userScore/100, request.GenerateCardInfoRequest{
+				TokenId: req.TokenId,
+				Answer:  req.Answer,
+			})
+		}()
+	}
 	if isOpenQuest {
 		err = s.dao.CreateUserOpenQuest(&model.UserOpenQuest{
 			Address:               req.Address,
