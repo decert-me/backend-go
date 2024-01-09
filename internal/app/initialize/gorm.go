@@ -32,6 +32,7 @@ func RegisterTables(db *gorm.DB) {
 		model.OpenQuestPerm{},
 		model.QuestTranslated{},
 		model.CollectionTranslated{},
+		model.OpenQuestUserPerm{},
 	)
 	if err != nil {
 		panic("register table failed")

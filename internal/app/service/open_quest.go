@@ -6,6 +6,7 @@ import (
 	"backend-go/internal/app/model/response"
 	"errors"
 	"fmt"
+	"github.com/lib/pq"
 	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -18,6 +19,12 @@ import (
 func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQuestListRequest) (list []response.UserOpenQuestJsonElements, total int64, err error) {
 	offset := (r.Page - 1) * r.PageSize
 	limit := r.PageSize
+	// 查询用户是否有其它权限
+	var questIDList []uint
+	err = s.dao.DB().Model(&model.OpenQuestUserPerm{}).Where("address_list @> ?", pq.Array([]string{address})).Pluck("quest_id", &questIDList).Error
+	if err != nil {
+		return
+	}
 	db := s.dao.DB().Model(&model.UserOpenQuest{})
 	if r.OpenQuestReviewStatus != 0 {
 		countSQL := `
@@ -30,14 +37,14 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				JOIN 
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
-					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest' AND quest.creator = ?
+					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest' AND (quest.creator = ? OR quest.id IN ?)
 		`
 		if r.OpenQuestReviewStatus == 2 {
 			countSQL += " AND (json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL)"
 		} else {
 			countSQL += " AND json_element->>'score' IS NULL AND json_element->>'correct' IS NULL"
 		}
-		err = db.Raw(countSQL, address).Scan(&total).Error
+		err = db.Raw(countSQL, address, questIDList).Scan(&total).Error
 		if err != nil {
 			return
 		}
@@ -67,15 +74,18 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				JOIN 
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
-					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest' AND quest.creator = ?
+					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'
 		`
 		if r.OpenQuestReviewStatus == 2 {
+			// 评阅开放题状态 1 未审核 2 已审核
+			dataSQL += " AND (quest.creator = ? OR (quest.id IN ? AND user_open_quest.open_quest_review_address IS NOT NULL))"
 			dataSQL += " AND (json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL)"
 		} else {
+			dataSQL += " AND (quest.creator = ? OR quest.id IN ? )"
 			dataSQL += " AND json_element->>'score' IS NULL AND json_element->>'correct' IS NULL"
 		}
 		dataSQL += " ORDER BY updated_at asc OFFSET ? LIMIT ?"
-		err = db.Raw(dataSQL, address, offset, limit).Scan(&list).Error
+		err = db.Raw(dataSQL, address, questIDList, offset, limit).Scan(&list).Error
 	} else {
 		err = db.Raw(`
 				SELECT 
@@ -87,8 +97,14 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				JOIN 
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
-					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND quest.creator = ?
-		`, address).Scan(&total).Error
+					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND (quest.creator = ? OR (
+					 quest.id IN ? AND ((
+						((json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL) AND user_open_quest.open_quest_review_address IS NOT NULL))
+						OR
+						(json_element->>'score' IS NULL AND json_element->>'correct' IS NULL)
+					 ))
+					)
+		`, address, questIDList).Scan(&total).Error
 		if err != nil {
 			return
 		}
@@ -118,10 +134,16 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				JOIN 
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
-					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND quest.creator = ?
+					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND (quest.creator = ? OR (
+					 quest.id IN ? AND ((
+						((json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL) AND user_open_quest.open_quest_review_address IS NOT NULL))
+						OR
+						(json_element->>'score' IS NULL AND json_element->>'correct' IS NULL)
+					 ))
+					)
 				ORDER BY updated_at asc
 				OFFSET ? LIMIT ?
-		`, address, offset, limit).Scan(&list).Error
+		`, address, questIDList, offset, limit).Scan(&list).Error
 	}
 	return
 }
