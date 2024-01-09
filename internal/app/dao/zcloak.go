@@ -33,10 +33,11 @@ func (d *Dao) SaveSignAndDid(address string, request request.SaveSignAndDidReque
 		return errors.New("AddressAlreadyBoundDid")
 	}
 	zcloakDid := model.ZcloakDid{
-		Signature:  request.Sign,
-		KeyFile:    request.KeyFile,
-		Address:    address,
-		DidAddress: request.DidAddress,
+		SignMessage: request.Sign,
+		Signature:   request.SignHash,
+		KeyFile:     request.KeyFile,
+		Address:     address,
+		DidAddress:  request.DidAddress,
 	}
 	err = d.db.Model(&model.ZcloakDid{}).Create(&zcloakDid).Error
 	if err != nil {
