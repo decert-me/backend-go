@@ -90,7 +90,7 @@ type DidCardRequest struct {
 
 type DidCardParamsRequest struct {
 	Title       string `json:"Title"`
-	ChallengeID int64  `json:"ChallengeID"`
+	ChallengeID string `json:"ChallengeID"`
 	Pass        bool   `json:"Pass"`
 	Score       int64  `json:"Score"`
 	Content     string `json:"Content"`
@@ -150,7 +150,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 		Receiver: did,
 		Params: DidCardParamsRequest{
 			Title:       quest.Title,
-			ChallengeID: req.TokenId,
+			ChallengeID: cast.ToString(req.TokenId),
 			Pass:        pass,
 			Score:       score,
 			Content:     "ipfs://" + hash,
