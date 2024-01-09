@@ -186,6 +186,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 		ImageURI:        strings.TrimPrefix(gjson.Get(string(quest.MetaData), "image").String(), "ipfs://"),
 		ErcType:         "erc1155",
 		Name:            gjson.Get(string(quest.MetaData), "name").String(),
+		DidAddress:      did,
 	})
 	if err != nil {
 		return err
@@ -207,6 +208,7 @@ type SaveCardInfoRequest struct {
 	ImageURI        string `json:"image_uri" form:"image_uri" binding:"required"`
 	ErcType         string `json:"erc_type" form:"erc_type" binding:"required"`
 	Name            string `json:"name" form:"name" binding:"required"`
+	DidAddress      string `json:"did_address" form:"did_address" binding:"required"`
 }
 
 // SaveToNFTCollection 保存到NFT
