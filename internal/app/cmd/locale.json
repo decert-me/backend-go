@@ -30,7 +30,9 @@
     "QuestNotComplete": "Not Complete All Quests！",
     "DiscordAlreadyLinked": "Discord account is already linked to another address!",
     "AddressAlreadyLinkedDiscord": "The wallet address has already been linked to Discord. Please do not repeat the operation.",
-    "FailedObtainDiscordInfo": "Failed to obtain Discord information!"
+    "FailedObtainDiscordInfo": "Failed to obtain Discord information!",
+    "DidAlreadyBound": "Did is already bound to another address!",
+    "AddressAlreadyBoundDid": "Address has already been bound to Did!"
   },
   "zh-CN": {
     "OperationSuccess": "操作成功！",
@@ -63,6 +65,8 @@
     "QuestNotComplete": "未完成所有挑战！",
     "DiscordAlreadyLinked": "Discord 账户已连接另一个地址",
     "AddressAlreadyLinkedDiscord": "钱包地址已绑定Discord，请勿重复操作",
-    "FailedObtainDiscordInfo": "无法获取 Discord 信息"
+    "FailedObtainDiscordInfo": "无法获取 Discord 信息",
+    "DidAlreadyBound": "DID 已绑定其他钱包地址",
+    "AddressAlreadyBoundDid": "钱包地址已绑定DID"
   }
 }

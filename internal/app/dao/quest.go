@@ -50,8 +50,9 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 			tx = tx.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
 		}
 		if req.Address != "" {
-			tx = tx.Select("quest.id,quest.uuid,COALESCE(quest_translated.title,quest.title) as title,quest.label,quest.disabled,COALESCE(quest_translated.description,quest.description) as description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,c.claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.pass,p.pass,false) as claimable")
+			tx = tx.Select("quest.id,quest.uuid,COALESCE(quest_translated.title,quest.title) as title,quest.label,quest.disabled,COALESCE(quest_translated.description,quest.description) as description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,NOT (c.claimed = false AND zc.quest_id IS NULL) as claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.pass,p.pass,false) as claimable")
 			tx = tx.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
+			tx = tx.Joins("LEFT JOIN (WITH zcloak_status AS (SELECT quest_id,ROW_NUMBER() OVER (PARTITION BY quest_id ORDER BY id DESC) as rn FROM zcloak_card WHERE address=? AND deleted_at IS NULL) SELECT quest_id FROM zcloak_status WHERE rn = 1) zc ON quest.id = zc.quest_id", req.Address)
 			tx = tx.Joins("LEFT JOIN (WITH ranked_statuses AS (SELECT token_id, open_quest_review_status,pass,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_open_quest WHERE address=? AND deleted_at IS NULL) SELECT open_quest_review_status,token_id,pass FROM ranked_statuses WHERE rn = 1) o ON quest.token_id = o.token_id", req.Address)
 			tx = tx.Joins("LEFT JOIN (WITH ranked_log AS (SELECT token_id,pass,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY id DESC) as rn FROM user_challenge_log WHERE address = ? AND deleted_at IS NULL) SELECT token_id,pass FROM ranked_log WHERE rn = 1) p ON quest.token_id = p.token_id", req.Address)
 		} else {
@@ -590,5 +591,28 @@ func (d *Dao) GetQuestAnswersByTokenId(tokenId int64) (answers []string, err err
 		UNION
 		SELECT answer FROM quest_translated WHERE token_id = ? AND answer IS NOT NULL) AS combined_data
 		`, tokenId, tokenId).Scan(&answers).Error
+	return
+}
+
+// GetAddressHighScore 获取地址最高分
+func (d *Dao) GetAddressHighScore(address string) (res []response.GetAddressHighScore, err error) {
+	userHighScoreSQL := `
+		WITH all_quest AS(
+				SELECT address,token_id,open_quest_score as score,answer
+				FROM user_open_quest
+				WHERE  address = ? AND pass=true
+				UNION
+				SELECT address,token_id,user_score/100 as score,answer
+				FROM user_challenge_log
+				WHERE address = ? AND pass=true AND is_open_quest=false
+			),ranked_quest AS (
+		SELECT address,token_id,score,answer,ROW_NUMBER() OVER (PARTITION BY address,token_id ORDER BY token_id DESC,score DESC) as rn 
+		 FROM all_quest
+			)
+		 SELECT address,token_id,score,answer
+		 FROM ranked_quest 
+		 WHERE rn=1
+	`
+	err = d.db.Raw(userHighScoreSQL, address, address).Scan(&res).Error
 	return
 }
