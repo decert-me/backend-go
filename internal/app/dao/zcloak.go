@@ -107,20 +107,18 @@ func (d *Dao) AddressHasCard(address string) (hasCard bool, err error) {
 	return true, nil
 }
 
-// GetKeyFileWithSignature 获取签名
-func (d *Dao) GetKeyFileWithSignature(address string) (signature string, keyFile datatypes.JSON, nonce string, err error) {
+// GetKeyFileWithSignature 获取KeyFile
+func (d *Dao) GetKeyFileWithSignature(address string) (keyFile datatypes.JSON, err error) {
 	type Data struct {
-		Signature string
-		KeyFile   datatypes.JSON
-		Nonce     string
+		KeyFile datatypes.JSON
 	}
 	var data Data
 	err = d.db.Model(&model.ZcloakDid{}).Where("address = ?", address).First(&data).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return signature, keyFile, nonce, nil
+			return keyFile, nil
 		}
-		return signature, keyFile, nonce, err
+		return keyFile, err
 	}
-	return data.Signature, data.KeyFile, data.Nonce, nil
+	return data.KeyFile, nil
 }

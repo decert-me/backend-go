@@ -235,7 +235,7 @@ func (s *Service) SaveToNFTCollection(saveCardInfo SaveCardInfoRequest) (err err
 	return nil
 }
 
-// GetKeyFileWithSignature 获取KeyFiles签名内容
-func (s *Service) GetKeyFileWithSignature(address string) (signature string, keyFile datatypes.JSON, nonce string, err error) {
+// GetKeyFileWithSignature 获取KeyFiles
+func (s *Service) GetKeyFileWithSignature(address string) (keyFile datatypes.JSON, err error) {
 	return s.dao.GetKeyFileWithSignature(address)
 }

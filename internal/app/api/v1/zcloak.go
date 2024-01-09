@@ -73,9 +73,9 @@ func GenerateCardInfo(c *gin.Context) {
 // GetKeyFileWithSignature 获取KeyFiles签名内容
 func GetKeyFileWithSignature(c *gin.Context) {
 	address := c.GetString("address")
-	if data, keyFile, nonce, err := srv.GetKeyFileWithSignature(address); err != nil {
+	if keyFile, err := srv.GetKeyFileWithSignature(address); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
-		OkWithData(map[string]interface{}{"key_file": keyFile, "signature": data, "nonce": nonce}, c)
+		OkWithData(map[string]interface{}{"key_file": keyFile}, c)
 	}
 }
