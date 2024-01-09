@@ -156,7 +156,10 @@ func (d *Dao) GetChallengeList(req *request.GetChallengeListRequest) (res []resp
 		)
 		SELECT nft_address,true as claimed,a.add_ts as complete_ts,b.*,COALESCE(tr.title,b.title) as title,COALESCE(tr.description,b.description) as description
 		FROM ranked_quest a
-		JOIN quest b ON a.token_id=b.token_id LEFT JOIN quest_translated tr ON b.token_id = tr.token_id AND tr.language = ? ORDER BY a.add_ts DESC LIMIT ? OFFSET ?
+		JOIN quest b ON a.token_id=b.token_id 
+		LEFT JOIN quest_translated tr ON b.token_id = tr.token_id AND tr.language = ? 
+		WHERE rn=1
+		ORDER BY a.add_ts DESC LIMIT ? OFFSET ?
 	`
 	// 查询数据
 	db := d.db.Raw(dataSQL, req.Address, req.Address, req.Language, limit, offset)
