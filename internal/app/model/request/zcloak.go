@@ -14,7 +14,11 @@ type GetDidSignMessageRequest struct {
 }
 
 type GenerateCardInfoRequest struct {
-	TokenId int64  `json:"token_id"`
+	TokenId int64  `json:"token_id" binding:"required"`
 	Answer  string `json:"answer" binding:"required"`
 	Uri     string `json:"uri"`
+}
+
+type GenerateCardRequest struct {
+	TokenId int64 `json:"token_id" binding:"required"`
 }

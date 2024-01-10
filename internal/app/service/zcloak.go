@@ -241,3 +241,35 @@ func (s *Service) SaveToNFTCollection(saveCardInfo SaveCardInfoRequest) (err err
 func (s *Service) GetKeyFileWithSignature(address string) (keyFile datatypes.JSON, err error) {
 	return s.dao.GetKeyFileWithSignature(address)
 }
+
+// GenerateCard 生成证书
+func (s *Service) GenerateCard(address string, tokenID int64) (err error) {
+	quest, err := s.dao.GetQuestByTokenID(tokenID)
+	if err != nil {
+		return errors.New("TokenIDInvalid")
+	}
+	var userScore int64
+	var answer string
+	// 判断是否是开放题
+	if IsOpenQuest(gjson.Get(string(quest.QuestData), "questions").String()) {
+		// 获取用户最新回答
+		answer, userScore, err = s.dao.GetLatestOpenQuestPassAnswer(address, tokenID)
+		if err != nil {
+			log.Errorv("GetLatestOpenQuestPassAnswer error", zap.Error(err))
+			return errors.New("UnexpectedError")
+		}
+	} else {
+		answer, userScore, err = s.dao.GetLatestQuestPassAnswer(address, tokenID)
+		if err != nil {
+			log.Errorv("GetLatestQuestPassAnswer error", zap.Error(err))
+			return errors.New("UnexpectedError")
+		}
+		userScore = userScore / 100
+	}
+	fmt.Println("answer", answer)
+	s.GenerateCardInfo(address, userScore, request.GenerateCardInfoRequest{
+		TokenId: tokenID,
+		Answer:  answer,
+	})
+	return
+}
