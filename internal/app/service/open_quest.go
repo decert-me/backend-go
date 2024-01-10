@@ -272,6 +272,13 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 					Content:   "你在《" + quest.Title + "》的挑战成绩为 " + cast.ToString(score) + " 分，可领取一枚NFT！",
 					ContentEn: "Your score for the challenge \"" + quest.Title + "\" is " + cast.ToString(score) + " points, and you can claim an NFT!",
 				}
+				// 创建证书
+				go func() {
+					s.GenerateCardInfo(userOpenQuest.Address, openQuestScore, request.GenerateCardInfoRequest{
+						TokenId: userOpenQuest.TokenId,
+						Answer:  answerRes,
+					})
+				}()
 			} else {
 				message = model.UserMessage{
 					Title:     "挑战未通过",
