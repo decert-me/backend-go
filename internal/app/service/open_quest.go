@@ -11,6 +11,7 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 	"math/big"
 	"time"
 )
@@ -21,9 +22,10 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 	limit := r.PageSize
 	// 查询用户是否有其它权限
 	var questIDList []uint
-	err = s.dao.DB().Model(&model.OpenQuestUserPerm{}).Where("address_list @> ?", pq.Array([]string{address})).Pluck("quest_id", &questIDList).Error
-	if err != nil {
-		return
+	if err := s.dao.DB().Model(&model.OpenQuestUserPerm{}).Where("address_list @> ?", pq.Array([]string{address})).Pluck("quest_id", &questIDList).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, 0, err
+		}
 	}
 	db := s.dao.DB().Model(&model.UserOpenQuest{})
 	if r.OpenQuestReviewStatus != 0 {
@@ -60,7 +62,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 						ELSE 1
 					END AS open_quest_review_status,
 					json_element->>'open_quest_review_time' AS open_quest_review_time,
-					user_open_quest.updated_at,
+					COALESCE(user_open_quest.commit_time,user_open_quest.updated_at) as updated_at,
 					(idx::int - 1)  AS index,
 					json_element->>'type' AS type,
 					json_element->>'value' AS value,
@@ -123,7 +125,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 						ELSE 1
 					END AS open_quest_review_status,
 					json_element->>'open_quest_review_time' AS open_quest_review_time,
-					user_open_quest.updated_at,
+					COALESCE(user_open_quest.commit_time,user_open_quest.updated_at) as updated_at,
 					(idx::int - 1) AS index,
 					json_element->>'type' AS type,
 					json_element->>'value' AS value,
@@ -162,7 +164,7 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 	questMap := make(map[int64]model.Quest)
 	for _, r := range req {
 		var userOpenQuest model.UserOpenQuest
-		if err = db.Model(&model.UserOpenQuest{}).Where("id = ? AND open_quest_review_status = 1", r.ID).First(&userOpenQuest).Error; err != nil {
+		if err = db.Model(&model.UserOpenQuest{}).Select("*,COALESCE(user_open_quest.commit_time,user_open_quest.updated_at) as updated_at").Where("id = ? AND open_quest_review_status = 1", r.ID).First(&userOpenQuest).Error; err != nil {
 			db.Rollback()
 			return errors.New("获取答案失败")
 		}
@@ -191,7 +193,8 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 			// 查询用户是否有其它权限
 			err = s.dao.DB().Model(&model.OpenQuestUserPerm{}).Where("address_list @> ?", pq.Array([]string{address})).Pluck("quest_id", &questIDList).Error
 			if err != nil {
-				return
+				db.Rollback()
+				return err
 			}
 			var isPerm bool
 			for _, v := range questIDList {
