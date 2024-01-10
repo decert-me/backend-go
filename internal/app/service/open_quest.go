@@ -42,15 +42,19 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'
 		`
 		if r.OpenQuestReviewStatus == 2 {
-			countSQL += " AND (quest.creator = ? OR (quest.id IN ? AND json_element->>'open_quest_review_address' IS NOT NULL))"
+			countSQL += " AND (quest.creator = ? OR (quest.id IN ? AND json_element->>'open_quest_review_address' = ?))"
 			countSQL += " AND (json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL)"
+			err = db.Raw(countSQL, address, questIDList, address).Scan(&total).Error
+			if err != nil {
+				return
+			}
 		} else {
 			countSQL += " AND (quest.creator = ? OR quest.id IN ? )"
 			countSQL += " AND json_element->>'score' IS NULL AND json_element->>'correct' IS NULL"
-		}
-		err = db.Raw(countSQL, address, questIDList).Scan(&total).Error
-		if err != nil {
-			return
+			err = db.Raw(countSQL, address, questIDList).Scan(&total).Error
+			if err != nil {
+				return
+			}
 		}
 		dataSQL := `
 				SELECT 
