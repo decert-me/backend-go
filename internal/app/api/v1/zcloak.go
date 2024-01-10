@@ -31,17 +31,6 @@ func GetAddressDid(c *gin.Context) {
 	}
 }
 
-// GetVcInfo 获取 VC 信息
-func GetVcInfo(c *gin.Context) {
-	id := c.GetString("id")
-	address := c.Param("address")
-	if data, err := srv.GetVcInfo(address, id); err != nil {
-		FailWithMessage(GetMessage(c, "FetchFailed"), c)
-	} else {
-		OkWithData(data, c)
-	}
-}
-
 // GetDidSignMessage 获取 DID 签名
 func GetDidSignMessage(c *gin.Context) {
 	var request request.GetDidSignMessageRequest
@@ -77,5 +66,21 @@ func GetKeyFileWithSignature(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
 		OkWithData(map[string]interface{}{"key_file": keyFile}, c)
+	}
+}
+
+// GenerateCard 生成证书
+func GenerateCard(c *gin.Context) {
+	var req request.GenerateCardRequest
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	address := c.GetString("address")
+	if err = srv.GenerateCard(address, req.TokenId); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		Ok(c)
 	}
 }
