@@ -11,6 +11,7 @@ func NewPgSQL(c *config.Pgsql) *gorm.DB {
 	db := GormPgSql(c)
 	if c.AutoMigrate {
 		RegisterTables(db) // 初始化表
+		initChainID(db)
 	}
 	return db
 }
@@ -21,6 +22,7 @@ func RegisterTables(db *gorm.DB) {
 		model.Users{},
 		model.ClaimBadgeTweet{},
 		model.Quest{},
+		model.Collection{},
 		model.UserChallenges{},
 		model.Transaction{},
 		model.Upload{},
@@ -32,11 +34,28 @@ func RegisterTables(db *gorm.DB) {
 		model.OpenQuestPerm{},
 		model.QuestTranslated{},
 		model.CollectionTranslated{},
-		model.OpenQuestUserPerm{},
 		model.ZcloakDid{},
 		model.ZcloakCard{},
 	)
 	if err != nil {
 		panic("register table failed")
+	}
+}
+
+// init chain id
+func initChainID(db *gorm.DB) {
+	// 查询是否存在链ID
+	var chainID int64
+	err := db.Model(&model.Collection{}).Select("max(chain_id)").First(&chainID).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		panic("init chain id failed")
+	}
+	if chainID == 0 {
+		return
+	}
+	// 初始化
+	err = db.Model(&model.Collection{}).Where("token_id != 0").Update("chain_id", 137).Error
+	if err != nil {
+		panic("init chain id failed")
 	}
 }

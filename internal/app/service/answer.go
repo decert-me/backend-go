@@ -5,6 +5,7 @@ import (
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
+	"fmt"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
@@ -21,6 +22,7 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 	res := string(quest.MetaData)
 	questData := string(quest.QuestData)
 	version := gjson.Get(res, "version").Float()
+
 	// 判断是否有开放题目
 	if useDBOpenQuest && IsOpenQuest(answerUser) {
 		// 获取数据库已审核最新数据
@@ -50,6 +52,7 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 			return userReturnScore, false, errors.New("unexpect error")
 		}
 	}
+	fmt.Println("answersList", answersList)
 	// 检查答案有效性
 	if len(answerU) != len(answerS) || len(scoreList) != len(answerS) {
 		log.Error("答案数量不相等")
@@ -83,9 +86,9 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 		}
 		// 单选题
 		if questType == "multiple_choice" {
-			//fmt.Println("multiple_choice")
-			//fmt.Println("questValue", questValue)
-			//fmt.Println("answerU[i].String()", answerU[i].String())
+			fmt.Println("multiple_choice")
+			fmt.Println("questValue", questValue)
+			fmt.Println("answerU[i].String()", answerU[i].String())
 			if questValue == answerU[i].String() {
 				score += scoreList[i].Int()
 			}
@@ -93,9 +96,9 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 		}
 		// 填空题
 		if questType == "fill_blank" {
-			//fmt.Println("questValue", questValue)
+			fmt.Println("questValue", questValue)
 			for _, item := range answersList {
-				//fmt.Println("item", item[i].String())
+				fmt.Println("item", item[i].String())
 				if questValue == item[i].String() {
 					score += scoreList[i].Int()
 					break
@@ -106,8 +109,8 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 		// 多选题
 		if questType == "multiple_response" {
 			answerArray := gjson.Get(questValue, "@this").Array()
-			//fmt.Println(len(answerArray))
-			//fmt.Println(len(answerU[i].Array()))
+			fmt.Println(len(answerArray))
+			fmt.Println(len(answerU[i].Array()))
 			// 数量
 			if len(answerArray) != len(answerU[i].Array()) {
 				continue
@@ -133,13 +136,17 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 		}
 		if questType == "open_quest" {
 			if gjson.Get(v.String(), "score").Int() != 0 {
-				//fmt.Println("score", gjson.Get(v.String(), "score").Int())
+				fmt.Println("score", gjson.Get(v.String(), "score").Int())
 				score += gjson.Get(v.String(), "score").Int()
 			} else if gjson.Get(v.String(), "correct").Bool() == true {
 				score += scoreList[i].Int()
 			}
 		}
 	}
+
+	fmt.Println("score", score)
+	fmt.Println("passingScore", passingScore)
+	fmt.Println("userScore", userScore)
 	if userScore == 0 {
 		if score >= passingScore {
 			return score * 10000 / totalScore, true, nil

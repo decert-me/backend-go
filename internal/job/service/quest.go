@@ -78,6 +78,7 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		QuestData:   []byte(questDataDetail),
 		IsDraft:     false, // 当前发布不审核
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
+		ChainID:     137,
 	}
 	// 区分合辑和Quest
 	if collectionID == 0 {

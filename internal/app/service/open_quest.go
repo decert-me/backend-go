@@ -6,12 +6,10 @@ import (
 	"backend-go/internal/app/model/response"
 	"errors"
 	"fmt"
-	"github.com/lib/pq"
 	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 	"gorm.io/datatypes"
-	"gorm.io/gorm"
 	"math/big"
 	"time"
 )
@@ -20,13 +18,6 @@ import (
 func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQuestListRequest) (list []response.UserOpenQuestJsonElements, total int64, err error) {
 	offset := (r.Page - 1) * r.PageSize
 	limit := r.PageSize
-	// 查询用户是否有其它权限
-	var questIDList []uint
-	if err := s.dao.DB().Model(&model.OpenQuestUserPerm{}).Where("address_list @> ?", pq.Array([]string{address})).Pluck("quest_id", &questIDList).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, 0, err
-		}
-	}
 	db := s.dao.DB().Model(&model.UserOpenQuest{})
 	if r.OpenQuestReviewStatus != 0 {
 		countSQL := `
@@ -39,22 +30,16 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				JOIN 
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
-					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'
+					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest' AND quest.creator = ?
 		`
 		if r.OpenQuestReviewStatus == 2 {
-			countSQL += " AND (quest.creator = ? OR (quest.id IN ? AND json_element->>'open_quest_review_address' = ?))"
 			countSQL += " AND (json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL)"
-			err = db.Raw(countSQL, address, questIDList, address).Scan(&total).Error
-			if err != nil {
-				return
-			}
 		} else {
-			countSQL += " AND (quest.creator = ? OR quest.id IN ? )"
 			countSQL += " AND json_element->>'score' IS NULL AND json_element->>'correct' IS NULL"
-			err = db.Raw(countSQL, address, questIDList).Scan(&total).Error
-			if err != nil {
-				return
-			}
+		}
+		err = db.Raw(countSQL, address).Scan(&total).Error
+		if err != nil {
+			return
 		}
 		dataSQL := `
 				SELECT 
@@ -66,7 +51,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 						ELSE 1
 					END AS open_quest_review_status,
 					json_element->>'open_quest_review_time' AS open_quest_review_time,
-					COALESCE(user_open_quest.commit_time,user_open_quest.updated_at) as updated_at,
+					user_open_quest.updated_at,
 					(idx::int - 1)  AS index,
 					json_element->>'type' AS type,
 					json_element->>'value' AS value,
@@ -82,21 +67,15 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				JOIN 
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
-					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'
+					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest' AND quest.creator = ?
 		`
 		if r.OpenQuestReviewStatus == 2 {
-			// 评阅开放题状态 1 未审核 2 已审核
-			dataSQL += " AND (quest.creator = ? OR (quest.id IN ? AND json_element->>'open_quest_review_address' = ?))"
 			dataSQL += " AND (json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL)"
-			dataSQL += " ORDER BY updated_at asc OFFSET ? LIMIT ?"
-			err = db.Raw(dataSQL, address, questIDList, address, offset, limit).Scan(&list).Error
 		} else {
-			dataSQL += " AND (quest.creator = ? OR quest.id IN ? )"
 			dataSQL += " AND json_element->>'score' IS NULL AND json_element->>'correct' IS NULL"
-			dataSQL += " ORDER BY updated_at asc OFFSET ? LIMIT ?"
-			err = db.Raw(dataSQL, address, questIDList, offset, limit).Scan(&list).Error
 		}
-
+		dataSQL += " ORDER BY updated_at asc OFFSET ? LIMIT ?"
+		err = db.Raw(dataSQL, address, offset, limit).Scan(&list).Error
 	} else {
 		err = db.Raw(`
 				SELECT 
@@ -108,14 +87,8 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				JOIN 
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
-					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND (quest.creator = ? OR (
-					 quest.id IN ? AND ((
-						((json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL) AND json_element->>'open_quest_review_address' = ?))
-						OR
-						(json_element->>'score' IS NULL AND json_element->>'correct' IS NULL)
-					 ))
-					)
-		`, address, questIDList, address).Scan(&total).Error
+					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND quest.creator = ?
+		`, address).Scan(&total).Error
 		if err != nil {
 			return
 		}
@@ -129,7 +102,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 						ELSE 1
 					END AS open_quest_review_status,
 					json_element->>'open_quest_review_time' AS open_quest_review_time,
-					COALESCE(user_open_quest.commit_time,user_open_quest.updated_at) as updated_at,
+					user_open_quest.updated_at,
 					(idx::int - 1) AS index,
 					json_element->>'type' AS type,
 					json_element->>'value' AS value,
@@ -145,16 +118,10 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				JOIN 
 					quest ON quest.token_id = user_open_quest.token_id
 				WHERE
-					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND (quest.creator = ? OR (
-					 quest.id IN ? AND ((
-						((json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL) AND json_element->>'open_quest_review_address' = ?))
-						OR
-						(json_element->>'score' IS NULL AND json_element->>'correct' IS NULL)
-					 ))
-					)
+					user_open_quest.deleted_at IS NULL AND quest.status = 1 AND json_element->>'type' = 'open_quest'  AND quest.creator = ?
 				ORDER BY updated_at asc
 				OFFSET ? LIMIT ?
-		`, address, questIDList, address, offset, limit).Scan(&list).Error
+		`, address, offset, limit).Scan(&list).Error
 	}
 	return
 }
@@ -168,7 +135,7 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 	questMap := make(map[int64]model.Quest)
 	for _, r := range req {
 		var userOpenQuest model.UserOpenQuest
-		if err = db.Model(&model.UserOpenQuest{}).Select("*,COALESCE(user_open_quest.commit_time,user_open_quest.updated_at) as updated_at").Where("id = ? AND open_quest_review_status = 1", r.ID).First(&userOpenQuest).Error; err != nil {
+		if err = db.Model(&model.UserOpenQuest{}).Where("id = ? AND open_quest_review_status = 1", r.ID).First(&userOpenQuest).Error; err != nil {
 			db.Rollback()
 			return errors.New("获取答案失败")
 		}
@@ -193,34 +160,12 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 		quest := questMap[userOpenQuest.TokenId]
 		// 检查是否用户发布的题目
 		if quest.Creator != address {
-			var questIDList []uint
-			// 查询用户是否有其它权限
-			err = s.dao.DB().Model(&model.OpenQuestUserPerm{}).Where("address_list @> ?", pq.Array([]string{address})).Pluck("quest_id", &questIDList).Error
-			if err != nil {
-				db.Rollback()
-				return err
-			}
-			var isPerm bool
-			for _, v := range questIDList {
-				if v == quest.ID {
-					isPerm = true
-					break
-				}
-			}
-			if !isPerm {
-				db.Rollback()
-				return errors.New("非法操作")
-			}
-		}
-		// 填入审核人
-		answerRaw, err := sjson.Set(string(r.Answer), "open_quest_review_address", address)
-		if err != nil {
 			db.Rollback()
-			return errors.New("写入审核结果失败")
+			return errors.New("非法操作")
 		}
 		// 填入原有答案
 		answer := userOpenQuest.Answer
-		answerRes, err := sjson.Set(string(answer), fmt.Sprintf("%d", r.Index), gjson.Parse(answerRaw).Value())
+		answerRes, err := sjson.Set(string(answer), fmt.Sprintf("%d", r.Index), r.Answer)
 		if err != nil {
 			db.Rollback()
 			return errors.New("写入审核结果失败")
