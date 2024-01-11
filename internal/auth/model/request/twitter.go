@@ -11,7 +11,7 @@ type TwitterCallbackReq struct {
 }
 
 type TwitterClaimReq struct {
-	TokenId int64  `json:"tokenId"`
+	TokenId string `json:"tokenId"`
 	Address string `json:"address"`
 	Score   int64  `json:"score"  binding:"required"`
 }

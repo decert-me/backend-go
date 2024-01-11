@@ -32,8 +32,8 @@ func (d *Dao) CreateClaimBadgeTweet(req *model.ClaimBadgeTweet) (exists bool, er
 	return exists, err
 }
 
-func (d *Dao) GetPendingAirdrop() (res map[int64][]string, err error) {
-	res = make(map[int64][]string)
+func (d *Dao) GetPendingAirdrop() (res map[string][]string, err error) {
+	res = make(map[string][]string)
 	var pending []model.ClaimBadgeTweet
 	if err = d.db.Where("airdropped", false).Find(&pending).Error; err != nil {
 		return
@@ -51,7 +51,7 @@ func (d *Dao) UpdateAirdropped(req *model.ClaimBadgeTweet) (err error) {
 	return
 }
 
-func (d *Dao) UpdateAirdroppedList(tokenId int64, receivers []common.Address, hash string) (err error) {
+func (d *Dao) UpdateAirdroppedList(tokenId string, receivers []common.Address, hash string) (err error) {
 	tx := d.db.Model(&model.ClaimBadgeTweet{}).Begin()
 	for _, v := range receivers {
 		tx.Where("token_id = ? AND address = ?", tokenId, v.String()).
@@ -60,14 +60,14 @@ func (d *Dao) UpdateAirdroppedList(tokenId int64, receivers []common.Address, ha
 	return tx.Commit().Error
 }
 
-func (d *Dao) UpdateAirdroppedOne(tokenId int64, receivers string, hash string) (err error) {
+func (d *Dao) UpdateAirdroppedOne(tokenId string, receivers string, hash string) (err error) {
 	tx := d.db.Model(&model.ClaimBadgeTweet{}).Begin()
 	tx.Where("token_id = ? AND address = ?", tokenId, receivers).
 		Updates(map[string]interface{}{"status": 1, "airdrop_hash": hash, "airdrop_ts": time.Now().Unix()})
 	return tx.Commit().Error
 }
 
-func (d *Dao) HasAirdrop(address string, tokenId int64) bool {
+func (d *Dao) HasAirdrop(address string, tokenId string) bool {
 	//var total int64
 	//err := d.db.Model(&model.ClaimBadgeTweet{}).
 	//	Where("address = ? AND token_id = ? AND status=1", address, tokenId).

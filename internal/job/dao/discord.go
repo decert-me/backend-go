@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (d *Dao) AirdropSuccessNotice(address string, tokenID int64) {
+func (d *Dao) AirdropSuccessNotice(address string, tokenId string) {
 	// 查询用户信息
 	var user model.Users
 	err := d.db.Model(&model.Users{}).Select("socials").Where("address = ?", address).First(&user).Error
@@ -54,7 +54,7 @@ func (d *Dao) AirdropSuccessNotice(address string, tokenID int64) {
 	}
 }
 
-func (d *Dao) AirdropFailNotice(address string, tokenID int64, reason string) {
+func (d *Dao) AirdropFailNotice(address string, tokenId string, reason string) {
 	Token := d.c.Discord.Token
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + Token)

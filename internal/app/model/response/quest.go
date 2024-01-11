@@ -77,7 +77,7 @@ type GetQuestHolderListRes struct {
 
 type GetAddressHighScore struct {
 	Address string         `gorm:"address"`
-	TokenId int64          `gorm:"token_id"`
+	TokenId string         `gorm:"token_id"`
 	Score   int64          `gorm:"score"`
 	Answer  datatypes.JSON `gorm:"answer"`
 }

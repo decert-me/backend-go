@@ -17,7 +17,7 @@ func (d *Dao) CreateChallenges(challenges *model.UserChallenges) (err error) {
 	return
 }
 
-func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (err error) {
+func (d *Dao) CreateChallengesList(tokenId string, receivers []common.Address) (err error) {
 	var challenge []model.UserChallenges
 	for _, v := range receivers {
 		challenge = append(challenge, model.UserChallenges{
@@ -34,7 +34,7 @@ func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (e
 	return
 }
 
-func (d *Dao) CreateChallengesOne(tokenId int64, receiver string, uerScore int64, nftAddress string) (err error) {
+func (d *Dao) CreateChallengesOne(tokenId string, receiver string, uerScore int64, nftAddress string) (err error) {
 	challenge := model.UserChallenges{
 		Address:    receiver,
 		TokenId:    tokenId,

@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *Dao) HasTokenId(tokenId int64) (has bool, err error) {
+func (d *Dao) HasTokenId(tokenId string) (has bool, err error) {
 	var count int64
 	err = d.db.Model(&model.Quest{}).Where("token_id", tokenId).Count(&count).Error
 	if count > 0 {
@@ -18,7 +18,7 @@ func (d *Dao) HasTokenId(tokenId int64) (has bool, err error) {
 	return
 }
 
-func (d *Dao) ValidTokenId(tokenId int64) (valid bool, err error) {
+func (d *Dao) ValidTokenId(tokenId string) (valid bool, err error) {
 	var quest model.Quest
 	err = d.db.
 		Where("token_id", tokenId).Where("disabled", false).Where("is_draft", false).
@@ -124,8 +124,8 @@ func (d *Dao) GetQuestByTokenIDWithLang(language string, id int64) (quest respon
 	return
 }
 
-func (d *Dao) GetQuestByTokenID(id int64) (quest model.Quest, err error) {
-	err = d.db.Model(&model.Quest{}).Where("token_id", id).First(&quest).Error
+func (d *Dao) GetQuestByTokenID(tokenID string) (quest model.Quest, err error) {
+	err = d.db.Model(&model.Quest{}).Where("token_id", tokenID).First(&quest).Error
 	return
 }
 
@@ -254,7 +254,7 @@ func (d *Dao) GetUserQuestListWithClaimed(req *request.GetUserQuestListRequest) 
 	return questList, total, err
 }
 
-func (d *Dao) GetQuestChallengeUserByTokenID(tokenId int64) (res response.GetQuestChallengeUserRes, err error) {
+func (d *Dao) GetQuestChallengeUserByTokenID(tokenId string) (res response.GetQuestChallengeUserRes, err error) {
 	err = d.db.Model(&model.UserChallenges{}).Where("token_id", tokenId).Count(&res.Times).Error
 	if err != nil {
 		return res, err
@@ -295,7 +295,7 @@ func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 }
 
 // GetQuestFlashRankByTokenID 获取闪电榜
-func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId int64) (res response.GetQuestFlashListRes, err error) {
+func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId string) (res response.GetQuestFlashListRes, err error) {
 	// 查询挑战
 	var quest model.Quest
 	err = d.db.Model(&model.Quest{}).Where("token_id", tokenId).First(&quest).Error
@@ -431,7 +431,7 @@ func IsOpenQuest(answerUser string) bool {
 }
 
 // GetQuestHighRankByTokenID 获取高分榜
-func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId int64) (res response.GetQuestHighScoreListRes, err error) {
+func (d *Dao) GetQuestHighRankByTokenID(address string, tokenId string) (res response.GetQuestHighScoreListRes, err error) {
 	// 查询挑战
 	var quest model.Quest
 	err = d.db.Model(&model.Quest{}).Where("token_id", tokenId).First(&quest).Error
@@ -553,7 +553,7 @@ func (d *Dao) GetQuestHighRankByUUID(address string, uuid string) (res response.
 }
 
 // GetQuestHolderRankByTokenID 获取持有榜
-func (d *Dao) GetQuestHolderRankByTokenID(address string, tokenId int64, page, pageSize int) (res []response.GetQuestHolderListRes, total int64, err error) {
+func (d *Dao) GetQuestHolderRankByTokenID(address string, tokenId string, page, pageSize int) (res []response.GetQuestHolderListRes, total int64, err error) {
 	// 分页参数
 	limit := pageSize
 	offset := pageSize * (page - 1)
@@ -584,7 +584,7 @@ func (d *Dao) GetQuestHolderRankByUUID(address string, uuid string, page, pageSi
 }
 
 // GetQuestAnswersByTokenId 获取挑战多语言答案
-func (d *Dao) GetQuestAnswersByTokenId(tokenId int64) (answers []string, err error) {
+func (d *Dao) GetQuestAnswersByTokenId(tokenId string) (answers []string, err error) {
 	err = d.db.Raw(`SELECT answer AS answers
 		FROM (
 		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?

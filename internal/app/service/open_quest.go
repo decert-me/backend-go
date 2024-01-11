@@ -132,7 +132,7 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 	// 用户开放题
 	userOpenQuestTimeMap := make(map[uint]time.Time)
 	// 题目
-	questMap := make(map[int64]model.Quest)
+	questMap := make(map[string]model.Quest)
 	for _, r := range req {
 		var userOpenQuest model.UserOpenQuest
 		if err = db.Model(&model.UserOpenQuest{}).Where("id = ? AND open_quest_review_status = 1", r.ID).First(&userOpenQuest).Error; err != nil {

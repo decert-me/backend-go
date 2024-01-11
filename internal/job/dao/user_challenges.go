@@ -33,7 +33,7 @@ func (d *Dao) CreateChallengesList(tokenIds []*big.Int, receivers []common.Addre
 	return
 }
 
-func (d *Dao) DeleteUserChallengeLogByTokenId(tokenId int64) (err error) {
+func (d *Dao) DeleteUserChallengeLogByTokenId(tokenId string) (err error) {
 	err = d.db.Where("token_id = ?", tokenId).Delete(&model.UserChallengeLog{}).Error
 	if err != nil {
 		return err

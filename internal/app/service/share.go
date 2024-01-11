@@ -109,18 +109,15 @@ func (s *Service) AirdropCallback(c *gin.Context, req request.AirdropCallbackReq
 		s.dao.AirdropFailNotice(req.Receiver, req.TokenId, req.Msg)
 		return
 	}
-	tokenId, err := strconv.Atoi(req.TokenId)
-	if err != nil {
-		log.Errorv("strconv.Atoi error", zap.Error(err))
-		return
-	}
-	if err = s.dao.UpdateAirdroppedOne(int64(tokenId), req.Receiver, req.Hash); err != nil {
+	tokenId := req.TokenId
+
+	if err = s.dao.UpdateAirdroppedOne(tokenId, req.Receiver, req.Hash); err != nil {
 		log.Errorv("UpdateAirdroppedOne error", zap.Any("error", err))
 	}
 	// 获取分数
 	score := gjson.Get(req.Params, "params.score").Int()
 	nftAddress := gjson.Get(req.Params, "params.nft_address").String()
-	if err = s.dao.CreateChallengesOne(int64(tokenId), req.Receiver, score, nftAddress); err != nil {
+	if err = s.dao.CreateChallengesOne(tokenId, req.Receiver, score, nftAddress); err != nil {
 		log.Errorv("CreateChallengesOne error ", zap.Any("error", err))
 	}
 	s.dao.AirdropSuccessNotice(req.Receiver, req.TokenId)

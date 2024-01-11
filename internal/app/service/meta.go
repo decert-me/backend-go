@@ -15,11 +15,8 @@ func (s *Service) HandleMetaRequest(_tokenID string) []byte {
 		return fileContent
 	}
 	// 查询信息
-	tokenID, err := strconv.Atoi(_tokenID)
-	if err != nil {
-		return fileContent
-	}
-	quest, err := s.dao.GetQuestByTokenID(int64(tokenID))
+	tokenID := _tokenID
+	quest, err := s.dao.GetQuestByTokenID(tokenID)
 	if err != nil {
 		return fileContent
 	}

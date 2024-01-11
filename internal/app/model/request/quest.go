@@ -22,7 +22,7 @@ type AddQuestRequest struct {
 }
 
 type UpdateQuestRequest struct {
-	TokenId     int64  `json:"token_id" binding:"required"`
+	TokenId     string `json:"token_id" binding:"required"`
 	Uri         string `json:"uri" binding:"required"`
 	Title       string `json:"title" binding:"required"`
 	Description string `json:"description"`
@@ -32,7 +32,7 @@ type UpdateQuestRequest struct {
 }
 
 type UpdateRecommendRequest struct {
-	TokenId   int64  `json:"token_id" binding:"required"`
+	TokenId   string `json:"token_id" binding:"required"`
 	Recommend string `json:"recommend"` // 推荐
 }
 
@@ -56,7 +56,7 @@ type AddQuestV2Request struct {
 }
 
 type UpdateQuestV2Request struct {
-	TokenId     int64  `json:"token_id" binding:"required"`
+	TokenId     string `json:"token_id" binding:"required"`
 	Uri         string `json:"uri" binding:"required"`
 	Title       string `json:"title" binding:"required"`
 	Description string `json:"description"`

@@ -126,7 +126,7 @@ func GetSpyderTweetById(c *config.Config, tweetId string) (string, error) {
 // @description: 检查推特帖子内容相符
 // @param: tokenId uint64, tweet string
 // @return: bool
-func CheckIfMatchClaimTweet(c *config.Config, tokenId int64, tweet string) bool {
+func CheckIfMatchClaimTweet(c *config.Config, tokenId string, tweet string) bool {
 	const twitter = "@decertme"
 	const twitterLink = "https://decert.me/quests/"
 	// 推文包含有「@DecertMe」

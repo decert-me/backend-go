@@ -20,12 +20,16 @@ func (s *Service) UpdateBadgeURIV2(address string, badgeURI request.UpdateBadgeU
 	if err != nil {
 		return
 	}
+	tokenId, set := big.NewInt(0).SetString(badgeURI.TokenId, 10)
+	if !set {
+		return res, errors.New("TokenIDInvalid")
+	}
 	hash := solsha3.SoliditySHA3(
 		// types
 		[]string{"uint256", "string", "address", "address"},
 		// values
 		[]interface{}{
-			big.NewInt(badgeURI.TokenId), badgeURI.Uri, s.c.ContractV2[badgeURI.ChainID].Badge, address,
+			tokenId, badgeURI.Uri, s.c.ContractV2[badgeURI.ChainID].Badge, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)

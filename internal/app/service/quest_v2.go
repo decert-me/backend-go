@@ -2,6 +2,7 @@ package service
 
 import (
 	"backend-go/internal/app/model/request"
+	"errors"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
@@ -32,12 +33,16 @@ func (s *Service) UpdateQuestV2(address string, modify request.UpdateQuestV2Requ
 	if err != nil {
 		return
 	}
+	tokenId, set := big.NewInt(0).SetString(modify.TokenId, 10)
+	if !set {
+		return res, errors.New("TokenIDInvalid")
+	}
 	hash := solsha3.SoliditySHA3(
 		// types
 		[]string{"uint256", "uint32", "uint32", "string", "string", "address", "address"},
 		// values
 		[]interface{}{
-			big.NewInt(modify.TokenId), modify.StartTs, modify.EndTs, modify.Title, modify.Uri, s.c.ContractV2[modify.ChainID].QuestMinter, address,
+			tokenId, modify.StartTs, modify.EndTs, modify.Title, modify.Uri, s.c.ContractV2[modify.ChainID].QuestMinter, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)

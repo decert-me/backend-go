@@ -12,7 +12,7 @@ type Quest struct {
 	Dependencies     datatypes.JSON `gorm:"column:dependencies" json:"-"`
 	IsDraft          bool           `gorm:"column:is_draft" json:"-"`
 	AddTs            int64          `gorm:"column:add_ts;autoCreateTime" json:"addTs"`
-	TokenId          int64          `gorm:"column:token_id;UNIQUE;not null;" json:"tokenId"`
+	TokenId          string         `gorm:"column:token_id;UNIQUE;not null;type:varchar(100)" json:"tokenId"`
 	Type             uint8          `gorm:"column:type" json:"type" form:"type"`                       // 0:问答;1:编程
 	Difficulty       uint8          `gorm:"column:difficulty" json:"difficulty"`                       // 0:easy;1:moderate;2:difficult
 	EstimateTime     uint8          `gorm:"column:estimate_time" json:"estimate_time"`                 // 预估时间/min

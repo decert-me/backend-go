@@ -123,7 +123,7 @@ func deleteTransaction() {
 	}
 }
 
-func waitForQuestCreated(tokenId int64) {
+func waitForQuestCreated(tokenId string) {
 	var count int64
 	for i := 0; i < 20; i++ {
 		_ = s.dao.DB().Model(&model.Quest{}).Where("token_id", tokenId).Count(&count).Error
@@ -134,7 +134,7 @@ func waitForQuestCreated(tokenId int64) {
 	}
 }
 
-func waitForClaimed(tokenId int64, address string) {
+func waitForClaimed(tokenId string, address string) {
 	var count int64
 	for i := 0; i < 20; i++ {
 		_ = s.dao.DB().Model(&model.UserChallenges{}).Where("token_id", tokenId).Where("address", address).Count(&count).Error
