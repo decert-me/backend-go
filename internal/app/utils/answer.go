@@ -49,3 +49,12 @@ func GetAnswers(version float64, key, res, questData, answerUser string) (answer
 	}
 	return
 }
+
+func GetQuest(version float64, res, questData string) (quest []gjson.Result) {
+	if version == 1 {
+		quest = gjson.Get(res, "properties.questions").Array()
+	} else if version == 1.1 || version == 1.2 {
+		quest = gjson.Get(questData, "questions").Array()
+	}
+	return
+}

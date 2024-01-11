@@ -45,7 +45,7 @@ func GetCollectionChallengeUser(c *gin.Context) {
 func CollectionClaim(c *gin.Context) {
 	var r request.CollectionClaimRequest
 	if err := c.ShouldBindJSON(&r); err != nil {
-		FailWithMessage("ParameterError", c)
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
 	if err := srv.CollectionClaim(r, c.GetString("address")); err != nil {

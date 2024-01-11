@@ -20,6 +20,9 @@ func (s *Service) CollectionClaimV2(r request.CollectionClaimRequest, address st
 	}
 	// 查询合辑包含的Quest列表
 	questList, err := s.dao.GetQuestListByCollectionID(collection.ID)
+	if len(questList) == 0 {
+		return errors.New("UnexpectedError")
+	}
 	for _, quest := range questList {
 		// 查询是否完成
 		status, err := s.dao.HasClaimed(address, quest.TokenId)

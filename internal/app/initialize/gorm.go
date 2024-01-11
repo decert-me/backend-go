@@ -46,11 +46,11 @@ func RegisterTables(db *gorm.DB) {
 func initChainID(db *gorm.DB) {
 	// 查询是否存在链ID
 	var chainID int64
-	err := db.Model(&model.Collection{}).Select("max(chain_id)").First(&chainID).Error
+	err := db.Model(&model.Collection{}).Select("max(chain_id)").Scan(&chainID).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		panic("init chain id failed")
 	}
-	if chainID == 0 {
+	if chainID != 0 {
 		return
 	}
 	// 初始化

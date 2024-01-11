@@ -23,5 +23,5 @@ type Config struct {
 	Social     *Social            `mapstructure:"social" json:"social" yaml:"social"`
 	ZCloak     *ZCloak            `mapstructure:"zcloak" json:"zcloak" yaml:"zcloak"`
 	NFT        *NFT               `mapstructure:"nft" json:"nft" yaml:"nft"`
-	ContractV2 map[int64]Contract `mapstructure:"contract" json:"contract" yaml:"contract"`
+	ContractV2 map[int64]Contract `mapstructure:"contract-v2" json:"contract-v2" yaml:"contract-v2"`
 }

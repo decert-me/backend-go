@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 	"go.uber.org/zap"
 	"strings"
 	"time"
@@ -202,4 +203,117 @@ func IsOpenQuest(answerUser string) bool {
 		}
 	}
 	return false
+}
+
+// AnswerParse 解析用户答案
+func (s *Service) AnswerParse(key, answerUser, address string, quest *model.Quest) (answerUserParse string, err error) {
+	res := string(quest.MetaData)
+	questData := string(quest.QuestData)
+	version := gjson.Get(res, "version").Float()
+	questList := utils.GetQuest(version, res, questData)
+	// 判断是否有开放题目
+	if IsOpenQuest(answerUser) {
+		// 获取数据库已审核最新数据
+		userOpenQuest, err := s.dao.GetUserOpenQuestReviewed(address, quest.TokenId)
+		if err == nil {
+			answerUser = string(userOpenQuest.Answer)
+		}
+	}
+	answerU, scoreList, answerS, _ := utils.GetAnswers(version, key, res, questData, answerUser)
+	var totalScore int64
+	for _, s := range scoreList {
+		totalScore += s.Int()
+	}
+	if len(answerU) != len(answerS) || len(scoreList) != len(answerS) {
+		return answerUserParse, errors.New("unexpect error")
+	}
+	var score int64
+	for i, v := range answerS {
+		if v.String() == "" {
+			continue
+		}
+		questType := gjson.Get(v.String(), "type").String()
+		questValue := gjson.Get(v.String(), "value").String()
+		answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.score", i), 0)
+		// 编程题目
+		if questType == "coding" || questType == "special_judge_coding" {
+			// 跳过不正确
+			if gjson.Get(v.String(), "correct").Bool() == false {
+				continue
+			}
+			reqMap := make(map[string]interface{})
+			reqMap["code"] = gjson.Get(v.String(), "code").String()
+			reqMap["lang"] = gjson.Get(v.String(), "language").String()
+			reqMap["token_id"] = quest.TokenId
+			reqMap["quest_index"] = i
+			reqMap["quest"] = quest
+			reqMap["address"] = strings.TrimSpace(address)
+			// 检查答案
+			if s.CodingCheck(reqMap) {
+				answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.score", i), scoreList[i].Int())
+				score += scoreList[i].Int()
+			}
+			continue
+		}
+		// 单选题
+		if questType == "multiple_choice" {
+			index := gjson.Get(v.String(), "value").Int()
+			answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.value", i), gjson.Get(questList[i].String(), fmt.Sprintf("options.%d", index)).String())
+			// 检查正确
+			if questValue == answerU[i].String() {
+				answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.score", i), scoreList[i].Int())
+				score += scoreList[i].Int()
+			}
+			continue
+		}
+		if questType == "fill_blank" {
+			if questValue == answerU[i].String() {
+				answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.score", i), scoreList[i].Int())
+				score += scoreList[i].Int()
+			}
+			continue
+		}
+		// 多选题
+		if questType == "multiple_response" {
+			indexList := gjson.Get(v.String(), "value").Array()
+			var answer []string
+			for _, index := range indexList {
+				answer = append(answer, gjson.Get(questList[i].String(), fmt.Sprintf("options.%d", index.Int())).String())
+			}
+			answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.value", i), answer)
+			// 检查正确
+			answerArray := gjson.Get(questValue, "@this").Array()
+			// 数量
+			if len(answerArray) != len(answerU[i].Array()) {
+				continue
+			}
+			// 内容
+			allRight := true
+			for _, v := range answerArray {
+				var right bool
+				for _, item := range answerU[i].Array() {
+					if item.String() == v.String() {
+						right = true
+						break
+					}
+				}
+				if !right {
+					allRight = false
+					break
+				}
+			}
+			if allRight {
+				answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.score", i), scoreList[i].Int())
+				score += scoreList[i].Int()
+			}
+		}
+		if questType == "open_quest" {
+			if gjson.Get(v.String(), "correct").Bool() == true {
+				answerUser, _ = sjson.Set(answerUser, fmt.Sprintf("%d.score", i), scoreList[i].Int())
+				score += scoreList[i].Int()
+			}
+		}
+	}
+
+	return answerUser, nil
 }

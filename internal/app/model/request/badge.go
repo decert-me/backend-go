@@ -18,7 +18,7 @@ type SubmitClaimTweetReq struct {
 type UpdateBadgeURIRequest struct {
 	TokenId int64  `json:"token_id" binding:"required"`
 	Uri     string `json:"uri" binding:"required"`
-	ChainID int64  `json:"chainId"`
+	ChainID int64  `json:"chain_id"`
 }
 
 type SubmitClaimShareReq struct {
@@ -40,5 +40,5 @@ type SubmitClaimShareV2Req struct {
 	Score   int64  `json:"score"  binding:"required"`
 	Answer  string `json:"answer" binding:"required"`
 	Uri     string `json:"uri"`
-	ChainID int64  `json:"chainId"`
+	ChainID int64  `json:"chain_id"`
 }
