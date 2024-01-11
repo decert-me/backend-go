@@ -52,7 +52,7 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 	if req.Uri != "" && req.Uri != quest.Uri {
 		return res, errors.New("QuestUpdate")
 	}
-	_, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, req.Score, &quest)
+	_, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, req.Score, &quest, true)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return res, errors.New("UnexpectedError")

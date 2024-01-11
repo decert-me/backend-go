@@ -10,6 +10,7 @@ type GetChallengeListRequest struct {
 	ReqAddress string
 	Type       uint8  `form:"type"`
 	Claimable  string `form:"claimable"`
+	Language   string `form:"-"`
 }
 
 type SaveChallengeLogRequest struct {

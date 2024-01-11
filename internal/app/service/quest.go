@@ -29,22 +29,26 @@ func (s *Service) GetUserQuestListWithClaimed(searchInfo request.GetUserQuestLis
 	return
 }
 
-func (s *Service) GetQuest(id string, address string) (quest response.GetQuestRes, err error) {
+func (s *Service) GetQuest(language, id string, address, original string) (quest response.GetQuestRes, err error) {
 	tokenId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		if address == "" {
-			quest.Quest, err = s.dao.GetQuestByUUID(id)
+			quest, err = s.dao.GetQuestByUUID(language, id)
 			return
 		}
-		quest, err = s.dao.GetQuestWithClaimStatusByUUID(id, address)
+		quest, err = s.dao.GetQuestWithClaimStatusByUUID(language, id, address)
 	} else {
 		if address == "" {
-			quest.Quest, err = s.dao.GetQuestByTokenID(tokenId)
+			quest, err = s.dao.GetQuestByTokenIDWithLang(language, tokenId)
 			return
 		}
-		quest, err = s.dao.GetQuestWithClaimStatusByTokenID(tokenId, address)
+		if original == "true" {
+			quest, err = s.dao.GetQuestWithClaimStatusByTokenID(tokenId, address)
+			return
+		} else {
+			quest, err = s.dao.GetQuestWithClaimStatusByTokenIDWithLang(language, tokenId, address)
+		}
 	}
-
 	return
 }
 
@@ -116,4 +120,37 @@ func (s *Service) UpdateRecommend(address string, modify request.UpdateRecommend
 		return errors.New("OperationFailed")
 	}
 	return nil
+}
+
+// GetQuestFlashRank 获取闪电榜
+func (s *Service) GetQuestFlashRank(address string, id string) (res response.GetQuestFlashListRes, err error) {
+	tokenId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		res, err = s.dao.GetQuestFlashRankByUUID(address, id)
+	} else {
+		res, err = s.dao.GetQuestFlashRankByTokenID(address, tokenId)
+	}
+	return
+}
+
+// GetQuestHighRank 获取高分榜
+func (s *Service) GetQuestHighRank(address string, id string) (res response.GetQuestHighScoreListRes, err error) {
+	tokenId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		res, err = s.dao.GetQuestHighRankByUUID(address, id)
+	} else {
+		res, err = s.dao.GetQuestHighRankByTokenID(address, tokenId)
+	}
+	return
+}
+
+// GetQuestHolderRank 获取持有榜
+func (s *Service) GetQuestHolderRank(address, id string, page int, pageSize int) (res []response.GetQuestHolderListRes, total int64, err error) {
+	tokenId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		res, total, err = s.dao.GetQuestHolderRankByUUID(address, id, page, pageSize)
+	} else {
+		res, total, err = s.dao.GetQuestHolderRankByTokenID(address, tokenId, page, pageSize)
+	}
+	return
 }

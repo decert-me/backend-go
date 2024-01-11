@@ -87,7 +87,9 @@ func UpdateUserInfo(c *gin.Context) {
 func GetUserQuestList(c *gin.Context) {
 	var searchInfo request.GetUserQuestListRequest
 	_ = c.ShouldBindQuery(&searchInfo)
-	searchInfo.Creator = c.Param("address")
+	searchInfo.Creator = c.Param("addressCreator")
+	searchInfo.Address = c.GetString("address")
+	searchInfo.Language = c.GetString("lang")
 	if list, total, err := srv.GetUserQuestListWithClaimed(searchInfo); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
@@ -111,7 +113,7 @@ func GetUserChallengeList(c *gin.Context) {
 	}
 	searchInfo.ReqAddress = c.GetString("address")
 	searchInfo.Address = address
-
+	searchInfo.Language = c.GetString("lang")
 	if list, total, err := srv.GetUserChallengeList(searchInfo); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
@@ -172,5 +174,14 @@ func HasCreateOpenQuestPerm(c *gin.Context) {
 		Fail(c)
 	} else {
 		OkWithData(map[string]interface{}{"perm": perm, "beta": beta}, c)
+	}
+}
+
+// HasBindSocialAccount 获取用户是否绑定社交账号
+func HasBindSocialAccount(c *gin.Context) {
+	if wechat, discord, err := srv.HasBindSocialAccount(c.GetString("address")); err != nil {
+		Fail(c)
+	} else {
+		OkWithData(map[string]interface{}{"wechat": wechat, "discord": discord}, c)
 	}
 }

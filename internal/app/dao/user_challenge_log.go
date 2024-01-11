@@ -62,3 +62,18 @@ func (d *Dao) GetUserOpenQuestReviewed(address string, tokenID int64) (userOpenQ
 		Order("id desc").First(&userOpenQuest).Error
 	return
 }
+
+// GetLatestQuestPassAnswer 获取用户通过的最新回答
+func (d *Dao) GetLatestQuestPassAnswer(address string, tokenID int64) (answer string, score int64, err error) {
+	type UserChallengeLog struct {
+		Answer    string `gorm:"column:answer"`
+		UserScore int64  `gorm:"column:user_score"`
+	}
+	var userChallengeLog UserChallengeLog
+	err = d.db.Model(&model.UserChallengeLog{}).
+		Where("address", address).
+		Where("token_id", tokenID).
+		Where("pass=true").
+		Order("id desc").First(&userChallengeLog).Error
+	return userChallengeLog.Answer, userChallengeLog.UserScore, err
+}

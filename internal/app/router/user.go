@@ -14,7 +14,7 @@ func InitUserRouter(Router *gin.RouterGroup) {
 		userRouter.POST("authLoginSign", v1.AuthLoginSign)
 		userRouter.GET("/:address", v1.GetUserInfo)
 		userRouter.GET("/challenge/:address", v1.GetUserChallengeList)
-		userRouter.GET("/quests/:address", v1.GetUserQuestList)
+		userRouter.GET("/quests/:addressCreator", v1.GetUserQuestList)
 		userRouter.GET("/hasCreateOpenQuestPerm", v1.HasCreateOpenQuestPerm)
 	}
 	{
@@ -22,5 +22,6 @@ func InitUserRouter(Router *gin.RouterGroup) {
 		userRouterAuth.GET("twitter", v1.GetTwitterInfo)
 		userRouterAuth.PUT("/:address", v1.UpdateUserInfo)
 		userRouterAuth.POST("/avatar", v1.UpdateAvatar)
+		userRouterAuth.GET("/hasBindSocialAccount", v1.HasBindSocialAccount)
 	}
 }

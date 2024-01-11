@@ -12,3 +12,7 @@ type CollectionClaimRequest struct {
 type CheckQuestInCollectionRequest struct {
 	TokenID int64 `json:"token_id" form:"token_id" binding:"required"`
 }
+
+type GetCollectionHolderRankRequest struct {
+	PageInfo
+}
