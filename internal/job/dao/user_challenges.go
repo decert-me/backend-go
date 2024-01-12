@@ -20,7 +20,7 @@ func (d *Dao) CreateChallengesList(tokenIds []*big.Int, receivers []common.Addre
 	for i, _ := range receivers {
 		challenge = append(challenge, model.UserChallenges{
 			Address:   receivers[i].String(),
-			TokenId:   tokenIds[i].Int64(),
+			TokenId:   tokenIds[i].String(),
 			UserScore: scores[i].Int64(),
 			Claimed:   true,
 			Status:    2,

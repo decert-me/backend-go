@@ -10,6 +10,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/imroc/req/v3"
+	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"strconv"
@@ -117,7 +118,9 @@ func (s *Service) AirdropCallback(c *gin.Context, req request.AirdropCallbackReq
 	// 获取分数
 	score := gjson.Get(req.Params, "params.score").Int()
 	nftAddress := gjson.Get(req.Params, "params.nft_address").String()
-	if err = s.dao.CreateChallengesOne(tokenId, req.Receiver, score, nftAddress); err != nil {
+	badgeTokenID := gjson.Get(req.Params, "params.badge_token_id").String()
+	chainID := gjson.Get(req.Params, "params.chain_id").String()
+	if err = s.dao.CreateChallengesOne(tokenId, req.Receiver, score, nftAddress, badgeTokenID, cast.ToInt64(chainID)); err != nil {
 		log.Errorv("CreateChallengesOne error ", zap.Any("error", err))
 	}
 	s.dao.AirdropSuccessNotice(req.Receiver, req.TokenId)

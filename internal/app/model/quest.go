@@ -31,4 +31,5 @@ type Quest struct {
 	Sort             int            `gorm:"column:sort;default:0" json:"sort"`                       // 	排序
 	CollectionStatus uint8          `gorm:"column:collection_status;default:1" json:"-"`             // 	合辑状态 1 独立 2 合辑
 	ChainID          int64          `gorm:"column:chain_id;comment:链ID;default:137" json:"chain_id"` // 链ID
+	Version          string         `gorm:"column:version;default:'1''" json:"version"`              // 	版本
 }

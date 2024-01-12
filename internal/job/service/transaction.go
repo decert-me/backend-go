@@ -83,8 +83,12 @@ func (s *Service) consumeTransaction() {
 }
 
 func (s *Service) handleTransactionReceipt(task taskTx) {
-	provider := s.w.Next()
+	provider := s.rpcV2[task.task.ChainID].Next()
 	hash := task.task.Hash
+	chainID := task.task.ChainID
+	if task.task.Version == "1" {
+		chainID = 0
+	}
 	// 错误处理
 	defer func() {
 		if err := recover(); err != nil {
@@ -123,7 +127,7 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 			time.Sleep(time.Second)
 			continue
 		}
-
+		tx, _, err := client.TransactionByHash(context.Background(), common.HexToHash(hash))
 		// 交易失败
 		if res.Status == 0 {
 			fmt.Println("fail for transaction", hash)
@@ -132,12 +136,26 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 			task.countMap.Delete(hash)
 			return
 		}
+		v1ContractAddresses := map[string]bool{
+			s.c.Contract.Badge:       true,
+			s.c.Contract.Quest:       true,
+			s.c.Contract.QuestMinter: true,
+		}
 		// 交易成功
 		if res.Status == 1 {
 			fmt.Println("success for transaction", hash)
-			if err = s.eventsParser(hash, res.Logs); err != nil {
-				log.Errorv("EventsParser", zap.Any("err", err))
+			if v1ContractAddresses[tx.To().String()] {
+				fmt.Println("v1ContractAddresses")
+				if err = s.eventsParser(hash, res.Logs, chainID); err != nil {
+					log.Errorv("EventsParser", zap.Any("err", err))
+				}
+			} else {
+				fmt.Println("v2ContractAddresses")
+				if err = s.eventsParserV2(hash, res.Logs, chainID); err != nil {
+					log.Errorv("EventsParser", zap.Any("err", err))
+				}
 			}
+			fmt.Println("to delete")
 			task.txMap.Delete(hash)
 			task.countMap.Delete(hash)
 			return
@@ -151,8 +169,8 @@ func (s *Service) handleTransactionReceipt(task taskTx) {
 	s.handleTraverseStatus(hash, 3, "")
 }
 
-func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
-	provider := s.w.Next()
+func (s *Service) eventsParser(hash string, Logs []*types.Log, chainID int64) (err error) {
+	provider := s.rpcV2[chainID].Next()
 	defer func() {
 		if err := recover(); err != nil {
 			provider.OnInvokeFault()
@@ -199,7 +217,7 @@ func (s *Service) eventsParser(hash string, Logs []*types.Log) (err error) {
 	if logEvent {
 		return
 	}
-	if err = s.handleDefaultEvent(hash); err != nil {
+	if err = s.handleDefaultEvent(hash, chainID); err != nil {
 		log.Errorv("handleDefaultEvent", zap.Error(err))
 		s.handleTraverseStatus(hash, 5, err.Error())
 		return err
@@ -216,8 +234,8 @@ func (s *Service) handleTraverseStatus(hash string, status uint8, msg string) {
 	}
 }
 
-func (s *Service) handleDefaultEvent(hash string) (err error) {
-	provider := s.w.Next()
+func (s *Service) handleDefaultEvent(hash string, chainID int64) (err error) {
+	provider := s.rpcV2[chainID].Next()
 	client, err := ethclient.Dial(provider.Item)
 	if err != nil {
 		log.Errorv("dial error", zap.Any("error", err))
@@ -258,6 +276,49 @@ func (s *Service) handleDefaultEvent(hash string) (err error) {
 	switch method.Name {
 	case "modifyQuest":
 		s.handleModifyQuest(hash, resJson)
+	}
+	return nil
+}
+
+func (s *Service) eventsParserV2(hash string, Logs []*types.Log, chainID int64) (err error) {
+	if err != nil {
+		log.Error("ethclient dial error")
+		return errors.New("ethclient dial error")
+	}
+	var logEvent bool
+	for _, vLog := range Logs {
+		name, ok := s.contractEventV2[vLog.Topics[0]]
+		if !ok {
+			continue
+		}
+		fmt.Println(name)
+		switch name {
+		case "QuestCreated":
+			logEvent = true
+			if err := s.handleQuestCreatedV2(hash, vLog); err != nil {
+				s.handleTraverseStatus(hash, 5, err.Error())
+				continue
+			}
+			return nil
+		case "Claimed":
+			logEvent = true
+			if err := s.handleClaimedV2(hash, vLog, chainID); err != nil {
+				s.handleTraverseStatus(hash, 5, err.Error())
+				continue
+			}
+			return nil
+		case "QuestModified":
+			logEvent = true
+			if err := s.handleModifyQuestV2(hash, vLog); err != nil {
+				s.handleTraverseStatus(hash, 5, err.Error())
+				continue
+			}
+			fmt.Println("QuestModified done")
+			return nil
+		}
+	}
+	if !logEvent {
+		s.handleTraverseStatus(hash, 6, err.Error())
 	}
 	return nil
 }

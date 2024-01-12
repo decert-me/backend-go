@@ -3,6 +3,7 @@ package service
 import (
 	"backend-go/internal/app/model/request"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
@@ -19,9 +20,10 @@ func (s *Service) AddQuestV2(address string, add request.AddQuestV2Request) (res
 		[]string{"uint256", "uint32", "uint32", "string", "string", "address", "address"},
 		// values
 		[]interface{}{
-			add.ChainID, add.StartTs, add.EndTs, add.Title, add.Uri, s.c.ContractV2[add.ChainID].QuestMinter, address,
+			big.NewInt(add.ChainID), add.StartTs, add.EndTs, add.Title, add.Uri, s.c.ContractV2[add.ChainID].QuestMinter, address,
 		},
 	)
+	fmt.Println(add.ChainID, add.StartTs, add.EndTs, add.Title, add.Uri, s.c.ContractV2[add.ChainID].QuestMinter, address)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
 	signature, err := crypto.Sign(prefixedHash, privateKey)
 	signature[64] += 27

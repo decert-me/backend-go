@@ -35,15 +35,15 @@ func (s *Service) handleClaimed(client *ethclient.Client, hash string, vLog *typ
 	if err = questMinterAbi.UnpackIntoInterface(&claimed, "Claimed", vLog.Data); err != nil || len(vLog.Topics) == 0 {
 		return errors.New("unpack error")
 	}
-	tokenId := vLog.Topics[1].Big().Int64()
+	tokenId := vLog.Topics[1].Big().String()
 	// no such tokenId in quest
 	exist, err := s.dao.HasTokenId(tokenId)
 	if err != nil {
-		log.Errorv("HasTokenId error", zap.Int64("tokenId", tokenId), zap.Error(err))
+		log.Errorv("HasTokenId error", zap.String("tokenId", tokenId), zap.Error(err))
 		return
 	}
 	if !exist {
-		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", tokenId))
+		log.Errorv("no such tokenId in quest", zap.String("tokenId", tokenId))
 		return
 	}
 	// 获取用户分数
@@ -51,7 +51,9 @@ func (s *Service) handleClaimed(client *ethclient.Client, hash string, vLog *typ
 	if err != nil {
 		return
 	}
-	score, err := badge.Scores(nil, big.NewInt(tokenId), common.HexToAddress(vLog.Topics[2].Hex()))
+	tokenIDInt, _ := new(big.Int).SetString(tokenId, 10)
+
+	score, err := badge.Scores(nil, tokenIDInt, common.HexToAddress(vLog.Topics[2].Hex()))
 	if err != nil {
 		return
 	}
@@ -75,7 +77,7 @@ func (s *Service) handleClaimed(client *ethclient.Client, hash string, vLog *typ
 }
 
 func (s *Service) AirdropBadge() error {
-	provider := s.w.Next()
+	provider := s.rpcV2[0].Next()
 	defer func() {
 		if err := recover(); err != nil {
 			provider.OnInvokeFault()
@@ -179,7 +181,7 @@ func (s *Service) receiverNotClaimList(client *ethclient.Client, tokenId []*big.
 		}
 		if res.Cmp(big.NewInt(0)) != 0 {
 			// already claimed update status
-			if err = s.dao.UpdateAirdroppedError(tokenId[i].Int64(), receivers[i], "already claimed"); err != nil {
+			if err = s.dao.UpdateAirdroppedError(tokenId[i].String(), receivers[i], "already claimed"); err != nil {
 				log.Errorv("UpdateAirdropped error", zap.Error(err))
 			}
 			continue

@@ -13,4 +13,5 @@ type Transaction struct {
 	Status    uint8          `gorm:"column:status;default:0" json:"status" form:"status"` // 状态 0 处理中 1 交易成功 2 交易失败 3 超过解析次数 4 事件匹配失败 5 出现错误
 	Params    datatypes.JSON `gorm:"column:params" json:"params"`
 	ChainID   int64          `gorm:"column:chain_id;comment:链ID;default:137" json:"chain_id"` // 链ID
+	Version   string         `gorm:"column:version;default:'1''" json:"version"`              // 	版本
 }

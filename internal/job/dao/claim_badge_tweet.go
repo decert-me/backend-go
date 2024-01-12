@@ -69,7 +69,7 @@ func (d *Dao) UpdateAirdroppedList(tokenIds []*big.Int, receivers []common.Addre
 	}
 	for i, _ := range receivers {
 		if d.c.Discord.Active {
-			d.AirdropSuccessNotice(receivers[i].String(), tokenIds[i].Int64())
+			d.AirdropSuccessNotice(receivers[i].String(), tokenIds[i].String())
 		}
 	}
 	return tx.Commit().Error

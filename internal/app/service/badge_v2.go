@@ -39,9 +39,10 @@ func (s *Service) UpdateBadgeURIV2(address string, badgeURI request.UpdateBadgeU
 }
 
 func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShareV2Req) (res string, err error) {
-	// 校验是否绑定discord
-	if !s.dao.HasDiscord(address) {
-		return res, errors.New("DiscordNotBind")
+	// 校验是否绑定社交账号
+	wechat, discord, err := s.dao.HasBindSocialAccount(address)
+	if wechat == false && discord == false {
+		return res, errors.New("NoBindingDetected")
 	}
 	// 校验是否已经空投
 	if s.dao.HasAirdrop(address, req.TokenId) {
@@ -90,6 +91,7 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 			"startTs":  gjson.Get(string(quest.ExtraData), "startTs").Int(),
 			"endTs":    gjson.Get(string(quest.ExtraData), "endTs").Int(),
 			"creator":  quest.Creator,
+			"chain_id": req.ChainID,
 		},
 	}
 	// 将Map转换为JSON格式的字节数组
@@ -107,6 +109,7 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 	if err = s.dao.CreateUserChallengeClaim(&model.UserChallengeClaim{
 		Address: address,
 		TokenId: req.TokenId,
+		ChainID: req.ChainID,
 	}); err != nil {
 		log.Errorv("CreateUserChallengeClaim error", zap.Error(err))
 		return

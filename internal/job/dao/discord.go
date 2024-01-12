@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (d *Dao) AirdropSuccessNotice(address string, tokenId string) {
+func (d *Dao) AirdropSuccessNotice(address string, tokenID string) {
 	// 查询用户信息
 	var user model.Users
 	err := d.db.Model(&model.Users{}).Select("socials").Where("address = ?", address).First(&user).Error
@@ -36,13 +36,13 @@ func (d *Dao) AirdropSuccessNotice(address string, tokenId string) {
 		return
 	}
 	// 拼接信息
-	link := fmt.Sprintf("https://polygonscan.com/token/%s?a=%d", d.c.Contract.Badge, tokenID)
-	description := fmt.Sprintf("Address: %s \n TokenID: %d \n %s \n <@%s>", address, tokenID, link, gjson.Get(string(user.Socials), "discord.id"))
+	link := fmt.Sprintf("https://polygonscan.com/token/%s?a=%s", d.c.Contract.Badge, tokenID)
+	description := fmt.Sprintf("Address: %s \n TokenID: %s \n %s \n <@%s>", address, tokenID, link, gjson.Get(string(user.Socials), "discord.id"))
 	footer := discordgo.MessageEmbedFooter{Text: "decertme-bot"}
 	embeds := []*discordgo.MessageEmbed{
 		{Color: 0x0099FF, Title: "SBT 空投",
 			Description: description,
-			URL:         fmt.Sprintf("https://decert.me/quests/%d", tokenID),
+			URL:         fmt.Sprintf("https://decert.me/quests/%s", tokenID),
 			Footer:      &footer,
 			Timestamp:   time.Now().Format(time.RFC3339),
 		},
@@ -54,7 +54,7 @@ func (d *Dao) AirdropSuccessNotice(address string, tokenId string) {
 	}
 }
 
-func (d *Dao) AirdropFailNotice(address string, tokenId string, reason string) {
+func (d *Dao) AirdropFailNotice(address string, tokenID string, reason string) {
 	Token := d.c.Discord.Token
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + Token)

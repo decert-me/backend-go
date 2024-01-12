@@ -12,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"math/big"
-	"strconv"
 )
 
 func (s *Service) GetQuestList(searchInfo request.GetQuestListRequest) (res []response.GetQuestListRes, total int64, err error) {
@@ -31,8 +30,7 @@ func (s *Service) GetUserQuestListWithClaimed(searchInfo request.GetUserQuestLis
 }
 
 func (s *Service) GetQuest(language, id string, address, original string) (quest response.GetQuestRes, err error) {
-	tokenId, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
+	if utils.IsUUID(id) {
 		if address == "" {
 			quest, err = s.dao.GetQuestByUUID(language, id)
 			return
@@ -40,14 +38,14 @@ func (s *Service) GetQuest(language, id string, address, original string) (quest
 		quest, err = s.dao.GetQuestWithClaimStatusByUUID(language, id, address)
 	} else {
 		if address == "" {
-			quest, err = s.dao.GetQuestByTokenIDWithLang(language, tokenId)
+			quest, err = s.dao.GetQuestByTokenIDWithLang(language, id)
 			return
 		}
 		if original == "true" {
-			quest, err = s.dao.GetQuestWithClaimStatusByTokenID(tokenId, address)
+			quest, err = s.dao.GetQuestWithClaimStatusByTokenID(id, address)
 			return
 		} else {
-			quest, err = s.dao.GetQuestWithClaimStatusByTokenIDWithLang(language, tokenId, address)
+			quest, err = s.dao.GetQuestWithClaimStatusByTokenIDWithLang(language, id, address)
 		}
 	}
 	return

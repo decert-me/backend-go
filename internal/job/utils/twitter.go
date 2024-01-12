@@ -12,7 +12,6 @@ import (
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -136,7 +135,7 @@ func CheckIfMatchClaimTweet(c *config.Config, tokenId string, tweet string) bool
 	// 包含挑战链接
 	pattern := regexp.MustCompile(`((https?|http)://[^\s/$.?#].[^\s]*)`)
 	matches := strings.Replace(pattern.FindString(tweet), "\\n", "", -1)
-	expectURL := strings.TrimSpace(twitterLink) + strconv.FormatInt(tokenId, 10)
+	expectURL := strings.TrimSpace(twitterLink) + tokenId
 	client := GetTwitterClient(c)
 	res, err := client.clientReq.R().Get(strings.TrimSpace(matches))
 	if err != nil {
