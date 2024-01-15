@@ -32,7 +32,7 @@ func (s *Service) GetUserQuestListWithClaimed(searchInfo request.GetUserQuestLis
 func (s *Service) GetQuest(language, id string, address, original string) (quest response.GetQuestRes, err error) {
 	if utils.IsUUID(id) {
 		if address == "" {
-			quest, err = s.dao.GetQuestByUUID(language, id)
+			quest, err = s.dao.GetQuestByUUIDLang(language, id)
 			return
 		}
 		quest, err = s.dao.GetQuestWithClaimStatusByUUID(language, id, address)

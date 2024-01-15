@@ -129,7 +129,12 @@ func (d *Dao) GetQuestByTokenID(tokenID string) (quest model.Quest, err error) {
 	return
 }
 
-func (d *Dao) GetQuestByUUID(language, uuid string) (quest response.GetQuestRes, err error) {
+func (d *Dao) GetQuestByUUID(uuid string) (quest model.Quest, err error) {
+	err = d.db.Model(&model.Quest{}).Where("uuid", uuid).First(&quest).Error
+	return
+}
+
+func (d *Dao) GetQuestByUUIDLang(language, uuid string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
 		"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data").
 		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).
