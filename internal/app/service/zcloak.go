@@ -150,7 +150,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 		Receiver: did,
 		Params: DidCardParamsRequest{
 			Title:       quest.Title,
-			ChallengeID: cast.ToString(req.TokenId),
+			ChallengeID: quest.UUID,
 			Pass:        pass,
 			Score:       score,
 			Content:     "ipfs://" + hash,
@@ -272,4 +272,9 @@ func (s *Service) GenerateCard(address string, tokenID int64) (err error) {
 		Answer:  answer,
 	})
 	return
+}
+
+// GetDidCardInfo 获取 DID Card 信息
+func (s *Service) GetDidCardInfo(req request.GetDidCardInfoRequest) (didCardInfo datatypes.JSON, err error) {
+	return s.dao.GetDidCardInfo(req.Address, req.TokenId)
 }

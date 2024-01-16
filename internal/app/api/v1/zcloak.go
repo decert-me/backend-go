@@ -84,3 +84,19 @@ func GenerateCard(c *gin.Context) {
 		Ok(c)
 	}
 }
+
+// GetDidCardInfo 获取 DID Card 信息
+func GetDidCardInfo(c *gin.Context) {
+	var req request.GetDidCardInfoRequest
+	err := c.ShouldBindQuery(&req)
+	if err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	if data, err := srv.GetDidCardInfo(req); err != nil {
+		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+	} else {
+		OkWithData(data, c)
+	}
+
+}
