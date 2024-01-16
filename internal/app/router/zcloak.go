@@ -14,5 +14,6 @@ func InitZcloakRouter(Router *gin.RouterGroup) {
 		router.GET("getDidSignMessage", v1.GetDidSignMessage)         // 获取 DID 签名
 		router.POST("generateCard", v1.GenerateCard)                  // 生成 card 信息
 		router.GET("getKeyFileSignature", v1.GetKeyFileWithSignature) // 获取KeyFiles
+		router.GET("getDidCardInfo", v1.GetDidCardInfo)               // 获取 DID card 信息
 	}
 }
