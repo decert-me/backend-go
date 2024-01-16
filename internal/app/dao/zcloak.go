@@ -123,3 +123,21 @@ func (d *Dao) GetKeyFileWithSignature(address string) (keyFile datatypes.JSON, e
 	}
 	return data.KeyFile, nil
 }
+
+// GetDidCardInfo 获取DidCardInfo
+func (d *Dao) GetDidCardInfo(address string, tokenID int64) (didCardInfo datatypes.JSON, err error) {
+	var data string
+	err = d.db.Model(&model.ZcloakCard{}).
+		Select("vc").
+		Joins("LEFT JOIN quest ON zcloak_card.quest_id = quest.id").
+		Where("quest.token_id = ?", tokenID).
+		Where("address ILIKE ?", address).
+		First(&data).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return didCardInfo, nil
+		}
+		return didCardInfo, err
+	}
+	return datatypes.JSON(data), nil
+}
