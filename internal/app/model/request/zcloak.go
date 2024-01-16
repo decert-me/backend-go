@@ -24,6 +24,6 @@ type GenerateCardRequest struct {
 }
 
 type GetDidCardInfoRequest struct {
-	TokenId int64  `form:"token_id" binding:"required"`
+	TokenId string `form:"token_id" binding:"required"`
 	Address string `form:"address" binding:"required"`
 }
