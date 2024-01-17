@@ -155,7 +155,7 @@ func (d *Dao) GetChallengeList(req *request.GetChallengeListRequest) (res []resp
 		 SELECT nft_address,add_ts,token_id,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY add_ts ASC) as rn 
 				 FROM all_quest
 		)
-		SELECT a.nft_address,true as claimed,a.add_ts as complete_ts,b.*,COALESCE(tr.title,b.title) as title,COALESCE(tr.description,b.description) as description,d.badge_token_id,d.chain_id as badge_chain_id
+		SELECT a.nft_address,true as claimed,a.add_ts as complete_ts,b.*,COALESCE(tr.title,b.title) as title,COALESCE(tr.description,b.description) as description
 		FROM ranked_quest a
 		JOIN quest b ON a.token_id=b.token_id 
 		LEFT JOIN quest_translated tr ON b.token_id = tr.token_id AND tr.language = ? 
