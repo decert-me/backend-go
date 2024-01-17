@@ -65,11 +65,12 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 		SELECT COUNT(1) FROM quest A
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id 
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
-		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = b.address
-		WHERE ((b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) OR (b.rn IS NULL AND C.rn IS NULL )) AND d.id IS NOT NULL) OR (b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND ((d.claimed=true OR b.pass=true) OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true OR (c.pass=false AND c.open_quest_review_status=1 AND A.status = 1)))
+		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = ?
+		LEFT JOIN (WITH zcloak_status AS (SELECT quest_id,ROW_NUMBER() OVER (PARTITION BY quest_id ORDER BY id DESC) as rn FROM zcloak_card WHERE address=? AND deleted_at IS NULL) SELECT quest_id FROM zcloak_status WHERE rn = 1) zc ON a.id = zc.quest_id
+		WHERE (((b.rn = 1 AND (C.rn IS NULL or C.rn = 1 )) OR (C.rn = 1 AND (b.rn IS NULL or b.rn = 1 )) OR (b.rn IS NULL AND C.rn IS NULL)) AND (d.id IS NOT NULL OR zc.quest_id IS NOT NULL)) OR (b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND ((d.claimed=true OR b.pass=true) OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true OR (c.pass=false AND c.open_quest_review_status=1 AND A.status = 1)))
 	`
 	// 查询记录条数
-	if err = d.db.Raw(countSQL, req.Address, req.Address).Scan(&total).Error; err != nil {
+	if err = d.db.Raw(countSQL, req.Address, req.Address, req.Address, req.Address).Scan(&total).Error; err != nil {
 		fmt.Println(err)
 		return res, total, err
 	}
@@ -84,14 +85,14 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 		SELECT a.*,COALESCE(tr.title,a.title) as title,COALESCE(tr.description,a.description) as description,COALESCE(c.pass,b.pass) as claimable,COALESCE(c.open_quest_review_status,0) as open_quest_review_status,b.is_open_quest,COALESCE(d.nft_address,'') as nft_address,NOT (d.claimed = false AND zc.quest_id IS NULL) as claimed FROM quest A
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id 
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
-		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = b.address
+		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = ?
 		LEFT JOIN (WITH zcloak_status AS (SELECT quest_id,ROW_NUMBER() OVER (PARTITION BY quest_id ORDER BY id DESC) as rn FROM zcloak_card WHERE address=? AND deleted_at IS NULL) SELECT quest_id FROM zcloak_status WHERE rn = 1) zc ON a.id = zc.quest_id
 		LEFT JOIN quest_translated tr ON a.token_id = tr.token_id AND tr.language = ?
-		WHERE ((b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) OR (b.rn IS NULL AND C.rn IS NULL )) AND d.id IS NOT NULL) OR (b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND ((d.claimed=true OR b.pass=true) OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true OR (c.pass=false AND c.open_quest_review_status=1 AND A.status = 1)))
-		ORDER BY b.ID DESC LIMIT ? OFFSET ?
+		WHERE (((b.rn = 1 AND (C.rn IS NULL or C.rn = 1 )) OR (C.rn = 1 AND (b.rn IS NULL or b.rn = 1 )) OR (b.rn IS NULL AND C.rn IS NULL)) AND (d.id IS NOT NULL OR zc.quest_id IS NOT NULL)) OR (b.rn = 1 AND (C.rn IS NULL or C.rn = 1 ) AND ((d.claimed=true OR b.pass=true) OR b.is_open_quest=true) AND (c.pass IS NULL OR c.pass=true OR (c.pass=false AND c.open_quest_review_status=1 AND A.status = 1)))
+		ORDER BY b.ID DESC NULLS LAST,d.id DESC LIMIT ? OFFSET ?
 	`
 	// 查询数据
-	db := d.db.Raw(dataSQL, req.Address, req.Address, req.Address, req.Language, limit, offset)
+	db := d.db.Raw(dataSQL, req.Address, req.Address, req.Address, req.Address, req.Language, limit, offset)
 	if err = db.Scan(&res).Error; err != nil {
 		return res, total, err
 	}
