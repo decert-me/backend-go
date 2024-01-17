@@ -65,6 +65,17 @@ contract:
   quest: "0xd1E50047cEbaD1d826c3F7961A35048B518652F2"
   quest-minter: "0xeb4E2EE6f165e7E1B9a4F1c4532C0433a6Ef397B"
 
+# contract-v2 configuration
+contract-v2:
+  11155420:
+    badge: "0xEd4d0d78cAd46fFa2dD7eb4826694FC9C489E489"
+    quest: "0x81475ae2C65b619C754DA93BFE3f9e43115DEe3d"
+    quest-minter: "0xdD07B70B610B350cDac4DcE74D59342c8a6F1A17"
+  80001:
+    badge: "0xc2bb6Ab14E291B078B76b17925576CC24AA03405"
+    quest: "0x7d8Ded1bb82cA089Ee79b4C3cAc8967AC04C33e8"
+    quest-minter: "0x1B47FC1F3EF613e44C8BfF9e4ca1357380d411A7"
+
 # quest configuration
 quest:
   encrypt-key: "eb5a5bb2-ebbd-45cc-9d37-77a9377f2aca"
