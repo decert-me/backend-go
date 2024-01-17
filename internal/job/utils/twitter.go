@@ -12,7 +12,6 @@ import (
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -126,7 +125,7 @@ func GetSpyderTweetById(c *config.Config, tweetId string) (string, error) {
 // @description: 检查推特帖子内容相符
 // @param: tokenId uint64, tweet string
 // @return: bool
-func CheckIfMatchClaimTweet(c *config.Config, tokenId int64, tweet string) bool {
+func CheckIfMatchClaimTweet(c *config.Config, tokenId string, tweet string) bool {
 	const twitter = "@decertme"
 	const twitterLink = "https://decert.me/quests/"
 	// 推文包含有「@DecertMe」
@@ -136,7 +135,7 @@ func CheckIfMatchClaimTweet(c *config.Config, tokenId int64, tweet string) bool 
 	// 包含挑战链接
 	pattern := regexp.MustCompile(`((https?|http)://[^\s/$.?#].[^\s]*)`)
 	matches := strings.Replace(pattern.FindString(tweet), "\\n", "", -1)
-	expectURL := strings.TrimSpace(twitterLink) + strconv.FormatInt(tokenId, 10)
+	expectURL := strings.TrimSpace(twitterLink) + tokenId
 	client := GetTwitterClient(c)
 	res, err := client.clientReq.R().Get(strings.TrimSpace(matches))
 	if err != nil {

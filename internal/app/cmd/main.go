@@ -2,6 +2,7 @@ package main
 
 import (
 	v1 "backend-go/internal/app/api/v1"
+	v2 "backend-go/internal/app/api/v2"
 	"backend-go/internal/app/initialize"
 	"backend-go/internal/app/router"
 	"backend-go/internal/app/service"
@@ -24,6 +25,7 @@ func main() {
 	i18n := initialize.InitI18n(config)
 	// 初始化api
 	v1.Init(s, i18n)
+	v2.Init(s, i18n)
 	// 初始化router
 	router.New(config)
 

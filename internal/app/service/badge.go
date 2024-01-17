@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
+	"github.com/spf13/cast"
 	"go.uber.org/zap"
 	"math/big"
 	"time"
@@ -37,10 +38,14 @@ func (s *Service) PermitClaimBadge(address string, req request.PermitClaimBadgeR
 	if err != nil {
 		return
 	}
+	tokenId, set := big.NewInt(0).SetString(req.TokenId, 10)
+	if !set {
+		return res, errors.New("TokenIDInvalid")
+	}
 	hash := solsha3.SoliditySHA3(
 		[]string{"string", "uint256", "uint256", "address", "address"},
 		[]interface{}{
-			"claim", big.NewInt(req.TokenId), big.NewInt(req.Score), s.c.Contract.Badge, address,
+			"claim", tokenId, big.NewInt(req.Score), s.c.Contract.Badge, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
@@ -53,7 +58,7 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	// 检查tokenId是否存在以及可用
 	valid, err := s.dao.ValidTokenId(req.TokenId)
 	if err != nil {
-		log.Errorv("ValidTokenId error", zap.Int64("TokenId", req.TokenId), zap.Error(err))
+		log.Errorv("ValidTokenId error", zap.String("TokenId", req.TokenId), zap.Error(err))
 		return errors.New("TokenIDInvalid")
 	}
 	if !valid {
@@ -103,7 +108,7 @@ func (s *Service) SubmitClaimTweet(address string, req request.SubmitClaimTweetR
 	// 检查是否重复使用
 	used, err := s.dao.HasTweet(tweetId)
 	if err != nil {
-		log.Errorv("HasTweet error", zap.Int64("TokenId", req.TokenId), zap.Error(err))
+		log.Errorv("HasTweet error", zap.String("TokenId", req.TokenId), zap.Error(err))
 		return errors.New("UnexpectedError")
 	}
 	if used {
@@ -133,12 +138,16 @@ func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURI
 	if err != nil {
 		return
 	}
+	tokenId, set := big.NewInt(0).SetString(badgeURI.TokenId, 10)
+	if !set {
+		return res, errors.New("TokenIDInvalid")
+	}
 	hash := solsha3.SoliditySHA3(
 		// types
 		[]string{"uint256", "string", "address", "address"},
 		// values
 		[]interface{}{
-			big.NewInt(badgeURI.TokenId), badgeURI.Uri, s.c.Contract.Badge, address,
+			tokenId, badgeURI.Uri, s.c.Contract.Badge, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
@@ -205,7 +214,7 @@ func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareR
 	// 保存记录
 	if err = s.dao.CreateUserChallengeClaim(&model.UserChallengeClaim{
 		Address: address,
-		TokenId: req.TokenId,
+		TokenId: cast.ToString(req.TokenId),
 	}); err != nil {
 		log.Errorv("CreateUserChallengeClaim error", zap.Error(err))
 		return
@@ -213,7 +222,7 @@ func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareR
 	return res, err
 }
 
-func (s *Service) HasClaimed(address string, tokenId int64) (res uint8, err error) {
+func (s *Service) HasClaimed(address string, tokenId string) (res uint8, err error) {
 	// 校验是否已经空投
 	if s.dao.HasAirdrop(address, tokenId) {
 		return 2, nil

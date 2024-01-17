@@ -103,7 +103,7 @@ func (d *Dao) GetCollectionByID(id int) (collection model.Collection, err error)
 	return
 }
 
-func (d *Dao) GetCollectionByTokenID(tokenID int64) (collection model.Collection, err error) {
+func (d *Dao) GetCollectionByTokenID(tokenID string) (collection model.Collection, err error) {
 	err = d.db.Model(&model.Collection{}).Where("token_id", tokenID).First(&collection).Error
 	return
 }
@@ -143,7 +143,7 @@ func (d *Dao) GetCollectionFlashRank(address, collectionID string) (res response
 		return res, err
 	}
 	// 合辑未完结直接返回
-	if collection.TokenId == 0 {
+	if collection.TokenId == "" {
 		return res, nil
 	}
 	// 查询合辑内挑战列表
@@ -157,7 +157,7 @@ func (d *Dao) GetCollectionFlashRank(address, collectionID string) (res response
 		return res, err
 	}
 	// 区分开放题
-	var allTokenIDList []int64
+	var allTokenIDList []string
 	for _, quest := range questList {
 		allTokenIDList = append(allTokenIDList, quest.TokenId)
 	}
@@ -242,7 +242,7 @@ func (d *Dao) GetCollectionHighRank(address, collectionID string) (res response.
 		return res, err
 	}
 	// 合辑未完结直接返回
-	if collection.TokenId == 0 {
+	if collection.TokenId == "" {
 		return res, nil
 	}
 	// 查询合辑内挑战列表
@@ -256,7 +256,7 @@ func (d *Dao) GetCollectionHighRank(address, collectionID string) (res response.
 		return res, err
 	}
 	// 区分开放题
-	var allTokenIDList []int64
+	var allTokenIDList []string
 	for _, quest := range questList {
 		allTokenIDList = append(allTokenIDList, quest.TokenId)
 	}
@@ -340,7 +340,7 @@ func (d *Dao) GetCollectionHolderRank(address string, id int64, page, pageSize i
 	limit := pageSize
 	offset := pageSize * (page - 1)
 	// 查询合辑的tokenID
-	var tokenId int64
+	var tokenId string
 	err = d.db.Model(&model.Collection{}).Select("token_id").Where("id", id).Scan(&tokenId).Error
 	if err != nil {
 		return res, total, err

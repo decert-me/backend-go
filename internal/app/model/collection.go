@@ -13,7 +13,7 @@ type Collection struct {
 	Dependencies     datatypes.JSON `gorm:"column:dependencies" json:"-"`
 	IsDraft          bool           `gorm:"column:is_draft" json:"-"`
 	AddTs            int64          `gorm:"column:add_ts;autoCreateTime" json:"addTs"`
-	TokenId          int64          `gorm:"column:token_id;default:0" json:"tokenId"`
+	TokenId          string         `gorm:"column:token_id;default:'';type:varchar(100)" json:"tokenId"`
 	Type             uint8          `gorm:"column:type" json:"type" form:"type"`                       // 0:问答;1:编程
 	Difficulty       *uint8         `gorm:"column:difficulty" json:"difficulty"`                       // 0:easy;1:moderate;2:difficult
 	EstimateTime     uint8          `gorm:"column:estimate_time" json:"-"`                             // 预估时间/min
@@ -31,6 +31,7 @@ type Collection struct {
 	Author           string         `gorm:"column:author;type:varchar(64);comment:合辑作者" json:"author"`
 	Sort             int            `gorm:"column:sort;default:0" json:"sort"` // 	排序
 	CollectionStatus uint8          `gorm:"column:collection_status;default:0" json:"-"`
+	ChainID          int64          `gorm:"column:chain_id;comment:链ID;default:0" json:"chain_id"` // 链ID
 }
 
 func (Collection) TableName() string {

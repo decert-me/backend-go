@@ -125,7 +125,7 @@ func (d *Dao) GetKeyFileWithSignature(address string) (keyFile datatypes.JSON, e
 }
 
 // GetDidCardInfo 获取DidCardInfo
-func (d *Dao) GetDidCardInfo(address string, tokenID int64) (didCardInfo datatypes.JSON, err error) {
+func (d *Dao) GetDidCardInfo(address string, tokenID string) (didCardInfo datatypes.JSON, err error) {
 	var data string
 	err = d.db.Model(&model.ZcloakCard{}).
 		Select("vc").

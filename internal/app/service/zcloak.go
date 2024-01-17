@@ -243,7 +243,7 @@ func (s *Service) GetKeyFileWithSignature(address string) (keyFile datatypes.JSO
 }
 
 // GenerateCard 生成证书
-func (s *Service) GenerateCard(address string, tokenID int64) (err error) {
+func (s *Service) GenerateCard(address string, tokenID string) (err error) {
 	quest, err := s.dao.GetQuestByTokenID(tokenID)
 	if err != nil {
 		return errors.New("TokenIDInvalid")

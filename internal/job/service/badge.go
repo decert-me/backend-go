@@ -21,15 +21,15 @@ func (s *Service) handleURI(hash string, vLog *types.Log) (err error) {
 	if err = contractAbi.UnpackIntoInterface(&uri, "URI", vLog.Data); err != nil || len(vLog.Topics) == 0 {
 		return errors.New("unpack error")
 	}
-	tokenId := vLog.Topics[1].Big().Int64()
+	tokenId := vLog.Topics[1].Big().String()
 	// no such tokenId in quest
 	exist, err := s.dao.HasTokenId(tokenId)
 	if err != nil {
-		log.Errorv("HasTokenId error", zap.Int64("tokenId", tokenId), zap.Error(err))
+		log.Errorv("HasTokenId error", zap.String("tokenId", tokenId), zap.Error(err))
 		return
 	}
 	if !exist {
-		log.Errorv("no such tokenId in quest", zap.Int64("tokenId", tokenId))
+		log.Errorv("no such tokenId in quest", zap.String("tokenId", tokenId))
 		return errors.New("no such tokenId in quest")
 	}
 	metadata, err := s.GetDataFromCid(strings.Replace(uri.Value, "ipfs://", "", 1))

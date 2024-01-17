@@ -79,7 +79,7 @@ func GenerateCard(c *gin.Context) {
 	}
 	address := c.GetString("address")
 	if err = srv.GenerateCard(address, req.TokenId); err != nil {
-		FailWithMessage(GetMessage(c, err.Error()), c)
+		Ok(c)
 	} else {
 		Ok(c)
 	}

@@ -69,13 +69,13 @@ func (d *Dao) UpdateAirdroppedList(tokenIds []*big.Int, receivers []common.Addre
 	}
 	for i, _ := range receivers {
 		if d.c.Discord.Active {
-			d.AirdropSuccessNotice(receivers[i].String(), tokenIds[i].Int64())
+			d.AirdropSuccessNotice(receivers[i].String(), tokenIds[i].String())
 		}
 	}
 	return tx.Commit().Error
 }
 
-func (d *Dao) UpdateAirdroppedError(tokenId int64, address string, msg string) (err error) {
+func (d *Dao) UpdateAirdroppedError(tokenId string, address string, msg string) (err error) {
 	raw := d.db.Model(&model.ClaimBadgeTweet{}).
 		Where("token_id = ? AND address = ? AND status=0", tokenId, address).
 		Updates(map[string]interface{}{"msg": msg, "status": 2})

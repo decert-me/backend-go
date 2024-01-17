@@ -11,5 +11,4 @@ type BlockChain struct {
 	ChainID           int64      `mapstructure:"chain-id" json:"chain-id" yaml:"chain-id"`                                  // Chain ID
 	Attempt           int        `mapstructure:"attempt" json:"attempt" yaml:"attempt"`                                     // 尝试次数
 	Provider          []Provider `mapstructure:"provider" json:"provider" yaml:"provider"`                                  // Provider
-
 }

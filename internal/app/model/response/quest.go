@@ -37,6 +37,8 @@ type GetQuestRes struct {
 	Answer                datatypes.JSON `gorm:"column:answer" json:"answer"`
 	OpenQuestReviewStatus uint8          `gorm:"column:open_quest_review_status" json:"open_quest_review_status"` // 评阅开放题状态 1 未审核 2 已审核
 	Answers               []string       `gorm:"-" json:"answers"`
+	BadgeTokenID          string         `gorm:"column:badge_token_id" json:"badge_token_id"`
+	BadgeChainID          int64          `gorm:"column:badge_chain_id" json:"badge_chain_id"`
 }
 
 type GetQuestFlashListRes struct {
@@ -77,7 +79,7 @@ type GetQuestHolderListRes struct {
 
 type GetAddressHighScore struct {
 	Address string         `gorm:"address"`
-	TokenId int64          `gorm:"token_id"`
+	TokenId string         `gorm:"token_id"`
 	Score   int64          `gorm:"score"`
 	Answer  datatypes.JSON `gorm:"answer"`
 }

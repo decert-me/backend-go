@@ -69,7 +69,7 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		UUID:        uuid,
 		Title:       questData.Title,
 		Description: gjson.Get(metadata, "description").String(),
-		TokenId:     vLog.Topics[2].Big().Int64(),
+		TokenId:     vLog.Topics[2].Big().String(),
 		Uri:         questData.Uri,
 		Type:        0, // TODO
 		Creator:     common.HexToAddress(vLog.Topics[1].Hex()).String(),
@@ -78,6 +78,7 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		QuestData:   []byte(questDataDetail),
 		IsDraft:     false, // 当前发布不审核
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
+		ChainID:     137,
 	}
 	// 区分合辑和Quest
 	if collectionID == 0 {
@@ -124,7 +125,7 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 	quest := model.Quest{
 		Title:       questData.Title,
 		Description: gjson.Get(metadata, "description").String(),
-		TokenId:     gjson.Get(string(resJson), "tokenId").Int(),
+		TokenId:     gjson.Get(string(resJson), "tokenId").String(),
 		Uri:         questData.Uri,
 		Type:        0, // TODO
 		MetaData:    []byte(metadata),

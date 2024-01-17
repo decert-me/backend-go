@@ -7,7 +7,7 @@ import (
 
 type QuestTranslated struct {
 	gorm.Model
-	TokenId     int64          `gorm:"column:token_id;not null;index:language_token_id,unique" json:"tokenId"`
+	TokenId     string         `gorm:"column:token_id;not null;index:language_token_id,unique;type:varchar(100)" json:"tokenId"`
 	Title       string         `gorm:"column:title;comment:标题;type:varchar" json:"title" form:"title"` // 标题
 	Answer      string         `gorm:"column:answer" json:"answer"`                                    // 答案
 	Description string         `gorm:"column:description;type:varchar" json:"description" form:"description"`

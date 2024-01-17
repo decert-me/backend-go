@@ -5,7 +5,7 @@ import "gorm.io/gorm"
 type UserMessage struct {
 	gorm.Model
 	Address   string `gorm:"column:address;type:varchar(44);comment:钱包地址;index:address_is_read" json:"address" form:"address"`
-	TokenId   int64  `gorm:"column:token_id" json:"token_id"`
+	TokenId   string `gorm:"column:token_id;type:varchar(100)" json:"token_id"`
 	Title     string `gorm:"column:title;type:varchar(200);default:''" json:"title" form:"title"`                           // 消息标题
 	TitleEn   string `gorm:"column:title_en;type:varchar(200);default:''" json:"title_en" form:"title_en"`                  // 消息标题
 	Content   string `gorm:"column:content;type:text;default:'';comment:消息内容" json:"content" form:"content"`                // 消息内容

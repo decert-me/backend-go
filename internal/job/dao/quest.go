@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *Dao) HasTokenId(tokenId int64) (has bool, err error) {
+func (d *Dao) HasTokenId(tokenId string) (has bool, err error) {
 	var count int64
 	err = d.db.Model(&model.Quest{}).Where("token_id", tokenId).Count(&count).Error
 	if count > 0 {
@@ -16,7 +16,7 @@ func (d *Dao) HasTokenId(tokenId int64) (has bool, err error) {
 	return
 }
 
-func (d *Dao) ValidTokenId(tokenId int64) (valid bool, err error) {
+func (d *Dao) ValidTokenId(tokenId string) (valid bool, err error) {
 	var quest model.Quest
 	err = d.db.
 		Where("token_id", tokenId).Where("disabled", false).Where("is_draft", false).

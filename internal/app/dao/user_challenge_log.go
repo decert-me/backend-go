@@ -54,7 +54,7 @@ func (d *Dao) CreateUserOpenQuest(userOpenQuest *model.UserOpenQuest) (err error
 }
 
 // GetUserOpenQuestReviewed 获取用户最新已审核开放题
-func (d *Dao) GetUserOpenQuestReviewed(address string, tokenID int64) (userOpenQuest model.UserOpenQuest, err error) {
+func (d *Dao) GetUserOpenQuestReviewed(address string, tokenID string) (userOpenQuest model.UserOpenQuest, err error) {
 	err = d.db.Model(&model.UserOpenQuest{}).
 		Where("address", address).
 		Where("token_id", tokenID).
@@ -64,7 +64,7 @@ func (d *Dao) GetUserOpenQuestReviewed(address string, tokenID int64) (userOpenQ
 }
 
 // GetLatestQuestPassAnswer 获取用户通过的最新回答
-func (d *Dao) GetLatestQuestPassAnswer(address string, tokenID int64) (answer string, score int64, err error) {
+func (d *Dao) GetLatestQuestPassAnswer(address string, tokenID string) (answer string, score int64, err error) {
 	type UserChallengeLog struct {
 		Answer    string `gorm:"column:answer"`
 		UserScore int64  `gorm:"column:user_score"`

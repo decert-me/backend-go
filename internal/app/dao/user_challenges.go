@@ -17,7 +17,7 @@ func (d *Dao) CreateChallenges(challenges *model.UserChallenges) (err error) {
 	return
 }
 
-func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (err error) {
+func (d *Dao) CreateChallengesList(tokenId string, receivers []common.Address) (err error) {
 	var challenge []model.UserChallenges
 	for _, v := range receivers {
 		challenge = append(challenge, model.UserChallenges{
@@ -34,14 +34,16 @@ func (d *Dao) CreateChallengesList(tokenId int64, receivers []common.Address) (e
 	return
 }
 
-func (d *Dao) CreateChallengesOne(tokenId int64, receiver string, uerScore int64, nftAddress string) (err error) {
+func (d *Dao) CreateChallengesOne(tokenId string, receiver string, uerScore int64, nftAddress string, badgeTokenID string, chainID int64) (err error) {
 	challenge := model.UserChallenges{
-		Address:    receiver,
-		TokenId:    tokenId,
-		Claimed:    true,
-		Status:     2,
-		UserScore:  uerScore,
-		NFTAddress: nftAddress,
+		Address:      receiver,
+		TokenId:      tokenId,
+		Claimed:      true,
+		Status:       2,
+		UserScore:    uerScore,
+		NFTAddress:   nftAddress,
+		BadgeTokenID: badgeTokenID,
+		ChainID:      chainID,
 	}
 	err = d.db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "address"}, {Name: "token_id"}},
@@ -82,7 +84,7 @@ func (d *Dao) GetOwnerChallengeList(req *request.GetChallengeListRequest) (res [
 		),ranked_logs2 AS (SELECT *,ROW_NUMBER () OVER (PARTITION BY token_id ORDER BY id DESC) AS rn 
 		FROM user_open_quest
 		WHERE address= ? AND deleted_at IS NULL)
-		SELECT a.*,COALESCE(tr.title,a.title) as title,COALESCE(tr.description,a.description) as description,COALESCE(c.pass,b.pass) as claimable,COALESCE(c.open_quest_review_status,0) as open_quest_review_status,b.is_open_quest,COALESCE(d.nft_address,'') as nft_address,NOT (d.claimed = false AND zc.quest_id IS NULL) as claimed FROM quest A
+		SELECT a.*,COALESCE(tr.title,a.title) as title,COALESCE(tr.description,a.description) as description,COALESCE(c.pass,b.pass) as claimable,COALESCE(c.open_quest_review_status,0) as open_quest_review_status,b.is_open_quest,COALESCE(d.nft_address,'') as nft_address,NOT (d.claimed = false AND zc.quest_id IS NULL) as claimed,d.badge_token_id,d.chain_id as badge_chain_id FROM quest A
 		LEFT JOIN ranked_logs b ON a.token_id = b.token_id 
 		LEFT JOIN ranked_logs2 c ON a.token_id = c.token_id
 		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = ?
@@ -133,11 +135,14 @@ func (d *Dao) GetChallengeList(req *request.GetChallengeListRequest) (res []resp
 		 SELECT nft_address,token_id,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY add_ts ASC) as rn 
 				 FROM all_quest
 		)
-		SELECT count(1) FROM ranked_quest
+		SELECT count(1) FROM ranked_quest a
+		JOIN quest b ON a.token_id=b.token_id 
+		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = ?
+		LEFT JOIN quest_translated tr ON b.token_id = tr.token_id AND tr.language = ? 
 		WHERE rn=1
 	`
 	// 查询记录条数
-	if err = d.db.Raw(countSQL, req.Address, req.Address).Scan(&total).Error; err != nil {
+	if err = d.db.Raw(countSQL, req.Address, req.Address, req.Address, req.Language).Scan(&total).Error; err != nil {
 		fmt.Println(err)
 		return res, total, err
 	}
@@ -155,15 +160,16 @@ func (d *Dao) GetChallengeList(req *request.GetChallengeListRequest) (res []resp
 		 SELECT nft_address,add_ts,token_id,ROW_NUMBER() OVER (PARTITION BY token_id ORDER BY add_ts ASC) as rn 
 				 FROM all_quest
 		)
-		SELECT a.nft_address,true as claimed,a.add_ts as complete_ts,b.*,COALESCE(tr.title,b.title) as title,COALESCE(tr.description,b.description) as description
+		SELECT a.nft_address,true as claimed,a.add_ts as complete_ts,b.*,COALESCE(tr.title,b.title) as title,COALESCE(tr.description,b.description) as description,d.badge_token_id,d.chain_id as badge_chain_id
 		FROM ranked_quest a
 		JOIN quest b ON a.token_id=b.token_id 
+		LEFT JOIN user_challenges d ON a.token_id=d.token_id AND d.address = ?
 		LEFT JOIN quest_translated tr ON b.token_id = tr.token_id AND tr.language = ? 
 		WHERE rn=1
 		ORDER BY a.add_ts DESC LIMIT ? OFFSET ?
 	`
 	// 查询数据
-	db := d.db.Raw(dataSQL, req.Address, req.Address, req.Language, limit, offset)
+	db := d.db.Raw(dataSQL, req.Address, req.Address, req.Address, req.Language, limit, offset)
 	if err = db.Scan(&res).Error; err != nil {
 		return res, total, err
 	}

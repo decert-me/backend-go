@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"backend-go/internal/app/utils"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -11,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"math/big"
-	"strconv"
 )
 
 func (s *Service) GetQuestList(searchInfo request.GetQuestListRequest) (res []response.GetQuestListRes, total int64, err error) {
@@ -30,23 +30,22 @@ func (s *Service) GetUserQuestListWithClaimed(searchInfo request.GetUserQuestLis
 }
 
 func (s *Service) GetQuest(language, id string, address, original string) (quest response.GetQuestRes, err error) {
-	tokenId, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
+	if utils.IsUUID(id) {
 		if address == "" {
-			quest, err = s.dao.GetQuestByUUID(language, id)
+			quest, err = s.dao.GetQuestByUUIDLang(language, id)
 			return
 		}
 		quest, err = s.dao.GetQuestWithClaimStatusByUUID(language, id, address)
 	} else {
 		if address == "" {
-			quest, err = s.dao.GetQuestByTokenIDWithLang(language, tokenId)
+			quest, err = s.dao.GetQuestByTokenIDWithLang(language, id)
 			return
 		}
 		if original == "true" {
-			quest, err = s.dao.GetQuestWithClaimStatusByTokenID(tokenId, address)
+			quest, err = s.dao.GetQuestWithClaimStatusByTokenID(id, address)
 			return
 		} else {
-			quest, err = s.dao.GetQuestWithClaimStatusByTokenIDWithLang(language, tokenId, address)
+			quest, err = s.dao.GetQuestWithClaimStatusByTokenIDWithLang(language, id, address)
 		}
 	}
 	return
@@ -78,12 +77,16 @@ func (s *Service) UpdateQuest(address string, modify request.UpdateQuestRequest)
 	if err != nil {
 		return
 	}
+	tokenId, set := big.NewInt(0).SetString(modify.TokenId, 10)
+	if !set {
+		return res, errors.New("TokenIDInvalid")
+	}
 	hash := solsha3.SoliditySHA3(
 		// types
 		[]string{"uint256", "uint32", "uint32", "uint192", "string", "string", "address", "address"},
 		// values
 		[]interface{}{
-			big.NewInt(modify.TokenId), modify.StartTs, modify.EndTs, modify.Supply, modify.Title, modify.Uri, s.c.Contract.QuestMinter, address,
+			tokenId, modify.StartTs, modify.EndTs, modify.Supply, modify.Title, modify.Uri, s.c.Contract.QuestMinter, address,
 		},
 	)
 	prefixedHash := solsha3.SoliditySHA3WithPrefix(hash)
@@ -93,11 +96,10 @@ func (s *Service) UpdateQuest(address string, modify request.UpdateQuestRequest)
 }
 
 func (s *Service) GetQuestChallengeUser(id string) (res response.GetQuestChallengeUserRes, err error) {
-	tokenId, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
+	if utils.IsUUID(id) {
 		res, err = s.dao.GetQuestChallengeUserByUUID(id)
 	} else {
-		res, err = s.dao.GetQuestChallengeUserByTokenID(tokenId)
+		res, err = s.dao.GetQuestChallengeUserByTokenID(id)
 	}
 	return
 }
@@ -124,33 +126,30 @@ func (s *Service) UpdateRecommend(address string, modify request.UpdateRecommend
 
 // GetQuestFlashRank 获取闪电榜
 func (s *Service) GetQuestFlashRank(address string, id string) (res response.GetQuestFlashListRes, err error) {
-	tokenId, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
+	if utils.IsUUID(id) {
 		res, err = s.dao.GetQuestFlashRankByUUID(address, id)
 	} else {
-		res, err = s.dao.GetQuestFlashRankByTokenID(address, tokenId)
+		res, err = s.dao.GetQuestFlashRankByTokenID(address, id)
 	}
 	return
 }
 
 // GetQuestHighRank 获取高分榜
 func (s *Service) GetQuestHighRank(address string, id string) (res response.GetQuestHighScoreListRes, err error) {
-	tokenId, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
+	if utils.IsUUID(id) {
 		res, err = s.dao.GetQuestHighRankByUUID(address, id)
 	} else {
-		res, err = s.dao.GetQuestHighRankByTokenID(address, tokenId)
+		res, err = s.dao.GetQuestHighRankByTokenID(address, id)
 	}
 	return
 }
 
 // GetQuestHolderRank 获取持有榜
 func (s *Service) GetQuestHolderRank(address, id string, page int, pageSize int) (res []response.GetQuestHolderListRes, total int64, err error) {
-	tokenId, err := strconv.ParseInt(id, 10, 64)
-	if err != nil {
+	if utils.IsUUID(id) {
 		res, total, err = s.dao.GetQuestHolderRankByUUID(address, id, page, pageSize)
 	} else {
-		res, total, err = s.dao.GetQuestHolderRankByTokenID(address, tokenId, page, pageSize)
+		res, total, err = s.dao.GetQuestHolderRankByTokenID(address, id, page, pageSize)
 	}
 	return
 }

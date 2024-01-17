@@ -20,7 +20,7 @@ func (d *Dao) CreateChallengesList(tokenIds []*big.Int, receivers []common.Addre
 	for i, _ := range receivers {
 		challenge = append(challenge, model.UserChallenges{
 			Address:   receivers[i].String(),
-			TokenId:   tokenIds[i].Int64(),
+			TokenId:   tokenIds[i].String(),
 			UserScore: scores[i].Int64(),
 			Claimed:   true,
 			Status:    2,
@@ -33,7 +33,7 @@ func (d *Dao) CreateChallengesList(tokenIds []*big.Int, receivers []common.Addre
 	return
 }
 
-func (d *Dao) DeleteUserChallengeLogByTokenId(tokenId int64) (err error) {
+func (d *Dao) DeleteUserChallengeLogByTokenId(tokenId string) (err error) {
 	err = d.db.Where("token_id = ?", tokenId).Delete(&model.UserChallengeLog{}).Error
 	if err != nil {
 		return err

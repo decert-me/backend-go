@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Service) HashSubmit(address string, req request.HashSubmitRequest) (err error) {
-	transHash := model.Transaction{SendAddr: address, Hash: req.Hash, Params: []byte(gjson.Parse(req.Params).Raw)}
+	transHash := model.Transaction{SendAddr: address, Hash: req.Hash, Params: []byte(gjson.Parse(req.Params).Raw), ChainID: req.ChainID, Version: req.Version}
 	// save
 	if err = s.dao.CreateTransaction(&transHash); err != nil {
 		log.Errorv("CreateTransaction error", zap.Error(err))

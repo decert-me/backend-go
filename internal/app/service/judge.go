@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend-go/internal/app/utils"
 	"backend-go/internal/judge/model/request"
 	"backend-go/pkg/log"
 	"github.com/imroc/req/v3"
@@ -10,7 +11,11 @@ import (
 )
 
 func (s *Service) TryRun(body request.TryRunReq) (result string, err error) {
-	body.Quest, err = s.dao.GetQuestByTokenID(body.TokenID)
+	if utils.IsUUID(body.TokenID) {
+		body.Quest, err = s.dao.GetQuestByUUID(body.TokenID)
+	} else {
+		body.Quest, err = s.dao.GetQuestByTokenID(body.TokenID)
+	}
 	if err != nil {
 		return "", err
 	}
