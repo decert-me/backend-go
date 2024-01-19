@@ -127,12 +127,6 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 	if !pass {
 		return nil
 	}
-	// 查询历史 Did 最高分
-	highestScore, err := s.dao.GetDidHighestScore(did, quest.ID)
-	// 未达到历史最高分，不保存
-	if highestScore >= score {
-		return nil
-	}
 	// 将用户答案写入metadata
 	metadata, err := sjson.Set(string(quest.MetaData), "attributes.user_answer", gjson.Parse(req.Answer).Value())
 	if err != nil {
@@ -141,7 +135,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 	}
 	// 将metadata上传到IPFS
 	err, hash := s.IPFSUploadJSON(gjson.Parse(metadata).Value())
-	if err != nil {
+	if err != nil || hash == "" {
 		log.Errorv("IPFSUploadJSON error", zap.Error(err))
 		return errors.New("UnexpectedError")
 	}
@@ -187,6 +181,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 		ErcType:         "erc1155",
 		Name:            gjson.Get(string(quest.MetaData), "name").String(),
 		DidAddress:      did,
+		MetadataJson:    string(quest.MetaData),
 	})
 	if err != nil {
 		return err
@@ -209,6 +204,7 @@ type SaveCardInfoRequest struct {
 	ErcType         string `json:"erc_type" form:"erc_type" binding:"required"`
 	Name            string `json:"name" form:"name" binding:"required"`
 	DidAddress      string `json:"did_address" form:"did_address" binding:"required"`
+	MetadataJson    string `json:"metadata_json" form:"metadata_json"`
 }
 
 // SaveToNFTCollection 保存到NFT
