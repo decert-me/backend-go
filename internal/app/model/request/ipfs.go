@@ -17,6 +17,9 @@ type UploadJSONNFT struct {
 		ChallengeTitle   string `json:"challenge_title" binding:"required"`
 		Difficulty       any    `json:"difficulty"`
 	} `json:"attributes" binding:"required"`
+	Properties struct {
+		Media string `json:"media"`
+	} `json:"properties"`
 	ExternalURL string  `json:"external_url" binding:"required"`
 	Version     float64 `json:"version" binding:"required"`
 }
