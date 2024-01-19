@@ -132,7 +132,7 @@ func (d *Dao) GetDidCardInfo(address string, tokenID string) (didCardInfo dataty
 		Joins("LEFT JOIN quest ON zcloak_card.quest_id = quest.id").
 		Where("quest.token_id = ?", tokenID).
 		Where("address ILIKE ?", address).
-		Order("add_ts desc").
+		Order("zcloak_card.add_ts desc").
 		First(&data).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
