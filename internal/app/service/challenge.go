@@ -67,6 +67,9 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 	if err != nil {
 		return errors.New("OperationFailed")
 	}
+	if req.Address == "" {
+		return
+	}
 	// 创建证书
 	if !isOpenQuest && pass {
 		go func() {
