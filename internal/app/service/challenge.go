@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"backend-go/internal/app/utils"
 	"backend-go/pkg/log"
 	"errors"
 	"github.com/tidwall/gjson"
@@ -31,9 +32,18 @@ func (s *Service) GetUserChallengeList(req request.GetChallengeListRequest) (res
 
 func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err error) {
 	// 校验分数正确性
-	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
-	if err != nil {
-		return errors.New("TokenIDInvalid")
+	var quest model.Quest
+	if utils.IsUUID(req.TokenId) {
+		quest, err = s.dao.GetQuestByUUID(req.TokenId)
+		if err != nil {
+			return errors.New("TokenIDInvalid")
+		}
+		req.TokenId = quest.TokenId
+	} else {
+		quest, err = s.dao.GetQuestByTokenID(req.TokenId)
+		if err != nil {
+			return errors.New("TokenIDInvalid")
+		}
 	}
 	// 判断是否同一题目
 	if quest.Uri != req.URI {
