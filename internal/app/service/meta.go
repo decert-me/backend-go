@@ -60,12 +60,12 @@ func (s *Service) HandleCollectionMetaRequest(_id string) []byte {
 		return fileContent
 	}
 	// 需要替换的内容
-	ipfs := "https://ipfs.decert.me/" + collection.Cover
+	ipfs := collection.Cover
 	replaceList := map[string]string{
 		"https://decert.me/": fmt.Sprintf("https://decert.me/collection/%s", _id),
 		"DeCert.Me":          collection.Title,
 		"Decentralized skills learning and certification platform · Education in the Age of AI · SBT - Proof of Learn.": collection.Description,
-		"/decert-social-card.png": ipfs,
+		"bafybeicd2u6h5uozel22ykklrw4dwh5nk2pyladngst4kjtrwijeihmto4":                                                   ipfs,
 	}
 	// 修改文件内容
 	temp := string(fileContent)
