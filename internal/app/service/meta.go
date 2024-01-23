@@ -30,12 +30,12 @@ func (s *Service) HandleMetaRequest(_id string) []byte {
 		}
 	}
 	// 需要替换的内容
-	ipfs := "https://ipfs.decert.me/" + strings.Replace(gjson.Get(string(quest.MetaData), "image").String(), "ipfs://", "", 1)
+	ipfs := strings.Replace(gjson.Get(string(quest.MetaData), "image").String(), "ipfs://", "", 1)
 	replaceList := map[string]string{
 		"https://decert.me/": fmt.Sprintf("https://decert.me/quests/%s", _id),
 		"DeCert.Me":          quest.Title,
 		"Decentralized skills learning and certification platform · Education in the Age of AI · SBT - Proof of Learn.": quest.Description,
-		"/decert-social-card.png": ipfs,
+		"bafybeicd2u6h5uozel22ykklrw4dwh5nk2pyladngst4kjtrwijeihmto4":                                                   ipfs,
 	}
 	// 修改文件内容
 	temp := string(fileContent)
