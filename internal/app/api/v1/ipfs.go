@@ -34,6 +34,8 @@ func UploadJson(c *gin.Context) {
 			FailWithMessage(GetMessage(c, "ParameterError"), c)
 			return
 		}
+		// 图片加标题
+		mediaToImage(uploadJSONNFT)
 		uploadJSON = uploadJSONNFT
 	} else {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
