@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
+	"gorm.io/datatypes"
 	"strconv"
 )
 
@@ -120,7 +121,17 @@ func (s *Service) AirdropCallback(c *gin.Context, req request.AirdropCallbackReq
 	nftAddress := gjson.Get(req.Params, "params.nft_address").String()
 	badgeTokenID := gjson.Get(req.Params, "params.badge_token_id").String()
 	chainID := gjson.Get(req.Params, "params.chain_id").String()
-	if err = s.dao.CreateChallengesOne(tokenId, req.Receiver, score, nftAddress, badgeTokenID, cast.ToInt64(chainID)); err != nil {
+	badgeUri := gjson.Get(req.Params, "params.badge_uri").String()
+	// 获取IPFS内容
+	var badgeMetaData datatypes.JSON
+	if badgeUri != "" {
+		ipfsData, err := s.GetDataFromCid(badgeUri)
+		if err != nil {
+			log.Errorv("GetDataFromCid error", zap.Any("error", err))
+		}
+		badgeMetaData = datatypes.JSON(ipfsData)
+	}
+	if err = s.dao.CreateChallengesOne(tokenId, req.Receiver, score, nftAddress, badgeTokenID, cast.ToInt64(chainID), badgeMetaData); err != nil {
 		log.Errorv("CreateChallengesOne error ", zap.Any("error", err))
 	}
 	s.dao.AirdropSuccessNotice(req.Receiver, req.TokenId)

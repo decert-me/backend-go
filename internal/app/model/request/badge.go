@@ -36,9 +36,10 @@ type SubmitAirdropReq struct {
 }
 
 type SubmitClaimShareV2Req struct {
-	TokenId string `json:"tokenId"`
-	Score   int64  `json:"score"  binding:"required"`
-	Answer  string `json:"answer" binding:"required"`
-	Uri     string `json:"uri"`
-	ChainID int64  `json:"chain_id"`
+	TokenId  string `json:"tokenId"`
+	Score    int64  `json:"score"  binding:"required"`
+	Answer   string `json:"answer" binding:"required"`
+	Uri      string `json:"uri"`
+	ChainID  int64  `json:"chain_id"`
+	ImageUri string `json:"image_uri"`
 }

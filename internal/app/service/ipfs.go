@@ -237,6 +237,8 @@ func (s *Service) IPFSUploadJSON(uploadJSON interface{}) (err error, hash string
 // @param: cid string
 // @return: string, error
 func (s *Service) GetDataFromCid(cid string) (result string, err error) {
+	// 去除前缀
+	cid = strings.TrimPrefix(cid, "ipfs://")
 	// 读取文件内容
 	path := s.c.Local.IPFS
 	filePath := path + "/" + cid

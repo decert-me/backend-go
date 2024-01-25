@@ -17,6 +17,7 @@ type GenerateCardInfoRequest struct {
 	TokenId string `json:"token_id" binding:"required"`
 	Answer  string `json:"answer" binding:"required"`
 	Uri     string `json:"uri"`
+	Lang    string `json:"lang"`
 }
 
 type GenerateCardRequest struct {

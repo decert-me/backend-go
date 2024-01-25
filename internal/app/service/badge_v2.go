@@ -7,6 +7,7 @@ import (
 	"backend-go/pkg/log"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
@@ -38,7 +39,7 @@ func (s *Service) UpdateBadgeURIV2(address string, badgeURI request.UpdateBadgeU
 	return hexutil.Encode(signature), err
 }
 
-func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShareV2Req) (res string, err error) {
+func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShareV2Req, lang string) (res string, err error) {
 	// 校验是否绑定社交账号
 	wechat, discord, err := s.dao.HasBindSocialAccount(address)
 	if wechat == false && discord == false {
@@ -49,15 +50,16 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 		return res, errors.New("AlreadyAirdrop")
 	}
 	// 校验分数正确性
-	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
+	quest, err := s.dao.GetQuestByTokenIDWithLang(lang, req.TokenId)
 	if err != nil {
 		return res, errors.New("TokenIDInvalid")
 	}
+	fmt.Println("quest", quest)
 	// 校验题目
 	if req.Uri != "" && req.Uri != quest.Uri {
 		return res, errors.New("QuestUpdate")
 	}
-	_, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, req.Score, &quest, true)
+	_, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, req.Score, &quest.Quest, true)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return res, errors.New("UnexpectedError")
@@ -73,7 +75,7 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 		app = "decert_solana"
 	}
 	// 解析用户答案
-	answer, err := s.AnswerParse(s.c.Quest.EncryptKey, req.Answer, address, &quest)
+	answer, err := s.AnswerParse(s.c.Quest.EncryptKey, req.Answer, address, &quest.Quest)
 	if err != nil {
 		log.Errorv("AnswerParse error", zap.Error(err))
 		return res, errors.New("UnexpectedError")
@@ -82,16 +84,20 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 	paramsMap := map[string]interface{}{
 		"app": app,
 		"params": map[string]interface{}{
-			"receiver": address,
-			"tokenId":  req.TokenId,
-			"score":    req.Score,
-			"uri":      quest.Uri,
-			"answer":   answer,
-			"title":    quest.Title,
-			"startTs":  gjson.Get(string(quest.ExtraData), "startTs").Int(),
-			"endTs":    gjson.Get(string(quest.ExtraData), "endTs").Int(),
-			"creator":  quest.Creator,
-			"chain_id": req.ChainID,
+			"receiver":           address,
+			"tokenId":            req.TokenId,
+			"score":              req.Score,
+			"uri":                quest.Uri,
+			"answer":             answer,
+			"title":              quest.Title,
+			"startTs":            gjson.Get(string(quest.ExtraData), "startTs").Int(),
+			"endTs":              gjson.Get(string(quest.ExtraData), "endTs").Int(),
+			"creator":            quest.Creator,
+			"chain_id":           req.ChainID,
+			"image_uri":          req.ImageUri,
+			"uuid":               quest.UUID,
+			"challenge_ipfs_url": gjson.Get(string(quest.MetaData), "attributes.challenge_ipfs_url").String(),
+			"description":        quest.Description,
 		},
 	}
 	// 将Map转换为JSON格式的字节数组
