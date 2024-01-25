@@ -63,6 +63,17 @@ func (d *Dao) GetDidAddress(did string) (address string, err error) {
 	return
 }
 
+func (d *Dao) IsExistsVc(address, tokenID string) (bool, error) {
+	var count int64
+	err := d.db.Model(&model.ZcloakCard{}).
+		Joins("LEFT JOIN quest ON zcloak_card.quest_id = quest.id").
+		Where("address = ? AND token_id = ?", address, tokenID).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
 func (d *Dao) GetVcInfo(address, questID string) (vc interface{}, err error) {
 	err = d.db.Model(&model.ZcloakCard{}).
 		Select("vc").

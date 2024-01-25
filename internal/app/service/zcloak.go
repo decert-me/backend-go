@@ -53,36 +53,6 @@ func (s *Service) SaveSignAndDid(address string, req request.SaveSignAndDidReque
 	return
 }
 
-// GenerateCardInfoTask TODO: task
-func (s *Service) GenerateCardInfoTask(address, didAddress string) (err error) {
-	// 是否生成过证书，跳过已经生成过
-	hasCard, err := s.dao.AddressHasCard(address)
-	if err != nil {
-		return errors.New("UnexpectedError")
-	}
-	if hasCard {
-		return nil
-	}
-	// 查询所有历史挑战最高分
-	res, err := s.dao.GetAddressHighScore(address)
-	if err != nil {
-		log.Errorv("查询所有历史挑战最高分失败", zap.Error(err))
-		return errors.New("UnexpectedError")
-	}
-	for _, v := range res {
-		// 生成证书
-		err = s.GenerateCardInfo(address, v.Score, request.GenerateCardInfoRequest{
-			TokenId: v.TokenId,
-			Answer:  string(v.Answer),
-		})
-		if err != nil {
-			log.Errorv("生成证书失败", zap.Error(err))
-			return errors.New("UnexpectedError")
-		}
-	}
-	return
-}
-
 // GetAddressDid 查询地址绑定的Did
 func (s *Service) GetAddressDid(address string) (did string, err error) {
 	return s.dao.GetAddressDid(address)
@@ -251,7 +221,12 @@ func (s *Service) GetKeyFileWithSignature(address string) (keyFile datatypes.JSO
 }
 
 // GenerateCard 生成证书
-func (s *Service) GenerateCard(address string, tokenID string) (err error) {
+func (s *Service) GenerateCard(address string, tokenID string, lang string) (err error) {
+	// 判断用户是否领取过
+	exists, err := s.dao.IsExistsVc(address, tokenID)
+	if exists || err != nil {
+		return
+	}
 	quest, err := s.dao.GetQuestByTokenID(tokenID)
 	if err != nil {
 		return errors.New("TokenIDInvalid")
@@ -278,6 +253,7 @@ func (s *Service) GenerateCard(address string, tokenID string) (err error) {
 	s.GenerateCardInfo(address, userScore, request.GenerateCardInfoRequest{
 		TokenId: tokenID,
 		Answer:  answer,
+		Lang:    lang,
 	})
 	return
 }
