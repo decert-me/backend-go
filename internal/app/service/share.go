@@ -129,7 +129,9 @@ func (s *Service) AirdropCallback(c *gin.Context, req request.AirdropCallbackReq
 		if err != nil {
 			log.Errorv("GetDataFromCid error", zap.Any("error", err))
 		}
-		badgeMetaData = datatypes.JSON(ipfsData)
+		if gjson.Valid(ipfsData) {
+			badgeMetaData = datatypes.JSON(ipfsData)
+		}
 	}
 	if err = s.dao.CreateChallengesOne(tokenId, req.Receiver, score, nftAddress, badgeTokenID, cast.ToInt64(chainID), badgeMetaData); err != nil {
 		log.Errorv("CreateChallengesOne error ", zap.Any("error", err))

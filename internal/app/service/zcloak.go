@@ -20,12 +20,22 @@ import (
 
 // SaveSignAndDid 保存签名和DID账号
 func (s *Service) SaveSignAndDid(address string, req request.SaveSignAndDidRequest) (err error) {
-	if !utils.VerifySignature(address, req.SignHash, []byte(req.Sign)) {
-		return errors.New("SignatureVerificationFailed")
-	}
-	// 校验Address
-	if req.Sign[0:42] != address {
-		return errors.New("AddressError")
+	if utils.IsValidAddress(address) {
+		if !utils.VerifySignature(address, req.SignHash, []byte(req.Sign)) {
+			return errors.New("SignatureVerificationFailed")
+		}
+		// 校验Address
+		if req.Sign[0:42] != address {
+			return errors.New("AddressError")
+		}
+	} else {
+		if !utils.VerifySignatureSolana(address, req.SignHash, []byte(req.Sign)) {
+			return errors.New("SignatureVerificationFailed")
+		}
+		// 校验Address
+		if req.Sign[0:44] != address {
+			return errors.New("AddressError")
+		}
 	}
 	// 校验did账号
 	indexAddress := strings.LastIndex(req.Sign, "did:zk:")
@@ -107,7 +117,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 		return errors.New("DIDNotFound")
 	}
 	// 校验分数正确性
-	quest, err := s.dao.GetQuestByTokenID(req.TokenId)
+	quest, err := s.dao.GetQuestByTokenIDWithLang(req.Lang, req.TokenId)
 	if err != nil {
 		return errors.New("TokenIDInvalid")
 	}
@@ -117,7 +127,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 	}
 	pass := true
 	if score == 0 {
-		score, pass, err = s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, 0, &quest, true)
+		score, pass, err = s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, 0, &quest.Quest, true)
 		if err != nil {
 			log.Errorv("AnswerCheck error", zap.Error(err))
 			return errors.New("UnexpectedError")
@@ -174,7 +184,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 	}
 	err = s.SaveToNFTCollection(SaveCardInfoRequest{
 		Chain:           "polygon",
-		AccountAddress:  strings.ToLower(address),
+		AccountAddress:  address,
 		ContractAddress: strings.ToLower("0xc8e9cd4921e54c4163870092ca8d9660e967b53d"),
 		TokenID:         cast.ToString(req.TokenId),
 		ImageURI:        strings.TrimPrefix(gjson.Get(string(quest.MetaData), "image").String(), "ipfs://"),
@@ -182,6 +192,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 		Name:            gjson.Get(string(quest.MetaData), "name").String(),
 		DidAddress:      did,
 		MetadataJson:    string(quest.MetaData),
+		UUID:            quest.UUID,
 	})
 	if err != nil {
 		return err
@@ -205,6 +216,7 @@ type SaveCardInfoRequest struct {
 	Name            string `json:"name" form:"name" binding:"required"`
 	DidAddress      string `json:"did_address" form:"did_address" binding:"required"`
 	MetadataJson    string `json:"metadata_json" form:"metadata_json"`
+	UUID            string `json:"uuid" form:"uuid"`
 }
 
 // SaveToNFTCollection 保存到NFT

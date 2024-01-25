@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 	"io"
 	"mime/multipart"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -232,13 +233,22 @@ func (s *Service) IPFSUploadJSON(uploadJSON interface{}) (err error, hash string
 	return err, resJson.Hash
 }
 
+func getCIDFromIPFSURL(ipfsURL string) (string, error) {
+	u, err := url.Parse(ipfsURL)
+	if err != nil {
+		return u.Path, err
+	}
+
+	return u.Path, nil
+}
+
 // GetDataFromCid
 // @description: 获取IPFS内容
 // @param: cid string
 // @return: string, error
 func (s *Service) GetDataFromCid(cid string) (result string, err error) {
 	// 去除前缀
-	cid = strings.TrimPrefix(cid, "ipfs://")
+	cid, _ = getCIDFromIPFSURL(cid)
 	// 读取文件内容
 	path := s.c.Local.IPFS
 	filePath := path + "/" + cid
