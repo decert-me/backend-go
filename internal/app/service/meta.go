@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func (s *Service) HandleMetaRequest(_id string) []byte {
+func (s *Service) HandleMetaRequest(_id, q string) []byte {
 	fileContent, err := os.ReadFile(filepath.Join(s.c.System.Website, "index.html"))
 	if err != nil {
 		return fileContent
@@ -30,7 +30,13 @@ func (s *Service) HandleMetaRequest(_id string) []byte {
 		}
 	}
 	// 需要替换的内容
-	ipfs := strings.Replace(gjson.Get(string(quest.MetaData), "image").String(), "ipfs://", "", 1)
+	var ipfs string
+	if q == "" {
+		ipfs = strings.Replace(gjson.Get(string(quest.MetaData), "image").String(), "ipfs://", "", 1)
+	} else {
+		ipfs = q
+	}
+	fmt.Println("q", q)
 	replaceList := map[string]string{
 		"https://decert.me/": fmt.Sprintf("https://decert.me/quests/%s", _id),
 		"DeCert.Me":          quest.Title,
