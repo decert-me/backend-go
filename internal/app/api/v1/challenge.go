@@ -13,7 +13,8 @@ func CreateChallengeLog(c *gin.Context) {
 		return
 	}
 	add.Address = c.GetString("address")
-	if err := srv.CreateChallengeLog(add); err != nil {
+	lang := c.GetString("lang")
+	if err := srv.CreateChallengeLog(add, lang); err != nil {
 		Fail(c)
 	} else {
 		Ok(c)

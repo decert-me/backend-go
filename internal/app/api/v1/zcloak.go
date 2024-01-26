@@ -43,22 +43,6 @@ func GetDidSignMessage(c *gin.Context) {
 	}
 }
 
-// GenerateCardInfo 生成卡片信息
-func GenerateCardInfo(c *gin.Context) {
-	var req request.GenerateCardInfoRequest
-	err := c.ShouldBindJSON(&req)
-	if err != nil {
-		FailWithMessage(GetMessage(c, "ParameterError"), c)
-		return
-	}
-	address := c.GetString("address")
-	if err = srv.GenerateCardInfo(address, 0, req); err != nil {
-		FailWithMessage(GetMessage(c, err.Error()), c)
-	} else {
-		Ok(c)
-	}
-}
-
 // GetKeyFileWithSignature 获取KeyFiles签名内容
 func GetKeyFileWithSignature(c *gin.Context) {
 	address := c.GetString("address")
@@ -78,7 +62,8 @@ func GenerateCard(c *gin.Context) {
 		return
 	}
 	address := c.GetString("address")
-	if err = srv.GenerateCard(address, req.TokenId); err != nil {
+	lang := c.GetString("lang")
+	if err = srv.GenerateCard(address, req.TokenId, lang); err != nil {
 		Ok(c)
 	} else {
 		Ok(c)

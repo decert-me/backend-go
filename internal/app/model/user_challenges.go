@@ -17,5 +17,6 @@ type UserChallenges struct {
 	ClaimTs      int64          `gorm:"column:claim_ts;" json:"claimTs"`
 	NFTAddress   string         `gorm:"column:nft_address" json:"nft_address" form:"nft_address"`
 	BadgeTokenID string         `gorm:"column:badge_token_id;default:'';type:varchar(100)" json:"badge_token_id" form:"badge_token_id"`
-	ChainID      int64          `gorm:"column:chain_id;comment:链ID;default:137" json:"chain_id"` // 链ID
+	ChainID      int64          `gorm:"column:chain_id;comment:链ID;default:null" json:"chain_id"` // 链ID
+	MetaData     datatypes.JSON `gorm:"column:meta_data" json:"meta_data"`
 }

@@ -30,7 +30,7 @@ func (s *Service) GetUserChallengeList(req request.GetChallengeListRequest) (res
 	return
 }
 
-func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err error) {
+func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest, lang string) (err error) {
 	// 校验分数正确性
 	var quest model.Quest
 	if utils.IsUUID(req.TokenId) {
@@ -76,6 +76,7 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest) (err e
 			s.GenerateCardInfo(req.Address, userScore/100, request.GenerateCardInfoRequest{
 				TokenId: req.TokenId,
 				Answer:  req.Answer,
+				Lang:    lang,
 			})
 		}()
 	}
