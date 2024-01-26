@@ -236,10 +236,12 @@ func (s *Service) IPFSUploadJSON(uploadJSON interface{}) (err error, hash string
 func getCIDFromIPFSURL(ipfsURL string) (string, error) {
 	u, err := url.Parse(ipfsURL)
 	if err != nil {
-		return u.Path, err
+		return strings.TrimPrefix(ipfsURL, "ipfs://"), err
 	}
-
-	return u.Path, nil
+	if u.Path == "" {
+		return strings.TrimPrefix(ipfsURL, "ipfs://"), nil
+	}
+	return strings.TrimPrefix(u.Path, "/"), nil
 }
 
 // GetDataFromCid
