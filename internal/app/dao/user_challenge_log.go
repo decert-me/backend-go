@@ -105,7 +105,7 @@ func (d *Dao) GetUserChallengeLastedScore(address string, tokenID string) (score
 			}
 			return 0, err
 		}
-		return userOpenQuest.OpenQuestScore * 100, nil
+		return userOpenQuest.OpenQuestScore, nil
 	}
-	return userChallengeLog.UserScore, nil
+	return userChallengeLog.UserScore / 100, nil
 }
