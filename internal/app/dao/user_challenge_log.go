@@ -77,3 +77,35 @@ func (d *Dao) GetLatestQuestPassAnswer(address string, tokenID string) (answer s
 		Order("id desc").First(&userChallengeLog).Error
 	return userChallengeLog.Answer, userChallengeLog.UserScore, err
 }
+
+// GetUserChallengeLastedScore 获取用户最新挑战分数
+func (d *Dao) GetUserChallengeLastedScore(address string, tokenID string) (score int64, err error) {
+	var userChallengeLog model.UserChallengeLog
+	err = d.db.Model(&model.UserChallengeLog{}).
+		Where("address", address).
+		Where("token_id", tokenID).
+		Order("id desc").First(&userChallengeLog).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return 0, nil
+		}
+		return 0, err
+	}
+	if userChallengeLog.IsOpenQuest {
+		// 查询开放题最新分数
+		var userOpenQuest model.UserOpenQuest
+		err = d.db.Model(&model.UserOpenQuest{}).
+			Where("address", address).
+			Where("token_id", tokenID).
+			Where("open_quest_review_status = 2").
+			Order("id desc").First(&userOpenQuest).Error
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				return 0, nil
+			}
+			return 0, err
+		}
+		return userOpenQuest.OpenQuestScore * 100, nil
+	}
+	return userChallengeLog.UserScore, nil
+}
