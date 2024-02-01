@@ -16,6 +16,7 @@ func InitQuestRouter(Router *gin.RouterGroup) {
 		questRouter.GET("/:id/getQuestFlashRank", v1.GetQuestFlashRank)   // 获取闪电榜
 		questRouter.GET("/:id/getQuestHighRank", v1.GetQuestHighRank)     // 获取高分榜
 		questRouter.GET("/:id/getQuestHolderRank", v1.GetQuestHolderRank) // 获取Holder榜单
+		questRouter.GET("/:id/:address/score", v1.GetQuestUserScore)      // 获取用户分数
 	}
 	{
 		questRouterAuth.POST("", v1.AddQuest)
