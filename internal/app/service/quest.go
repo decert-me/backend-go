@@ -156,6 +156,9 @@ func (s *Service) GetQuestHolderRank(address, id string, page int, pageSize int)
 
 // GetQuestUserScore 获取用户分数
 func (s *Service) GetQuestUserScore(id, address string) (res response.GetQuestUserScoreRes, err error) {
+	if utils.IsValidAddress(address) {
+		address = common.HexToAddress(address).String()
+	}
 	tokenID := id
 	if utils.IsUUID(id) {
 		tokenID, err = s.dao.QuestUUIDToTokenId(id)

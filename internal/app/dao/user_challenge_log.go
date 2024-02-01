@@ -2,6 +2,7 @@ package dao
 
 import (
 	"backend-go/internal/app/model"
+	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
 
@@ -79,7 +80,7 @@ func (d *Dao) GetLatestQuestPassAnswer(address string, tokenID string) (answer s
 }
 
 // GetUserChallengeLastedScore 获取用户最新挑战分数
-func (d *Dao) GetUserChallengeLastedScore(address string, tokenID string) (score int64, err error) {
+func (d *Dao) GetUserChallengeLastedScore(address string, tokenID string) (score float64, err error) {
 	var userChallengeLog model.UserChallengeLog
 	err = d.db.Model(&model.UserChallengeLog{}).
 		Where("address", address).
@@ -91,6 +92,7 @@ func (d *Dao) GetUserChallengeLastedScore(address string, tokenID string) (score
 		}
 		return 0, err
 	}
+	userScore := userChallengeLog.UserScore
 	if userChallengeLog.IsOpenQuest {
 		// 查询开放题最新分数
 		var userOpenQuest model.UserOpenQuest
@@ -105,7 +107,9 @@ func (d *Dao) GetUserChallengeLastedScore(address string, tokenID string) (score
 			}
 			return 0, err
 		}
-		return userOpenQuest.OpenQuestScore, nil
+		userScore = userOpenQuest.UserScore
 	}
-	return userChallengeLog.UserScore / 100, nil
+	_userScore := decimal.NewFromInt(userScore)
+	userScoreRes, _ := _userScore.Div(decimal.NewFromInt(100)).Round(2).Float64()
+	return userScoreRes, nil
 }

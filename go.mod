@@ -20,6 +20,7 @@ require (
 	github.com/redis/go-redis/v9 v9.0.2
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
+	github.com/shopspring/decimal v1.3.1
 	github.com/silenceper/wechat/v2 v2.1.6
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/viper v1.15.0

@@ -85,8 +85,8 @@ type GetAddressHighScore struct {
 }
 
 type GetQuestUserScoreRes struct {
-	UUID      string `gorm:"column:uuid" json:"uuid"`
-	Title     string `gorm:"column:title;comment:标题;type:varchar" json:"title" form:"title"` // 标题
-	Address   string `gorm:"address" json:"address"`
-	UserScore int64  `gorm:"user_score" json:"user_score"`
+	UUID      string  `gorm:"column:uuid" json:"uuid"`
+	Title     string  `gorm:"column:title;comment:标题;type:varchar" json:"title" form:"title"` // 标题
+	Address   string  `gorm:"address" json:"address"`
+	UserScore float64 `gorm:"user_score" json:"user_score"`
 }
