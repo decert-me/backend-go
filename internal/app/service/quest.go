@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/jinzhu/copier"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"math/big"
 )
@@ -151,5 +152,24 @@ func (s *Service) GetQuestHolderRank(address, id string, page int, pageSize int)
 	} else {
 		res, total, err = s.dao.GetQuestHolderRankByTokenID(address, id, page, pageSize)
 	}
+	return
+}
+
+// GetQuestUserScore 获取用户分数
+func (s *Service) GetQuestUserScore(id, address string) (res response.GetQuestUserScoreRes, err error) {
+	if utils.IsUUID(id) {
+		data, err := s.dao.GetQuestWithClaimStatusByUUID("", id, address)
+		if err != nil {
+			return res, err
+		}
+		copier.Copy(&res, &data)
+	} else {
+		data, err := s.dao.GetQuestWithClaimStatusByTokenIDWithLang("", id, address)
+		if err != nil {
+			return res, err
+		}
+		copier.Copy(&res, &data)
+	}
+	res.Address = address
 	return
 }
