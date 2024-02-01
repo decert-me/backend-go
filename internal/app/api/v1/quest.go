@@ -3,7 +3,6 @@ package v1
 import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -120,7 +119,7 @@ func GetQuestHolderRank(c *gin.Context) {
 
 // GetQuestUserScore 获取用户分数
 func GetQuestUserScore(c *gin.Context) {
-	if data, err := srv.GetQuestUserScore(c.Param("id"), common.HexToAddress(c.Param("address")).String()); err != nil {
+	if data, err := srv.GetQuestUserScore(c.Param("id"), c.Param("address")); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {
 		OkWithData(data, c)

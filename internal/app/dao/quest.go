@@ -621,3 +621,9 @@ func (d *Dao) GetAddressHighScore(address string) (res []response.GetAddressHigh
 	err = d.db.Raw(userHighScoreSQL, address, address).Scan(&res).Error
 	return
 }
+
+// QuestUUIDToTokenId UUID 转 TokenId
+func (d *Dao) QuestUUIDToTokenId(uuid string) (tokenId string, err error) {
+	err = d.db.Model(&model.Quest{}).Select("token_id").Where("uuid", uuid).First(&tokenId).Error
+	return
+}

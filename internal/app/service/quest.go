@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/jinzhu/copier"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
 	"math/big"
 )
@@ -157,19 +156,26 @@ func (s *Service) GetQuestHolderRank(address, id string, page int, pageSize int)
 
 // GetQuestUserScore 获取用户分数
 func (s *Service) GetQuestUserScore(id, address string) (res response.GetQuestUserScoreRes, err error) {
+	if utils.IsValidAddress(address) {
+		address = common.HexToAddress(address).String()
+	}
+	tokenID := id
 	if utils.IsUUID(id) {
-		data, err := s.dao.GetQuestWithClaimStatusByUUID("", id, address)
+		tokenID, err = s.dao.QuestUUIDToTokenId(id)
 		if err != nil {
 			return res, err
 		}
-		copier.Copy(&res, &data)
-	} else {
-		data, err := s.dao.GetQuestWithClaimStatusByTokenIDWithLang("", id, address)
-		if err != nil {
-			return res, err
-		}
-		copier.Copy(&res, &data)
+	}
+	quest, err := s.dao.GetQuestByTokenID(tokenID)
+	if err != nil {
+		return res, err
+	}
+	res.UserScore, err = s.dao.GetUserChallengeLastedScore(address, tokenID)
+	if err != nil {
+		return res, err
 	}
 	res.Address = address
+	res.Title = quest.Title
+	res.UUID = quest.UUID
 	return
 }

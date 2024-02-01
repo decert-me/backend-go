@@ -208,6 +208,7 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 			OpenQuestScore:        openQuestScore,
 			Answer:                datatypes.JSON(answerRes),
 			Pass:                  pass,
+			UserScore:             userReturnScore,
 		}).Error
 		if err != nil {
 			db.Rollback()
