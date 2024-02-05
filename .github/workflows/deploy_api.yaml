@@ -57,7 +57,7 @@ jobs:
           port: 22
           script: |
             # 删除超过5个版本的旧二进制文件
-            cd ${{ vars.APPS_DIRECTORY }}
+            cd "${{ vars.APPS_DIRECTORY }}/api"
             ls -t api-* | tail -n +6 | xargs -I {} rm -- {}
             # copy to decert-api
             cp $BINARY_FILENAME decert-api
