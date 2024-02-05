@@ -1,0 +1,64 @@
+name: Deploy api service
+
+on:
+  # Manually triggered event
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.20' # 设置为 1.x 以自动获取最新的 Go 1.x 系列版本
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+            
+      - name: Build Go application
+        run: |
+          cd internal/app/cmd # 更改为你应用程序所在的目录
+          BINARY_FILENAME=api-$(date +'%Y%m%d-%H%M%S')
+          echo "BINARY_FILENAME=$BINARY_FILENAME" >> $GITHUB_ENV
+          go build -o $BINARY_FILENAME main.go
+
+      - name: Copy files to the server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ vars.SERVER_HOST }}
+          username: ${{ vars.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
+          port: 22
+          source: "internal/app/cmd/$BINARY_FILENAME" # 修改为你的应用二进制文件的路径
+          target: "${{ vars.APPS_DIRECTORY }}/api" # 更改为服务器上的目标目录
+
+      - name: Clean old releases and restart application with PM2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.SERVER_HOST }}
+          username: ${{ vars.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
+          port: 22
+          script: |
+            # 删除超过5个版本的旧二进制文件
+            cd ${{ vars.APPS_DIRECTORY }}
+            ls -t api-* | tail -n +6 | xargs -I {} rm -- {}
+            # copy to decert-api
+            cp $BINARY_FILENAME decert-api
+            # 使用 pm2 重启应用
+            pm2 restart pm2.json
