@@ -32,10 +32,9 @@ jobs:
             
       - name: Build Go application
         run: |
-          cd internal/app/cmd # 更改为你应用程序所在的目录
           BINARY_FILENAME=api-$(date +'%Y%m%d-%H%M%S')
           echo "BINARY_FILENAME=$BINARY_FILENAME" >> $GITHUB_ENV
-          go build -o $BINARY_FILENAME main.go
+          go build -o $BINARY_FILENAME internal/app/cmd/main.go
 
       - name: Copy files to the server
         uses: appleboy/scp-action@v0.1.7
@@ -45,7 +44,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
           port: 22
-          source: "internal/app/cmd/api-*" # 修改为你的应用二进制文件的路径
+          source: ${{ env.BINARY_FILENAME }} # 修改为你的应用二进制文件的路径
           target: "${{ vars.APPS_DIRECTORY }}/api" # 更改为服务器上的目标目录
 
       - name: Clean old releases and restart application with PM2
