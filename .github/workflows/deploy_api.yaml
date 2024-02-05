@@ -8,6 +8,8 @@ jobs:
   build:
     name: Build and deploy
     runs-on: ubuntu-latest
+    environment: 
+      name: prod
 
     steps:
       - name: Checkout code
