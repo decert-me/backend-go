@@ -62,4 +62,4 @@ jobs:
             # copy to decert-api
             cp ${{ env.BINARY_FILENAME }} decert-api
             # 使用 pm2 重启应用
-            pm2 restart pm2.json
+            pm2 reload pm2.json
