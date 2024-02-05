@@ -60,6 +60,6 @@ jobs:
             cd "${{ vars.APPS_DIRECTORY }}/api"
             ls -t api-* | tail -n +6 | xargs -I {} rm -- {}
             # copy to decert-api
-            cp $BINARY_FILENAME decert-api
+            cp ${{ env.BINARY_FILENAME }} decert-api
             # 使用 pm2 重启应用
             pm2 restart pm2.json
