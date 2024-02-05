@@ -34,7 +34,7 @@ jobs:
         run: |
           BINARY_FILENAME=api-$(date +'%Y%m%d-%H%M%S')
           echo "BINARY_FILENAME=$BINARY_FILENAME" >> $GITHUB_ENV
-          go build -o $BINARY_FILENAME internal/app/cmd/main.go
+          GOOS=linux GOARCH=amd64 go build -o $BINARY_FILENAME internal/app/cmd/main.go
 
       - name: Copy files to the server
         uses: appleboy/scp-action@v0.1.7
