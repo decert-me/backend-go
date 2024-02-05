@@ -45,7 +45,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
           port: 22
-          source: "internal/app/cmd/$BINARY_FILENAME" # 修改为你的应用二进制文件的路径
+          source: "internal/app/cmd/${{ $BINARY_FILENAME }}" # 修改为你的应用二进制文件的路径
           target: "${{ vars.APPS_DIRECTORY }}/api" # 更改为服务器上的目标目录
 
       - name: Clean old releases and restart application with PM2
