@@ -61,7 +61,7 @@ func UploadFile(c *gin.Context) {
 	}
 	// 文件格式限制
 	if types != "open_quest" {
-		if !utils.VerifyFileFormat(header.Filename, []string{"jpeg", "jpg", "png", "gif", "svg"}) {
+		if !utils.VerifyFileFormat(header.Filename, []string{"jpeg", "jpg", "png", "gif", "svg", "webp"}) {
 			FailWithMessage(GetMessage(c, "FileFormatIncorrect"), c)
 			return
 		}
