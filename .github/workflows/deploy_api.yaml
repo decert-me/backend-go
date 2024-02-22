@@ -59,6 +59,8 @@ jobs:
             # 删除超过5个版本的旧二进制文件
             cd "${{ vars.APPS_DIRECTORY }}/api"
             ls -t api-* | tail -n +6 | xargs -I {} rm -- {}
+            # remove old file
+            rm decert-api
             # copy to decert-api
             cp ${{ env.BINARY_FILENAME }} decert-api
             # 使用 pm2 重启应用
