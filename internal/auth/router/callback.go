@@ -9,5 +9,6 @@ func InitCallbackRouter(Router *gin.RouterGroup) {
 	callbackRouter := Router.Group("callback")
 	{
 		callbackRouter.POST("discord", v1.DiscordCallback)
+		callbackRouter.POST("github", v1.GithubCallback)
 	}
 }

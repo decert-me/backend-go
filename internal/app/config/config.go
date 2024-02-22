@@ -24,4 +24,5 @@ type Config struct {
 	ZCloak     *ZCloak            `mapstructure:"zcloak" json:"zcloak" yaml:"zcloak"`
 	NFT        *NFT               `mapstructure:"nft" json:"nft" yaml:"nft"`
 	ContractV2 map[int64]Contract `mapstructure:"contract-v2" json:"contract-v2" yaml:"contract-v2"`
+	Email      Email              `mapstructure:"email" json:"email" yaml:"email"`
 }

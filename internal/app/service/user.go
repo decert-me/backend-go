@@ -189,6 +189,9 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 func (s *Service) createUser(userInfo model.Users) (user model.Users, err error) {
 	user, err = s.dao.GetUser(userInfo.Address)
 	if err == nil {
+		if err = s.dao.UpdateUser(userInfo.Address, userInfo); err != nil {
+			return
+		}
 		return
 	}
 	// create user
@@ -269,6 +272,6 @@ func (s *Service) HasOpenQuestPerm(address string) (perm bool, beta bool, err er
 }
 
 // HasBindSocialAccount 获取用户是否绑定社交账号
-func (s *Service) HasBindSocialAccount(address string) (wechat bool, discord bool, err error) {
+func (s *Service) HasBindSocialAccount(address string) (data map[string]bool, err error) {
 	return s.dao.HasBindSocialAccount(address)
 }
