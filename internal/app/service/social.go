@@ -146,18 +146,19 @@ func (s *Service) GetEmailBindCode(address, emailAddress string) (err error) {
 
 	// 设置 receiver 接收方 的邮箱  此处也可以填写自己的邮箱， 就是自己发邮件给自己
 	em.To = strings.Split(emailAddress, ";")
-	fmt.Println(em.To)
 	// 设置主题
 	em.Subject = "Decert邮箱验证码"
 
 	em.HTML = tpl.Bytes()
 	//设置服务器相关的配置
 	addr := fmt.Sprintf("%s:%d", s.c.Email.Host, s.c.Email.Port)
-	plainAuth := smtp.PlainAuth("", s.c.Email.From, s.c.Email.Secret, s.c.Email.Host)
+
 	if !s.c.Email.IsSSL {
+		plainAuth := smtp.PlainAuth("", s.c.Email.From, s.c.Email.Secret, s.c.Email.Host)
 		err = em.Send(addr, plainAuth)
 	} else {
-		err = em.SendWithTLS(addr, plainAuth, &tls.Config{InsecureSkipVerify: true})
+		plainAuth := smtp.PlainAuth("", s.c.Email.From, s.c.Email.Secret, "")
+		err = em.SendWithStartTLS(addr, plainAuth, &tls.Config{InsecureSkipVerify: true})
 	}
 	if err != nil {
 		log.Errorv("Send email error", zap.Error(err))
