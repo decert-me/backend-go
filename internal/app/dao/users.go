@@ -104,6 +104,10 @@ func (d *Dao) ParticleUpdateSocialsInfo(address string, particleUserinfo datatyp
 		githubID := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.id").String()
 		username := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.name").String()
 		return d.GithubBindAddress(githubID, username, address)
+	} else if provider == "discord" {
+		discordID := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.id").String()
+		username := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.name").String()
+		return d.DiscordBindAddress(discordID, username, address)
 	}
 	if gjson.Get(particleUserinfo.String(), "email").String() != "" {
 		email := gjson.Get(particleUserinfo.String(), "email").String()
