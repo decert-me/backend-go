@@ -158,7 +158,7 @@ func (s *Service) GetEmailBindCode(address, emailAddress string) (err error) {
 		err = em.Send(addr, plainAuth)
 	} else {
 		plainAuth := smtp.PlainAuth("", s.c.Email.From, s.c.Email.Secret, "")
-		err = em.SendWithStartTLS(addr, plainAuth, &tls.Config{InsecureSkipVerify: true})
+		err = em.SendWithTLS(addr, plainAuth, &tls.Config{InsecureSkipVerify: true})
 	}
 	if err != nil {
 		log.Errorv("Send email error", zap.Error(err))
