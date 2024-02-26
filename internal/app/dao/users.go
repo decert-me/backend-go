@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"github.com/tidwall/gjson"
+	"gorm.io/datatypes"
 	"time"
 )
 
@@ -94,4 +95,19 @@ func (d *Dao) HasBindSocialAccount(address string) (data map[string]bool, err er
 
 	data = map[string]bool{"wechat": wechat, "discord": discord, "github": github, "email": email}
 	return data, err
+}
+
+// ParticleUpdateSocialsInfo 更新社交信息
+func (d *Dao) ParticleUpdateSocialsInfo(address string, particleUserinfo datatypes.JSON) (err error) {
+	provider := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.provider").String()
+	if provider == "github" {
+		githubID := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.id").String()
+		username := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.name").String()
+		return d.GithubBindAddress(githubID, username, address)
+	}
+	if gjson.Get(particleUserinfo.String(), "email").String() != "" {
+		email := gjson.Get(particleUserinfo.String(), "email").String()
+		return d.EmailBindAddress(address, email)
+	}
+	return nil
 }

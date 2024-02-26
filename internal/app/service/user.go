@@ -172,6 +172,12 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 		log.Errorv("createUser error", zap.Any("address", req.Address), zap.Error(err))
 		return token, errors.New("UnexpectedError")
 	}
+	// 更新用户社交账户
+	if len(req.ParticleUserinfo) != 0 {
+		if err = s.dao.ParticleUpdateSocialsInfo(user.Address, req.ParticleUserinfo); err != nil {
+			log.Errorv("UpdateSocialsInfo error", zap.Error(err))
+		}
+	}
 	// 验证成功返回JWT
 	claims := midAuth.CreateClaims(auth.BaseClaims{
 		UserID:  user.ID,
