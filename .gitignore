@@ -13,7 +13,6 @@ nft-collect
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
-assets/
 /log
 uploads/
 internal/app/cmd/config.yaml
