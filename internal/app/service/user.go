@@ -25,6 +25,13 @@ func (s *Service) GetUserInfo(address string) (res interface{}, err error) {
 	if user, err = s.dao.GetUser(address); err != nil {
 		return
 	}
+	// default nickname
+	if user.NickName == nil || *user.NickName == "" {
+		if len(user.Address) > 10 {
+			nickName := fmt.Sprintf("%s...%s", address[:6], address[len(address)-4:])
+			user.NickName = &nickName
+		}
+	}
 	return user, err
 }
 
@@ -160,10 +167,16 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 		return token, errors.New("SignatureVerificationFailed")
 	}
 	// 保存用户信息
-	user, err := s.createUser(req.Address)
+	user, err := s.createUser(model.Users{Address: req.Address, ParticleUserinfo: req.ParticleUserinfo})
 	if err != nil {
 		log.Errorv("createUser error", zap.Any("address", req.Address), zap.Error(err))
 		return token, errors.New("UnexpectedError")
+	}
+	// 更新用户社交账户
+	if len(req.ParticleUserinfo) != 0 {
+		if err = s.dao.ParticleUpdateSocialsInfo(user.Address, req.ParticleUserinfo); err != nil {
+			log.Errorv("UpdateSocialsInfo error", zap.Error(err))
+		}
 	}
 	// 验证成功返回JWT
 	claims := midAuth.CreateClaims(auth.BaseClaims{
@@ -179,14 +192,17 @@ func (s *Service) AuthLoginSignRequest(req request.AuthLoginSignRequest) (token 
 }
 
 // createUser 创建用户
-func (s *Service) createUser(address string) (user model.Users, err error) {
-	user, err = s.dao.GetUser(address)
+func (s *Service) createUser(userInfo model.Users) (user model.Users, err error) {
+	user, err = s.dao.GetUser(userInfo.Address)
 	if err == nil {
+		if err = s.dao.UpdateUser(userInfo.Address, userInfo); err != nil {
+			return
+		}
 		return
 	}
 	// create user
-	if err == gorm.ErrRecordNotFound {
-		user = model.Users{Address: address}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		user = userInfo
 		if err = s.dao.CreateUser(&user); err != nil {
 			return
 		}
@@ -200,9 +216,6 @@ func (s *Service) createUser(address string) (user model.Users, err error) {
 // @return: token string, err error
 func (s *Service) AuthLoginSignRequestSolana(req request.AuthLoginSignRequest) (token string, err error) {
 	midAuth := auth.New(s.c.Auth)
-	fmt.Println(req.Address)
-	fmt.Println(req.Signature)
-	fmt.Println(req.Message)
 	if !utils.VerifySignatureSolana(req.Address, req.Signature, []byte(req.Message)) {
 		return token, errors.New("SignatureVerificationFailed")
 	}
@@ -241,7 +254,7 @@ func (s *Service) AuthLoginSignRequestSolana(req request.AuthLoginSignRequest) (
 		return token, errors.New("SignatureVerificationFailed")
 	}
 	// 保存用户信息
-	user, err := s.createUser(req.Address)
+	user, err := s.createUser(model.Users{Address: req.Address, ParticleUserinfo: req.ParticleUserinfo})
 	if err != nil {
 		log.Errorv("createUser error", zap.Any("address", req.Address), zap.Error(err))
 		return token, errors.New("UnexpectedError")
@@ -265,6 +278,6 @@ func (s *Service) HasOpenQuestPerm(address string) (perm bool, beta bool, err er
 }
 
 // HasBindSocialAccount 获取用户是否绑定社交账号
-func (s *Service) HasBindSocialAccount(address string) (wechat bool, discord bool, err error) {
+func (s *Service) HasBindSocialAccount(address string) (data map[string]bool, err error) {
 	return s.dao.HasBindSocialAccount(address)
 }

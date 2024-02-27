@@ -4,6 +4,7 @@ import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
 	"backend-go/internal/app/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"path"
 	"strings"
@@ -154,6 +155,7 @@ func AuthLoginSign(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
+	fmt.Println(request)
 	var token string
 	var err error
 	if utils.IsValidAddress(request.Address) {
@@ -179,9 +181,9 @@ func HasCreateOpenQuestPerm(c *gin.Context) {
 
 // HasBindSocialAccount 获取用户是否绑定社交账号
 func HasBindSocialAccount(c *gin.Context) {
-	if wechat, discord, err := srv.HasBindSocialAccount(c.GetString("address")); err != nil {
+	if data, err := srv.HasBindSocialAccount(c.GetString("address")); err != nil {
 		Fail(c)
 	} else {
-		OkWithData(map[string]interface{}{"wechat": wechat, "discord": discord}, c)
+		OkWithData(data, c)
 	}
 }

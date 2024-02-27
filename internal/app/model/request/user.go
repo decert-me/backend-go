@@ -1,15 +1,19 @@
 package request
 
-import "backend-go/internal/app/model"
+import (
+	"backend-go/internal/app/model"
+	"gorm.io/datatypes"
+)
 
 type GetLoginMessageRequest struct {
 	Address string `json:"address" form:"address"`
 }
 
 type AuthLoginSignRequest struct {
-	Address   string `json:"address" form:"address" binding:"required"`
-	Message   string `json:"message" form:"message" binding:"required"`
-	Signature string `json:"signature" form:"signature" binding:"required"`
+	Address          string         `json:"address" form:"address" binding:"required"`
+	Message          string         `json:"message" form:"message" binding:"required"`
+	Signature        string         `json:"signature" form:"signature" binding:"required"`
+	ParticleUserinfo datatypes.JSON `json:"particle_userinfo" form:"particle_userinfo"`
 }
 
 type UpdateUserInfo struct {

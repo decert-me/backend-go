@@ -116,6 +116,9 @@ social:
   discord:
     api-key: "test"
     call-url: "http://127.0.0.1:8110"
+  github:
+    api-key: "test"
+    call-url: "http://127.0.0.1:8110"
 
 # ZCloak configuration
 zcloak:
@@ -125,3 +128,12 @@ zcloak:
 nft:
   api: "http://192.168.1.10:8093/v1"
   api-key: "test"
+
+# email configuration
+email:
+  port: 25
+  from: "admin@decert.me"
+  host: "smtp.mxhichina.com"
+  is-ssl: false
+  secret: ""
+  nickname: "decert"

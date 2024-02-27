@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"github.com/tidwall/gjson"
+	"gorm.io/datatypes"
 	"time"
 )
 
@@ -70,10 +71,11 @@ func (d *Dao) GetSocialsInfo(user *model.Users) (socials string, err error) {
 }
 
 // HasBindSocialAccount 判断是否已经绑定
-func (d *Dao) HasBindSocialAccount(address string) (wechat bool, discord bool, err error) {
+func (d *Dao) HasBindSocialAccount(address string) (data map[string]bool, err error) {
+	var discord, wechat, github, email bool
 	socials, err := d.GetSocialsInfo(&model.Users{Address: address})
 	if err != nil {
-		return wechat, discord, nil
+		return data, nil
 	}
 	id := gjson.Get(socials, "discord.id").String()
 	if id != "" {
@@ -83,5 +85,33 @@ func (d *Dao) HasBindSocialAccount(address string) (wechat bool, discord bool, e
 	if openid != "" {
 		wechat = true
 	}
-	return wechat, discord, err
+	githubID := gjson.Get(socials, "github.id").String()
+	if githubID != "" {
+		github = true
+	}
+	if gjson.Get(socials, "email").String() != "" {
+		email = true
+	}
+
+	data = map[string]bool{"wechat": wechat, "discord": discord, "github": github, "email": email}
+	return data, err
+}
+
+// ParticleUpdateSocialsInfo 更新社交信息
+func (d *Dao) ParticleUpdateSocialsInfo(address string, particleUserinfo datatypes.JSON) (err error) {
+	provider := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.provider").String()
+	if provider == "github" {
+		githubID := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.id").String()
+		username := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.name").String()
+		return d.GithubBindAddress(githubID, username, address)
+	} else if provider == "discord" {
+		discordID := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.id").String()
+		username := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.user_info.name").String()
+		return d.DiscordBindAddress(discordID, username, address)
+	}
+	if gjson.Get(particleUserinfo.String(), "email").String() != "" {
+		email := gjson.Get(particleUserinfo.String(), "email").String()
+		return d.EmailBindAddress(address, email)
+	}
+	return nil
 }

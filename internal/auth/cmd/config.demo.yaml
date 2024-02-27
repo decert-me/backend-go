@@ -26,6 +26,9 @@ auth:
   discord:
     client-id: ""
     client-secret: ""
+  github:
+    client-id: ""
+    client-secret: ""
 
 # project configuration
 project:

@@ -158,8 +158,15 @@ func (s *Service) UpdateBadgeURI(address string, badgeURI request.UpdateBadgeURI
 
 func (s *Service) SubmitClaimShare(address string, req request.SubmitClaimShareReq) (res string, err error) {
 	// 校验是否绑定社交账号
-	wechat, discord, err := s.dao.HasBindSocialAccount(address)
-	if wechat == false && discord == false {
+	data, err := s.dao.HasBindSocialAccount(address)
+	var isBinding bool
+	for _, v := range data {
+		if v == true {
+			isBinding = true
+			break
+		}
+	}
+	if !isBinding {
 		return res, errors.New("NoBindingDetected")
 	}
 	// 校验是否已经空投

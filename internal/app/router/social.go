@@ -17,4 +17,12 @@ func InitSocialRouter(Router *gin.RouterGroup) {
 		router.POST("/wechatBindAddress", v1.WechatBindAddress)               // 微信绑定
 		router.GET("/getDiscordAuthorizationURL", v1.DiscordAuthorizationURL) // 获取 Discord 授权链接
 	}
+	{
+		routerAuth.POST("/getEmailBindCode", v1.GetEmailBindCode) // 获取邮箱绑定验证码
+		routerAuth.POST("/emailBindAddress", v1.EmailBindAddress) // 绑定邮箱
+	}
+	{
+		routerAuth.GET("/getGithubAuthorizationURL", v1.GithubAuthorizationURL) // 获取 Github 授权链接
+		routerAuth.POST("/githubBindAddress", v1.GithubBindAddress)             // Github 回调绑定
+	}
 }
