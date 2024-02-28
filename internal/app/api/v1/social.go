@@ -80,7 +80,6 @@ func GetEmailBindCode(c *gin.Context) {
 		return
 	}
 	language := c.GetString("lang")
-	fmt.Println("language", language)
 	if err := srv.GetEmailBindCode(address, r.Email, language); err != nil {
 		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
