@@ -9,6 +9,7 @@ func (d *Dao) UpdateCollectionOnce(collectionID int64, quest model.Quest) error 
 		Uri:       quest.Uri,
 		MetaData:  quest.MetaData,
 		Recommend: quest.Recommend,
+		ChainID:   quest.ChainID,
 	}
 	return d.db.Model(&model.Collection{}).Where("id = ? AND (token_id = '0' OR token_id = '')", collectionID).Updates(collection).Error
 }
