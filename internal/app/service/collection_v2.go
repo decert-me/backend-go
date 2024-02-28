@@ -25,7 +25,7 @@ func (s *Service) CollectionClaimV2(r request.CollectionClaimRequest, address st
 	}
 	for _, quest := range questList {
 		// 查询是否完成
-		status, err := s.dao.HasClaimed(address, quest.TokenId)
+		status, err := s.dao.HasClaimedFinish(address, quest.TokenId)
 		if err != nil {
 			return err
 		}
