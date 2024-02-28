@@ -10,5 +10,5 @@ func (d *Dao) UpdateCollectionOnce(collectionID int64, quest model.Quest) error 
 		MetaData:  quest.MetaData,
 		Recommend: quest.Recommend,
 	}
-	return d.db.Model(&model.Collection{}).Where("id = ? AND token_id = 0", collectionID).Updates(collection).Error
+	return d.db.Model(&model.Collection{}).Where("id = ? AND (token_id = '0' OR token_id = '')", collectionID).Updates(collection).Error
 }

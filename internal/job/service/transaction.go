@@ -83,8 +83,15 @@ func (s *Service) consumeTransaction() {
 }
 
 func (s *Service) handleTransactionReceipt(task taskTx) {
-	provider := s.rpcV2[task.task.ChainID].Next()
 	hash := task.task.Hash
+	rpc := s.rpcV2[task.task.ChainID]
+	if rpc == nil {
+		log.Errorv("rpcV2 error", zap.Any("rpcV2", rpc), zap.Int64("chainID", task.task.ChainID))
+		s.handleTraverseStatus(hash, 5, "chainID error")
+		return
+	}
+	provider := rpc.Next()
+
 	chainID := task.task.ChainID
 	if task.task.Version == "1" {
 		chainID = 0
