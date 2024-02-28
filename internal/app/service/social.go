@@ -117,7 +117,7 @@ func (s *Service) DiscordCallback(address string, discordCallback interface{}) (
 }
 
 // GetEmailBindCode 获取邮箱绑定验证码
-func (s *Service) GetEmailBindCode(address, emailAddress string) (err error) {
+func (s *Service) GetEmailBindCode(address, emailAddress, language string) (err error) {
 	// 发送内容
 	type Code struct {
 		Code string `json:"code"`
@@ -128,7 +128,13 @@ func (s *Service) GetEmailBindCode(address, emailAddress string) (err error) {
 		return errors.New("UnexpectedError")
 	}
 	test := Code{Code: code}
-	t, err := template.ParseFS(assets.Assets, "email.html")
+	path := "email.html"
+	subject := "Decert邮箱验证码"
+	if language == "en-US" {
+		path = "email_en.html"
+		subject = "Decert Verification Code"
+	}
+	t, err := template.ParseFS(assets.Assets, path)
 	if err != nil {
 		log.Errorv("Parse email template error", zap.Error(err))
 		return errors.New("UnexpectedError")
@@ -147,7 +153,7 @@ func (s *Service) GetEmailBindCode(address, emailAddress string) (err error) {
 	// 设置 receiver 接收方 的邮箱  此处也可以填写自己的邮箱， 就是自己发邮件给自己
 	em.To = strings.Split(emailAddress, ";")
 	// 设置主题
-	em.Subject = "Decert邮箱验证码"
+	em.Subject = subject
 
 	em.HTML = tpl.Bytes()
 	//设置服务器相关的配置

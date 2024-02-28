@@ -79,7 +79,9 @@ func GetEmailBindCode(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "SignatureExpired"), c)
 		return
 	}
-	if err := srv.GetEmailBindCode(address, r.Email); err != nil {
+	language := c.GetString("lang")
+	fmt.Println("language", language)
+	if err := srv.GetEmailBindCode(address, r.Email, language); err != nil {
 		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		Ok(c)
