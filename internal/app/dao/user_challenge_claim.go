@@ -2,6 +2,7 @@ package dao
 
 import (
 	"backend-go/internal/app/model"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +31,7 @@ func (d *Dao) HasClaimedFinish(address string, tokenID string) (status uint8, er
 	var userChallenges model.UserChallenges
 	err = d.db.Model(&model.UserChallenges{}).Where("address = ? AND token_id = ?", address, tokenID).First(&userChallenges).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, nil
 		} else {
 			return 0, err
