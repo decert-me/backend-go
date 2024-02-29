@@ -130,7 +130,7 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 		Type:        0, // TODO
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
-		Recommend:   gjson.Get(tr.Params.String(), "recommend").Raw,
+		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
 		QuestData:   []byte(questDataDetail),
 	}
 	if err = s.dao.UpdateQuest(&quest); err != nil {

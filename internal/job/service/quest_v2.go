@@ -81,7 +81,7 @@ func (s *Service) handleQuestCreatedV2(hash string, vLog *types.Log) (err error)
 		Version:     "2",
 		ChainID:     tr.ChainID,
 	}
-	fmt.Println(quest)
+
 	// 区分合辑和Quest
 	if collectionID == 0 {
 		if err = s.dao.CreateQuest(&quest); err != nil {
@@ -131,7 +131,7 @@ func (s *Service) handleModifyQuestV2(hash string, vLog *types.Log) (err error) 
 		Type:        0, // TODO
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
-		Recommend:   gjson.Get(tr.Params.String(), "recommend").Raw,
+		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
 		QuestData:   []byte(questDataDetail),
 		Version:     "2",
 	}
