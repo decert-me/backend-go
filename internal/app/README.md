@@ -1,9 +1,11 @@
 # App
 
+后端程序
+
 ## 安装
 
 ```bash
-git clone https://github.com/decert-me/backend-go.git```]
+git clone https://github.com/decert-me/backend-go.git
 ```
 
 ## 编译

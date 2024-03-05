@@ -1,5 +1,7 @@
 # Auth
 
+授权登录模块
+
 ## 编译
 
 ```bash
@@ -84,3 +86,21 @@ auth:
 4、Redirects 添加 decert 回调链接 https://decert.me/callback/discord
 
 ![](https://ipfs.io/ipfs/bafybeihw43kchnyicpn2m7y4o2eb6ma4sgkksaymcx6osm7igcscc35wpe/Snipaste_2023-12-19_17-14-08.png)
+
+### Github 配置
+
+Github 用户绑定配置
+
+配置项：
+```yaml
+# auth configuration
+auth:
+  github:
+    client-id: ""
+    client-secret: ""
+```
+
+1、进入 [Github OAuth Apps](https://github.com/settings/developers)
+2、选择用户需要授权绑定的 Apps，未创建可以点击 New OAuth App
+3、进入 Apps 页面复制 CLIENT ID 和 CLIENT SECRET 写入配置文件
+4、Authorization callback URL 添加 decert 回调链接 https://decert.me/

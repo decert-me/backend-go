@@ -3,29 +3,13 @@ system:
   env: develop
   addr: 8888
 
-# pgsql configuration
-pgsql:
-  path: "127.0.0.1"
-  port: "5432"
-  config: ""
-  db-name: ""
-  username: "postgres"
-  password: "123456"
-  auto-migrate: true
-  prefix: ""
-  slow-threshold: 200
-  max-idle-conns: 10
-  max-open-conns: 100
-  log-mode: "info"
-  log-zap: false
-
 # log configuration
 log:
   level: info      # 日志等级
   save: true       # 日志本地化存储
   format: console  # 日志格式
   log-in-console: true    # 输出到终端
-  prefix: '[backend-go]'  # 日志前缀
+  prefix: '[decert-judge]'  # 日志前缀
   director: log           # 日志目录
   show-line: true
   encode-level: LowercaseColorLevelEncoder
