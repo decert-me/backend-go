@@ -107,7 +107,7 @@ func (s *Service) AirdropCallback(c *gin.Context, req request.AirdropCallbackReq
 		return errors.New("校验失败")
 	}
 
-	if req.Status == 2 {
+	if req.Status == 2 && req.Msg != "already claimed" {
 		s.dao.AirdropFailNotice(req.Receiver, req.TokenId, req.Msg)
 		return
 	}
