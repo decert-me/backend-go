@@ -73,7 +73,7 @@
     "FailedObtainDiscordInfo": "无法获取 Discord 信息",
     "DidAlreadyBound": "DID 已绑定其他钱包地址",
     "AddressAlreadyBoundDid": "钱包地址已绑定DID",
-    "EmailCaptchaError": "邮箱验证码错误",
+    "EmailCaptchaError": "邮箱验证码错误!",
     "AddressAlreadyLinkedEmail": "钱包地址已绑定邮箱，请勿重复操作",
     "EmailAlreadyLinked": "邮箱已绑定其他钱包地址",
     "GithubAlreadyLinked": "Github 已绑定其他钱包地址",

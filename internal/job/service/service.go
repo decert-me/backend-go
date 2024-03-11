@@ -5,11 +5,9 @@ import (
 	"backend-go/internal/job/dao"
 	"backend-go/internal/job/initialize"
 	"backend-go/pkg/balancer"
-	"backend-go/pkg/log"
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/robfig/cron/v3"
-	"go.uber.org/zap"
 )
 
 // Service struct
@@ -35,13 +33,6 @@ func New(c *config.Config) (s *Service) {
 	s.rpcV2 = initialize.InitProviderV2(c)
 	go s.consumeTransaction() // 消费
 	go s.StartTransaction()   // 任务
-	if s.c.Scheduler.Active {
-		s.cron = cron.New()
-		if _, err := s.cron.AddFunc(c.Scheduler.AirdropBadge, func() { s.AirdropBadge() }); err != nil {
-			log.Errorv("AirdropBadge cron init error", zap.Error(err))
-		}
-		s.cron.Start()
-	}
 
 	return
 }

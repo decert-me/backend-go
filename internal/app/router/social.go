@@ -7,7 +7,7 @@ import (
 )
 
 func InitSocialRouter(Router *gin.RouterGroup) {
-	routerAuth := Router.Group("social").Use(middleware.Auth())
+	routerAuth := Router.Group("social").Use(middleware.Auth()).Use(middleware.I18n())
 	router := Router.Group("social")
 	{
 		routerAuth.GET("/getWechatQrcode", v1.GetWechatQrcode)        // 获取关注二维码
