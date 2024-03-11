@@ -54,7 +54,7 @@ cp ./internal/judge/cmd/config.demo.yaml ./bin/judge/config.yaml
 vi ./bin/judge/config.yaml
 ```
 
-## 运行判题 Docker
+## Docker 构建判题镜像
 
 ```shell
 sudo docker build -t judge:1.0 -f internal/judge/Dockerfile .
@@ -78,13 +78,4 @@ cd bin/auth
 # 判题程序
 cd bin/judge
 ./decert-judge
-```
-
-
-
-## 测试
-```bash
-go test ./internal/app/service
-go test ./internal/job/service
-go test ./pkg/...
 ```
