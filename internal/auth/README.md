@@ -39,6 +39,7 @@ project:
     callback-url: "http://127.0.0.1:8087/api"
 ```
 1、api-key 需与decert app 模块 social configuration 配置项保持一致
+
 2、callback-url 填写 decert app 模块接口 URL
 
 
@@ -63,8 +64,11 @@ auth:
 ![](https://ipfs.io/ipfs/bafybeihmyjqidtjtjt5yulxuxclfzvaucgg736fkana4wqsrntrl4w47pq/Snipaste_2023-12-19_16-43-37.png)
 
 服务器配置：
+
 1、部署 Auth 程序，程序的 Token 和 EncodingAESKey 与微信公众号配置保持一致
+
 2、到微信公众号服务器配置中，配置 URL、Token 和 EncodingAESKey
+
 (https://ipfs.io/ipfs/QmQFgHGLDBUqR8ezUpxCutKwe6mvZF7EA2G3Ln8MmLhcaX/Snipaste_2023-12-19_16-39-51.png)
 
 ### Discord 配置
@@ -81,8 +85,11 @@ auth:
 ```
 
 1、进入 [DEVELOPER PORTAL](https://discord.com/developers/applications)
+
 2、选择用户需要授权绑定的 Applications，未创建可以点击 New Application
+
 3、进入 Applications -> Oauth2 页面复制 CLIENT ID 和 CLIENT SECRET 写入配置文件
+
 4、Redirects 添加 decert 回调链接 https://decert.me/callback/discord
 
 ![](https://ipfs.io/ipfs/bafybeihw43kchnyicpn2m7y4o2eb6ma4sgkksaymcx6osm7igcscc35wpe/Snipaste_2023-12-19_17-14-08.png)
@@ -101,6 +108,9 @@ auth:
 ```
 
 1、进入 [Github OAuth Apps](https://github.com/settings/developers)
+
 2、选择用户需要授权绑定的 Apps，未创建可以点击 New OAuth App
+
 3、进入 Apps 页面复制 CLIENT ID 和 CLIENT SECRET 写入配置文件
+
 4、Authorization callback URL 添加 decert 回调链接 https://decert.me/

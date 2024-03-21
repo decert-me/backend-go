@@ -37,17 +37,29 @@ pgsql:
 ```
 
 path：数据库地址
+
 port：数据库端口
+
 config：数据库配置
+
 db-name：数据库名称
+
 username：数据库用户名
+
 password：数据库密码
+
 auto-migrate：是否自动迁移数据库
+
 prefix：数据库表前缀
+
 slow-threshold：慢查询阈值，单位毫秒
+
 max-idle-conns：最大空闲连接数
+
 max-open-conns：最大连接数
+
 log-mode：日志级别
+
 log-zap：是否使用zap日志库
 
 ### 日志级别配置
@@ -68,13 +80,21 @@ log:
 ```
 
 level：日志级别 debug、info、warn、error、dpanic、panic、fatal
+
 save：是否保存日志
+
 format：日志格式
+
 log-in-console：是否在控制台输出日志
+
 prefix：日志前缀
+
 director：日志保存路径
+
 show-line：是否显示行号
+
 encode-level：日志编码级别
+
 stacktrace-key：堆栈信息
 
 
@@ -96,11 +116,17 @@ blockchain:
 ```
 
 sign-private-key: 签名私钥
+
 airdrop-private-key: 空投私钥
+
 chain-id: 链ID
+
 attempt: 尝试次数
+
 provider：RPC
+
 url：RPC地址
+
 weight：权重
 
 ### 合约配置(V1)
@@ -114,7 +140,9 @@ contract:
 ```
 
 badge: badge 合约地址
+
 quest: quest 合约地址
+
 quest-minter: quest minter 合约地址
 
 ### 合约配置(V2多链)
@@ -134,9 +162,13 @@ contract-v2:
 ```
 
 137：链ID
+
 badge: badge 合约地址
+
 quest: quest 合约地址
+
 quest-minter: quest minter 合约地址
+
 provider：RPC
 
 ### IPFS 配置

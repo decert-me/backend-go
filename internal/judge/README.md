@@ -16,6 +16,7 @@ system:
 ```
 
 env：运行环境，可选值为 develop、public
+
 addr：运行端口
 
 ### 日志级别配置
@@ -36,13 +37,21 @@ log:
 ```
 
 level：日志级别 debug、info、warn、error、dpanic、panic、fatal
+
 save：是否保存日志
+
 format：日志格式
+
 log-in-console：是否在控制台输出日志
+
 prefix：日志前缀
+
 director：日志保存路径
+
 show-line：是否显示行号
+
 encode-level：日志编码级别
+
 stacktrace-key：堆栈信息
 
 ### JWT 配置
@@ -58,7 +67,9 @@ auth:
 ```
 
 signing-key：签名密钥
+
 expires-time：过期时间，单位秒
+
 issuer：签发人
 
 ### 挑战信息配置
@@ -85,6 +96,7 @@ docker:
 ```
 
 clear-enabled：是否开启 Docker 定时清空容器
+
 clear-time: Docker 定时清空超过闲置时长的容器（分钟）
 
 ### 代码运行配置（未启用）
@@ -103,9 +115,15 @@ judge:
 ```
 
 sandbox-service：沙盒服务URL，请查看 sandbox 项目
+
 work-path：判题模块工作目录，临时保存用户代码
+
 cache-path：判题模块缓存目录，缓存 solc 等
+
 javascript-path：nodejs 路径
+
 typescript-path：ts-node 路径
+
 golang-path：golang 路径
+
 python-path：python 路径
