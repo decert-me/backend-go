@@ -99,6 +99,7 @@ func Routers(c *config.Config) *gin.Engine {
 		InitQuestV2Router(V2Group)
 		InitBadgeV2Router(V2Group)
 		InitCollectionV2Router(V2Group)
+		InitOpenQuestV2Router(V2Group)
 	}
 	// meta
 	Router.GET("/quests/:id", v1.HandleMetaRequest)

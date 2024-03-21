@@ -45,6 +45,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				SELECT 
 					user_open_quest.id,
 					user_open_quest.address,
+					quest.uuid,
 					user_open_quest.token_id,
 					CASE 
 						WHEN json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL THEN 2
@@ -96,6 +97,7 @@ func (s *Service) GetUserOpenQuestList(address string, r request.GetUserOpenQues
 				SELECT 
 					user_open_quest.id,
 					user_open_quest.address,
+					quest.uuid,
 					user_open_quest.token_id,
 					CASE 
 						WHEN json_element->>'score' IS NOT NULL OR json_element->>'correct' IS NOT NULL THEN 2
