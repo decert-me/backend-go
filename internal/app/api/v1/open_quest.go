@@ -33,5 +33,4 @@ func GetUserOpenQuestList(c *gin.Context) {
 			PageSize: r.PageSize,
 		}, "获取成功", c)
 	}
-
 }
