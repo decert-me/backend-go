@@ -104,8 +104,6 @@ stacktrace-key：堆栈信息
 ```yaml
 # blockchain configuration
 blockchain:
-  sign-private-key: ""
-  airdrop-private-key: ""
   chain-id: 5
   attempt: 200
   provider:
@@ -115,10 +113,6 @@ blockchain:
       weight: 10
 ```
 
-sign-private-key: 签名私钥
-
-airdrop-private-key: 空投私钥
-
 chain-id: 链ID
 
 attempt: 尝试次数
@@ -127,7 +121,7 @@ provider：RPC
 
 url：RPC地址
 
-weight：权重
+weight：权重，越大权重越高
 
 ### 合约配置(V1)
 
@@ -169,7 +163,10 @@ quest: quest 合约地址
 
 quest-minter: quest minter 合约地址
 
-provider：RPC
+provider：RPC 配置
+
+url：RPC地址
+weight：权重，越大权重越高
 
 ### IPFS 配置
 

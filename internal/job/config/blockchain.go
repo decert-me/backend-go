@@ -6,8 +6,7 @@ type Provider struct {
 }
 
 type BlockChain struct {
-	SignPrivateKey string     `mapstructure:"sign-private-key" json:"sign-private-key" yaml:"sign-private-key"` // 签名私钥
-	ChainID        int64      `mapstructure:"chain-id" json:"chain-id" yaml:"chain-id"`                         // Chain ID
-	Attempt        int        `mapstructure:"attempt" json:"attempt" yaml:"attempt"`                            // 尝试次数
-	Provider       []Provider `mapstructure:"provider" json:"provider" yaml:"provider"`                         // Provider
+	ChainID  int64      `mapstructure:"chain-id" json:"chain-id" yaml:"chain-id"` // Chain ID
+	Attempt  int        `mapstructure:"attempt" json:"attempt" yaml:"attempt"`    // 尝试次数
+	Provider []Provider `mapstructure:"provider" json:"provider" yaml:"provider"` // Provider
 }

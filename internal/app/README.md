@@ -257,9 +257,9 @@ judge:
       weight: 10
 ```
 
-url：代码运行API地址
+url：[judge服务](../judge) 运行API地址
 
-weight：权重
+weight：权重，数字越大权重越高
 
 ### 空投配置
 
@@ -271,11 +271,11 @@ share:
   callback: "http://192.168.1.10:8105"   # 回调接口
 ```
 
-verify-key：校验key
+verify-key：校验key，空投服务加密通讯，需与空投服务配置保持一致
 
 callback：回调接口
 
-### discord 消息通知配置
+### discord 消息通知配置（接收空投结果通知）
 
 配置项：
 
@@ -290,11 +290,11 @@ discord:
 
 active：是否启用
 
-token：机器人token
+token：Discord 机器人token
 
-success-channel：成功通知频道ID
+success-channel：空投成功通知 Discord 频道ID
 
-failed-channel：失败通知频道ID
+failed-channel：空投失败通知 Discord 频道ID
 
 ### sentry 配置
 
@@ -308,7 +308,7 @@ sentry:
   enable-tracing: true          # Enable performance tracing.
 ```
 
-dsn：sentry dsn
+dsn：sentry dsn 配置为空不启用
 
 traces-sample-rate：采样率
 
