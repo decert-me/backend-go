@@ -26,7 +26,7 @@ vi ./bin/app/config.yaml
 
 配置项：
 
-```
+```yaml
 # system configuration
 system:
   env: develop
