@@ -6,6 +6,15 @@
 ```bash
 git clone https://github.com/decert-me/backend-go.git
 ```
+## 运行环境
+
+```shell
+- Golang >= v1.19 && < v1.21
+- Redis
+- PostgreSQL
+- Docker
+```
+
 ## 环境配置
 1、安装 Docker
 脚本一键安装: `sudo curl -sSL https://get.daocloud.io/docker | sh`
