@@ -29,7 +29,6 @@ log:
 # blockchain configuration
 blockchain:
   sign-private-key: ""
-  airdrop-private-key: ""
   chain-id: 5
   attempt: 200
   provider:

@@ -1,9 +1,11 @@
 # App
 
+后端程序
+
 ## 安装
 
 ```bash
-git clone https://github.com/decert-me/backend-go.git```]
+git clone https://github.com/decert-me/backend-go.git
 ```
 
 ## 编译
@@ -24,7 +26,7 @@ vi ./bin/app/config.yaml
 
 配置项：
 
-```
+```yaml
 # system configuration
 system:
   env: develop
@@ -34,8 +36,11 @@ system:
 ```
 
 env：运行环境，可选值为 develop、test、production
+
 addr：运行端口
+
 i18n：国际化配置文件
+
 website：前端网站index.html文件路径，用于代理meta标签
 
 ### 数据库配置
@@ -60,17 +65,29 @@ pgsql:
 ```
 
 path：数据库地址
+
 port：数据库端口
+
 config：数据库配置
+
 db-name：数据库名称
+
 username：数据库用户名
+
 password：数据库密码
+
 auto-migrate：是否自动迁移数据库
+
 prefix：数据库表前缀
+
 slow-threshold：慢查询阈值，单位毫秒
+
 max-idle-conns：最大空闲连接数
+
 max-open-conns：最大连接数
+
 log-mode：日志级别
+
 log-zap：是否使用zap日志库
 
 
@@ -87,8 +104,11 @@ redis:
 ```
 
 db：Redis数据库
+
 addr：Redis地址和端口
+
 password：密码
+
 prefix：前缀
 
 ### 日志级别配置
@@ -109,13 +129,21 @@ log:
 ```
 
 level：日志级别 debug、info、warn、error、dpanic、panic、fatal
+
 save：是否保存日志
+
 format：日志格式
+
 log-in-console：是否在控制台输出日志
+
 prefix：日志前缀
+
 director：日志保存路径
+
 show-line：是否显示行号
+
 encode-level：日志编码级别
+
 stacktrace-key：堆栈信息
 
 ### JWT 配置
@@ -131,7 +159,9 @@ auth:
 ```
 
 signing-key：签名密钥
+
 expires-time：过期时间，单位秒
+
 issuer：签发人
 
 ### 文件上传配置
@@ -146,6 +176,7 @@ local:
 ```
 
 path：本地文件保存路径
+
 ipfs：IPFS文件保存路径
 
 ### 区块链配置
@@ -162,8 +193,11 @@ blockchain:
 ```
 
 ens-rpc：ENS查找RPC地址
+
 sign-private-key：签名私钥
+
 signature：签名内容
+
 signature-exp：签名过期时间，单位秒
 
 ### 合约配置
@@ -179,7 +213,9 @@ contract:
 ```
 
 badge：badge合约地址
+
 quest：quest合约地址
+
 quest-minter：quest-minter合约地址
 
 ### 挑战信息配置
@@ -206,6 +242,7 @@ ipfs:
 ```
 
 api：IPFS节点地址
+
 upload-api：IPFS上传API地址
 
 ### 代码运行配置
@@ -220,8 +257,9 @@ judge:
       weight: 10
 ```
 
-url：代码运行API地址
-weight：权重
+url：[judge服务](../judge) 运行API地址
+
+weight：权重，数字越大权重越高
 
 ### 空投配置
 
@@ -233,10 +271,11 @@ share:
   callback: "http://192.168.1.10:8105"   # 回调接口
 ```
 
-verify-key：校验key
+verify-key：校验key，空投服务加密通讯，需与空投服务配置保持一致
+
 callback：回调接口
 
-### discord 消息通知配置
+### discord 消息通知配置（接收空投结果通知）
 
 配置项：
 
@@ -250,9 +289,12 @@ discord:
 ```
 
 active：是否启用
-token：机器人token
-success-channel：成功通知频道ID
-failed-channel：失败通知频道ID
+
+token：Discord 机器人token
+
+success-channel：空投成功通知 Discord 频道ID
+
+failed-channel：空投失败通知 Discord 频道ID
 
 ### sentry 配置
 
@@ -266,8 +308,10 @@ sentry:
   enable-tracing: true          # Enable performance tracing.
 ```
 
-dsn：sentry dsn
+dsn：sentry dsn 配置为空不启用
+
 traces-sample-rate：采样率
+
 enable-tracing：是否启用性能追踪
 
 ### 社交账号绑定配置
@@ -285,7 +329,9 @@ social:
 ```
 
 wechat：微信配置
+
 discord：discord配置
 
 api-key：API密钥，与Auth配置一致
+
 call-url：回调地址，Auth接口地址
