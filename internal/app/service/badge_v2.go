@@ -66,7 +66,7 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 	if req.Uri != "" && req.Uri != quest.Uri {
 		return res, errors.New("QuestUpdate")
 	}
-	_, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, req.Score, &quest.Quest, true)
+	_, pass, err := s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, req.Score, &quest, true)
 	if err != nil {
 		log.Errorv("AnswerCheck error", zap.Error(err))
 		return res, errors.New("UnexpectedError")
@@ -82,7 +82,7 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 		app = "decert_solana"
 	}
 	// 解析用户答案
-	answer, err := s.AnswerParse(s.c.Quest.EncryptKey, req.Answer, address, &quest.Quest)
+	answer, err := s.AnswerParse(s.c.Quest.EncryptKey, req.Answer, address, &quest)
 	if err != nil {
 		log.Errorv("AnswerParse error", zap.Error(err))
 		return res, errors.New("UnexpectedError")
