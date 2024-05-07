@@ -142,7 +142,12 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 		log.Errorv("DeleteUserChallengeLogByTokenId error", zap.Error(err), zap.Any("quest", quest))
 		return
 	}
+	// 清除翻译
+	err = s.dao.DeleteQuestTranslated(quest.TokenId)
+	if err != nil {
+		log.Errorv("DeleteQuestTranslated error", zap.String("tokenId", quest.TokenId), zap.Error(err))
+		return
+	}
 	s.handleTraverseStatus(hash, 1, "")
-
 	return
 }

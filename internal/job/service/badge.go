@@ -63,6 +63,12 @@ func (s *Service) handleURI(hash string, vLog *types.Log) (err error) {
 		log.Errorv("UpdateQuest error", zap.Any("quest", quest), zap.Error(err))
 		return err
 	}
+	// 清除翻译
+	err = s.dao.DeleteQuestTranslated(tokenId)
+	if err != nil {
+		log.Errorv("DeleteQuestTranslated error", zap.String("tokenId", tokenId), zap.Error(err))
+		return
+	}
 	s.handleTraverseStatus(hash, 1, "")
 	return
 }
