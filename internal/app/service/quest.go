@@ -38,7 +38,7 @@ func (s *Service) GetQuest(language, id string, address, original string) (quest
 		quest, err = s.dao.GetQuestWithClaimStatusByUUID(language, id, address)
 	} else {
 		if address == "" {
-			quest, err = s.dao.GetQuestByTokenIDWithLang(language, id)
+			quest, err = s.dao.GetQuestDetailByTokenIDWithLang(language, id)
 			return
 		}
 		if original == "true" {

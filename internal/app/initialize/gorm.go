@@ -46,7 +46,7 @@ func RegisterTables(db *gorm.DB) {
 func initMultiChainV2(db *gorm.DB) {
 	// 查询是否存在链ID
 	var chainID int64
-	err := db.Model(&model.Collection{}).Select("max(chain_id)").Scan(&chainID).Error
+	err := db.Model(&model.Collection{}).Select("COALESCE(max(chain_id), 0)").Scan(&chainID).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		panic("initMultiChainV2 failed")
 	}

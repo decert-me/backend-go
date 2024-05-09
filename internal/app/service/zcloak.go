@@ -87,9 +87,17 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 		return errors.New("DIDNotFound")
 	}
 	// 校验分数正确性
-	quest, err := s.dao.GetQuestByTokenIDWithLang(req.Lang, req.TokenId)
-	if err != nil {
-		return errors.New("TokenIDInvalid")
+	var quest model.Quest
+	if req.Lang == "" {
+		quest, err = s.dao.GetQuestByTokenID(req.TokenId)
+		if err != nil {
+			return errors.New("TokenIDInvalid")
+		}
+	} else {
+		quest, err = s.dao.GetQuestByTokenIDWithLang(req.Lang, req.TokenId)
+		if err != nil {
+			return errors.New("TokenIDInvalid")
+		}
 	}
 	// 校验题目
 	if req.Uri != "" && req.Uri != quest.Uri {
@@ -97,7 +105,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 	}
 	pass := true
 	if score == 0 {
-		score, pass, err = s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, 0, &quest.Quest, true)
+		score, pass, err = s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, 0, &quest, true)
 		if err != nil {
 			log.Errorv("AnswerCheck error", zap.Error(err))
 			return errors.New("UnexpectedError")

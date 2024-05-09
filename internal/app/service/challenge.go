@@ -9,6 +9,7 @@ import (
 	"errors"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
+	"time"
 )
 
 func (s *Service) GetUserChallengeList(req request.GetChallengeListRequest) (res []response.GetChallengeListRes, total int64, err error) {
@@ -86,6 +87,7 @@ func (s *Service) CreateChallengeLog(req request.SaveChallengeLogRequest, lang s
 			TokenId:               req.TokenId,
 			Answer:                []byte(gjson.Parse(req.Answer).Raw),
 			OpenQuestReviewStatus: 1,
+			CommitTime:            time.Now(),
 		})
 		if err != nil {
 			return errors.New("OperationFailed")

@@ -107,7 +107,7 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 	return questList, total, err
 }
 
-func (d *Dao) GetQuestByTokenIDWithLang(language string, tokenID string) (quest response.GetQuestRes, err error) {
+func (d *Dao) GetQuestDetailByTokenIDWithLang(language string, tokenID string) (quest response.GetQuestRes, err error) {
 	err = d.db.Model(&model.Quest{}).Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
 		"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data").
 		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).Where("quest.token_id", tokenID).First(&quest.Quest).Error
@@ -121,6 +121,16 @@ func (d *Dao) GetQuestByTokenIDWithLang(language string, tokenID string) (quest 
 		UNION
 		SELECT answer FROM quest_translated WHERE token_id = ? AND answer IS NOT NULL) AS combined_data
 		`, tokenID, tokenID).Scan(&quest.Answers).Error
+	return
+}
+
+func (d *Dao) GetQuestByTokenIDWithLang(language string, tokenID string) (quest model.Quest, err error) {
+	err = d.db.Model(&model.Quest{}).Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description,"+
+		"COALESCE(tr.meta_data,quest.meta_data) as meta_data,COALESCE(tr.quest_data,quest.quest_data) as quest_data").
+		Joins("LEFT JOIN quest_translated tr ON quest.token_id = tr.token_id AND tr.language = ?", language).Where("quest.token_id", tokenID).First(&quest).Error
+	if err != nil {
+		return quest, err
+	}
 	return
 }
 
