@@ -4,7 +4,9 @@ import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
+	"backend-go/pkg/log"
 	"fmt"
+	"go.uber.org/zap"
 	"sort"
 )
 
@@ -167,7 +169,11 @@ func (s *Service) GetUserOpenQuestDetailListV2(address string, r request.GetUser
 					(quest.quest_data->'questions')->(idx::int - 1)->>'title' AS title,
 					(quest.quest_data->'questions')->(idx::int - 1)->>'score' AS score,
 					(quest.quest_data->'questions')->(idx::int - 1)->>'correct' AS correct,
-					json_element AS answer
+					json_element AS answer,
+					quest.quest_data->>'passingScore' AS pass_score,
+					quest.quest_data AS quest_data,
+					quest.meta_data AS meta_data,  
+					user_open_quest.answer AS user_answer
 				FROM
 					user_open_quest
 				JOIN
@@ -186,6 +192,19 @@ func (s *Service) GetUserOpenQuestDetailListV2(address string, r request.GetUser
 	err = db.Raw(dataSQL, address, r.TokenID, *r.Index+1, offset, limit).Scan(&list).Error
 	if err != nil {
 		return
+	}
+	// 计算分数
+	for i := 0; i < len(list); i++ {
+		quest := model.Quest{
+			TokenId:   list[i].TokenId,
+			MetaData:  list[i].MetaData,
+			QuestData: list[i].QuestData,
+		}
+		list[i].TotalScore, list[i].UserScore, _, _, err = s.AnswerCheck(s.c.Quest.EncryptKey, list[i].UserAnswer.String(), address, 0, &quest, false)
+		if err != nil {
+			log.Errorv("AnswerCheck error", zap.Error(err))
+			return
+		}
 	}
 	return
 }

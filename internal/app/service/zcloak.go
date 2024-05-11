@@ -97,7 +97,7 @@ func (s *Service) GenerateCardInfo(address string, score int64, req request.Gene
 	}
 	pass := true
 	if score == 0 {
-		score, pass, err = s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, 0, &quest.Quest, true)
+		_, _, score, pass, err = s.AnswerCheck(s.c.Quest.EncryptKey, req.Answer, address, 0, &quest.Quest, true)
 		if err != nil {
 			log.Errorv("AnswerCheck error", zap.Error(err))
 			return errors.New("UnexpectedError")

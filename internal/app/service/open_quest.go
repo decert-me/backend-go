@@ -193,7 +193,7 @@ func (s *Service) ReviewOpenQuest(address string, req []request.ReviewOpenQuestR
 		}
 		// 判断是否通过
 		if openQuestReviewStatus == 2 {
-			userReturnScore, pass, err = s.AnswerCheck(s.c.Quest.EncryptKey, answerRes, address, 0, &quest, false)
+			_, _, userReturnScore, pass, err = s.AnswerCheck(s.c.Quest.EncryptKey, answerRes, address, 0, &quest, false)
 			if err != nil {
 				db.Rollback()
 				return errors.New("服务器错误")
