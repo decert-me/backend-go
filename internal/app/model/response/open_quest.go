@@ -20,6 +20,12 @@ type UserOpenQuestJsonElements struct {
 	ChallengeTitle        string         `gorm:"column:challenge_title" json:"challenge_title"`
 	Score                 int64          `gorm:"column:score" json:"score"`
 	Correct               bool           `gorm:"column:correct" json:"correct"`
+	UserAnswer            datatypes.JSON `gorm:"column:user_answer" json:"-"`
+	MetaData              datatypes.JSON `gorm:"column:meta_data" json:"-"`                                // 元数据
+	QuestData             datatypes.JSON `gorm:"column:quest_data" json:"-"`                               // 元数据
+	PassScore             int64          `gorm:"column:pass_score" form:"pass_score" json:"pass_score"`    // 通过分数
+	TotalScore            int64          `gorm:"column:total_score" form:"total_score" json:"total_score"` // 总分
+	UserScore             int64          `gorm:"column:user_score" form:"user_score" json:"user_score"`    // 用户分数
 }
 
 type UserOpenQuestJsonElementsV2 struct {

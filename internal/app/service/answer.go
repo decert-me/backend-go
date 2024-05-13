@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, quest *model.Quest, useDBOpenQuest bool) (userReturnScore int64, pass bool, err error) {
+func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, quest *model.Quest, useDBOpenQuest bool) (totalScore, userReturnRawScore, userReturnScore int64, pass bool, err error) {
 	defer func() {
 		if err != nil {
 			log.Errorv("AnswerCheck error", zap.Error(err))
@@ -33,7 +33,6 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 		}
 	}
 	answerU, scoreList, answerS, passingScore := utils.GetAnswers(version, key, res, questData, answerUser)
-	var totalScore int64
 	for _, s := range scoreList {
 		totalScore += s.Int()
 	}
@@ -41,7 +40,7 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 	answers, err := s.dao.GetQuestAnswersByTokenId(quest.TokenId)
 	if err != nil {
 		log.Errorv("GetQuestAnswersByTokenId error", zap.Error(err))
-		return userReturnScore, false, err
+		return totalScore, userReturnRawScore, userReturnScore, false, err
 	}
 	// 解密答案
 	var answersList [][]gjson.Result
@@ -50,14 +49,14 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 		answersList = append(answersList, temp) // 标准答案
 		if len(answerU) != len(temp) {
 			log.Error("答案数量不相等")
-			return userReturnScore, false, errors.New("unexpect error")
+			return totalScore, userReturnRawScore, userReturnScore, false, errors.New("unexpect error")
 		}
 	}
 	fmt.Println("answersList", answersList)
 	// 检查答案有效性
 	if len(answerU) != len(answerS) || len(scoreList) != len(answerS) {
 		log.Error("答案数量不相等")
-		return userReturnScore, false, errors.New("unexpect error")
+		return totalScore, userReturnRawScore, userReturnScore, false, errors.New("unexpect error")
 	}
 	var score int64
 	for i, v := range answerS {
@@ -150,15 +149,15 @@ func (s *Service) AnswerCheck(key, answerUser, address string, userScore int64, 
 	fmt.Println("userScore", userScore)
 	if userScore == 0 {
 		if score >= passingScore {
-			return score * 10000 / totalScore, true, nil
+			return totalScore, score, score * 10000 / totalScore, true, nil
 		} else {
-			return score * 10000 / totalScore, false, nil
+			return totalScore, score, score * 10000 / totalScore, false, nil
 		}
 	}
 	if userScore == (score*10000/totalScore) && score >= passingScore {
-		return userScore, true, nil
+		return totalScore, score, userScore, true, nil
 	} else {
-		return userScore, true, errors.New("not enough scores")
+		return totalScore, score, userScore, true, errors.New("not enough scores")
 	}
 	return
 }
