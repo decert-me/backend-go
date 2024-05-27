@@ -14,6 +14,7 @@ type GetQuestListRes struct {
 	AuthorInfo            model.Users `gorm:"-" json:"author_info"`
 	OpenQuestReviewStatus uint8       `gorm:"column:open_quest_review_status" json:"open_quest_review_status"` // 评阅开放题状态 1 未审核 2 已审核
 	Claimable             bool        `gorm:"claimable" json:"claimable"`                                      // 是否可领取
+	ChallengeFailed       bool        `gorm:"column:challenge_failed" json:"challenge_failed"`                 // 是否挑战失败
 }
 
 type ChallengeUsers struct {

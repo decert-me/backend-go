@@ -11,7 +11,7 @@ func NewPgSQL(c *config.Pgsql) *gorm.DB {
 	db := GormPgSql(c)
 	if c.AutoMigrate {
 		RegisterTables(db) // 初始化表
-		initMultiChainV2(db)
+		//initMultiChainV2(db)
 	}
 	return db
 }
