@@ -58,11 +58,12 @@ func GetTwitterInfo(c *gin.Context) {
 // GetUserInfo Get User Info
 func GetUserInfo(c *gin.Context) {
 	address := c.Param("address")
+	LoginAddress := c.GetString("address")
 	if address == "" {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
-	if list, err := srv.GetUserInfo(address); err != nil {
+	if list, err := srv.GetUserInfo(address, LoginAddress); err != nil {
 		OkWithData(list, c)
 	} else {
 		OkWithData(list, c)

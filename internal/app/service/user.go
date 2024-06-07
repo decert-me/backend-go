@@ -20,10 +20,32 @@ import (
 	"strings"
 )
 
-func (s *Service) GetUserInfo(address string) (res interface{}, err error) {
+func (s *Service) GetUserInfo(address string, loginAddress string) (res interface{}, err error) {
 	var user model.Users
 	if user, err = s.dao.GetUser(address); err != nil {
 		return
+	}
+	// 是否管理员
+	isAdmin, err := s.dao.IsAdmin(loginAddress)
+	if err != nil {
+		return
+	}
+	// 管理员显示
+	if isAdmin {
+		var showStr string
+		showStr = fmt.Sprintf("%s...%s", address[:6], address[len(address)-4:])
+		if user.Name != nil && *user.Name != "" {
+			showStr += "-" + *user.Name
+		}
+		// 显示标签
+		tags, err := s.dao.GetUserTags(user.ID)
+		if err == nil {
+			for i := 0; i < len(tags); i++ {
+				showStr += "，" + tags[i]
+			}
+		}
+		user.NickName = &showStr
+		return user, err
 	}
 	// default nickname
 	if user.NickName == nil || *user.NickName == "" {
