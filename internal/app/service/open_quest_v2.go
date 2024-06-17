@@ -214,8 +214,11 @@ func (s *Service) GetUserOpenQuestDetailListV2(address string, loginAddress stri
 		showStr = fmt.Sprintf("%s...%s", list[i].Address[:6], list[i].Address[len(list[i].Address)-4:])
 		if isAdmin {
 			// 显示标签
-			name, tags, err := s.dao.GetUserNameTagsByAddress(list[i].Address)
+			nickname, name, tags, err := s.dao.GetUserNameTagsByAddress(list[i].Address)
 			if err == nil {
+				if nickname != "" {
+					showStr = nickname
+				}
 				if name != "" {
 					showStr += "-" + name
 				}

@@ -10,7 +10,7 @@ func (d *Dao) GetUserTags(userID uint) (tags []string, err error) {
 	return
 }
 
-func (d *Dao) GetUserNameTagsByAddress(address string) (name string, tags []string, err error) {
+func (d *Dao) GetUserNameTagsByAddress(address string) (nickname, name string, tags []string, err error) {
 	var user model.Users
 	err = d.db.Model(&model.Users{}).
 		Where("address = ?", address).
@@ -20,6 +20,9 @@ func (d *Dao) GetUserNameTagsByAddress(address string) (name string, tags []stri
 	}
 	if user.Name != nil {
 		name = *user.Name
+	}
+	if user.NickName != nil {
+		nickname = *user.NickName
 	}
 	err = d.db.Model(&model.UsersTag{}).Select("tag.name").
 		Joins("join tag on users_tag.tag_id = tag.id").

@@ -34,6 +34,9 @@ func (s *Service) GetUserInfo(address string, loginAddress string) (res interfac
 	if isAdmin {
 		var showStr string
 		showStr = fmt.Sprintf("%s...%s", address[:6], address[len(address)-4:])
+		if user.NickName != nil && *user.NickName != "" {
+			showStr = *user.NickName
+		}
 		if user.Name != nil && *user.Name != "" {
 			showStr += "-" + *user.Name
 		}
