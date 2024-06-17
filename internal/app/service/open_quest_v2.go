@@ -124,10 +124,15 @@ func (s *Service) GetUserOpenQuestListV2(address string, r request.GetUserOpenQu
 }
 
 // GetUserOpenQuestDetailListV2 获取用户开放题详情
-func (s *Service) GetUserOpenQuestDetailListV2(address string, r request.GetUserOpenQuestDetailListRequest) (list []response.UserOpenQuestJsonElements, total int64, err error) {
+func (s *Service) GetUserOpenQuestDetailListV2(address string, loginAddress string, r request.GetUserOpenQuestDetailListRequest) (list []response.UserOpenQuestJsonElements, total int64, err error) {
 	offset := (r.Page - 1) * r.PageSize
 	limit := r.PageSize
 	db := s.dao.DB().Model(&model.UserOpenQuest{})
+	// 是否管理员
+	isAdmin, err := s.dao.IsAdmin(loginAddress)
+	if err != nil {
+		return
+	}
 	// OpenQuestReviewStatus 1 未审核 2 已审核
 	countSQL := `
 		SELECT 
@@ -205,6 +210,24 @@ func (s *Service) GetUserOpenQuestDetailListV2(address string, r request.GetUser
 			log.Errorv("AnswerCheck error", zap.Error(err))
 			return
 		}
+		var showStr string
+		showStr = fmt.Sprintf("%s...%s", list[i].Address[:6], list[i].Address[len(list[i].Address)-4:])
+		if isAdmin {
+			// 显示标签
+			nickname, name, tags, err := s.dao.GetUserNameTagsByAddress(list[i].Address)
+			if err == nil {
+				if nickname != "" {
+					showStr = nickname
+				}
+				if name != "" {
+					showStr += "-" + name
+				}
+				for i := 0; i < len(tags); i++ {
+					showStr += "，" + tags[i]
+				}
+			}
+		}
+		list[i].NickName = &showStr
 	}
 	return
 }

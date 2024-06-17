@@ -43,7 +43,8 @@ func GetUserOpenQuestDetailList(c *gin.Context) {
 		return
 	}
 	address := c.GetString("address")
-	if list, total, err := srv.GetUserOpenQuestDetailListV2(address, r); err != nil {
+	LoginAddress := c.GetString("address")
+	if list, total, err := srv.GetUserOpenQuestDetailListV2(address, LoginAddress, r); err != nil {
 		FailWithMessage("获取失败："+err.Error(), c)
 	} else {
 		OkWithDetailed(response.PageResult{

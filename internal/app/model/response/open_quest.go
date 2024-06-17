@@ -26,6 +26,7 @@ type UserOpenQuestJsonElements struct {
 	PassScore             int64          `gorm:"column:pass_score" form:"pass_score" json:"pass_score"`    // 通过分数
 	TotalScore            int64          `gorm:"column:total_score" form:"total_score" json:"total_score"` // 总分
 	UserScore             int64          `gorm:"column:user_score" form:"user_score" json:"user_score"`    // 用户分数
+	NickName              *string        `gorm:"column:nickname;type:varchar(200);default:''" json:"nickname" form:"nickname"`
 }
 
 type UserOpenQuestJsonElementsV2 struct {
