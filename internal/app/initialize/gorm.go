@@ -37,6 +37,7 @@ func RegisterTables(db *gorm.DB) {
 		model.ZcloakDid{},
 		model.ZcloakCard{},
 		model.CollectionRelate{},
+		model.QuestCategory{},
 	)
 	if err != nil {
 		panic("register table failed")

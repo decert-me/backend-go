@@ -5,8 +5,11 @@ import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
 	"fmt"
+	"github.com/lib/pq"
 	"github.com/tidwall/gjson"
 	"gorm.io/gorm"
+	"strconv"
+	"strings"
 )
 
 func (d *Dao) HasTokenId(tokenId string) (has bool, err error) {
@@ -39,16 +42,33 @@ func (d *Dao) CreateQuest(req *model.Quest) (err error) {
 func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []response.GetQuestListRes, total int64, err error) {
 	limit := req.PageSize
 	offset := req.PageSize * (req.Page - 1)
+	var category pq.Int64Array
+	if req.Category != "" {
+		req.Category = strings.ReplaceAll(req.Category, "[", "")
+		req.Category = strings.ReplaceAll(req.Category, "]", "")
+		chunks := strings.Split(req.Category, ",")
 
-	db := d.db.Model(&model.Quest{})
+		for _, c := range chunks {
+			i, _ := strconv.Atoi(c) // error handling ommitted for concision
+			category = append(category, int64(i))
+		}
+	}
+	db := d.db.Model(&model.Quest{}).Distinct()
 	// Quest
 	questSQL := db.ToSQL(func(tx *gorm.DB) *gorm.DB {
 		tx = tx.Where("quest.status = 1 AND quest.disabled = false AND collection_status=1")
 		tx = tx.Where(&req.Quest)
+		// 根据分类要求过滤
+		if category != nil && len(category) != 0 {
+			db = db.Where("quest.category && ?", category)
+		}
 		tx = tx.Joins("LEFT JOIN quest_translated ON quest.token_id = quest_translated.token_id AND quest_translated.language = ?", req.Language)
 		if req.SearchKey != "" {
-			tx = tx.Where("quest.title ILIKE ? OR quest.description ILIKE ?", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
+			tx.Joins("INNER JOIN quest_category ON quest_category.id = ANY(quest.category)")
+			db = db.Where("quest.title ILIKE  ?", "%"+req.SearchKey+"%")
+			db.Or("quest_category.id = ANY(quest.category) AND (quest_category.chinese ILIKE ? OR quest_category.english ILIKE ?)", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
 		}
+
 		if req.Address != "" {
 			tx = tx.Select("quest.id,quest.uuid,COALESCE(quest_translated.title,quest.title) as title,quest.label,quest.disabled,COALESCE(quest_translated.description,quest.description) as description,quest.dependencies,quest.is_draft,quest.add_ts,quest.token_id,quest.type,quest.difficulty,quest.estimate_time,quest.creator,quest.meta_data,quest.quest_data,quest.extra_data,quest.uri,quest.pass_score,quest.total_score,quest.recommend,quest.status,quest.style,quest.cover,quest.author,quest.sort,quest.collection_status,NOT (c.claimed = false AND zc.quest_id IS NULL) as claimed,COALESCE(o.open_quest_review_status,0) as open_quest_review_status,COALESCE(o.pass,p.pass,false) as claimable,quest.version,CASE WHEN P.pass IS NULL OR P.pass = TRUE OR o.pass OR o.open_quest_review_status = 1 OR C.claimed OR zc.quest_id IS NOT NULL THEN FALSE WHEN P.pass = FALSE THEN TRUE ELSE NULL END AS challenge_failed")
 			tx = tx.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", req.Address)
@@ -61,9 +81,18 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 		return tx.Find(&[]response.GetQuestListRes{})
 	})
 	// Collection
-	collectionSQL := d.db.Model(&model.Collection{}).ToSQL(func(tx *gorm.DB) *gorm.DB {
+	collectionSQL := d.db.Model(&model.Collection{}).Distinct().ToSQL(func(tx *gorm.DB) *gorm.DB {
 		tx = tx.Select("collection.id,uuid,COALESCE(tr.title,collection.title) as title,label,disabled,COALESCE(tr.description,collection.description) as description,dependencies,is_draft,add_ts,token_id,type,difficulty,estimate_time,creator,meta_data,quest_data,extra_data,uri,pass_score,total_score,recommend,status,style,cover,author,sort,collection_status,FALSE as claimed,0 as open_quest_review_status,false as claimable,'' as version,false as challenge_failed").
 			Joins("LEFT JOIN collection_translated as tr ON collection.id = tr.collection_id AND tr.language = ?", req.Language)
+		if req.SearchKey != "" {
+			tx.Joins("INNER JOIN quest_category ON quest_category.id = ANY(collection.category)")
+			tx = tx.Where("collection.title ILIKE  ?", "%"+req.SearchKey+"%")
+			tx.Or("quest_category.id = ANY(collection.category) AND (quest_category.chinese ILIKE ? OR quest_category.english ILIKE ?)", "%"+req.SearchKey+"%", "%"+req.SearchKey+"%")
+		}
+		// 根据分类要求过滤
+		if category != nil && len(category) != 0 {
+			tx = tx.Where("collection.category && ?", category)
+		}
 		return tx.Where("status = 1").Find(&[]response.GetQuestListRes{})
 	})
 	//fmt.Println("questSQL", questSQL)
@@ -625,5 +654,11 @@ func (d *Dao) GetAddressHighScore(address string) (res []response.GetAddressHigh
 // QuestUUIDToTokenId UUID 转 TokenId
 func (d *Dao) QuestUUIDToTokenId(uuid string) (tokenId string, err error) {
 	err = d.db.Model(&model.Quest{}).Select("token_id").Where("uuid", uuid).First(&tokenId).Error
+	return
+}
+
+func (d *Dao) LabelQuestList() (category []model.QuestCategory, err error) {
+	db := d.db.Model(&model.QuestCategory{})
+	err = db.Order("weight desc,created_at desc").Find(&category).Error
 	return
 }

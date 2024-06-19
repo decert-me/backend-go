@@ -22,6 +22,7 @@ type GetProgressListRequest struct {
 
 type GetTutorialListStatusRequest struct {
 	PageInfo
+	SearchKey string `json:"search_key"`
 	model.Tutorial
 }
 

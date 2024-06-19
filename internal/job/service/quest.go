@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/lib/pq"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"strings"
@@ -78,7 +79,14 @@ func (s *Service) handleQuestCreated(hash string, vLog *types.Log) (err error) {
 		QuestData:   []byte(questDataDetail),
 		IsDraft:     false, // 当前发布不审核
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
-		ChainID:     137,
+		Category: func() pq.Int64Array {
+			var categoryID pq.Int64Array
+			for _, id := range gjson.Get(tr.Params.String(), "category").Array() {
+				categoryID = append(categoryID, id.Int())
+			}
+			return categoryID
+		}(),
+		ChainID: 137,
 	}
 	// 区分合辑和Quest
 	if collectionID == 0 {
@@ -131,7 +139,14 @@ func (s *Service) handleModifyQuest(hash string, resJson []byte) (err error) {
 		MetaData:    []byte(metadata),
 		ExtraData:   extraData,
 		Recommend:   gjson.Get(tr.Params.String(), "recommend").String(),
-		QuestData:   []byte(questDataDetail),
+		Category: func() pq.Int64Array {
+			var categoryID pq.Int64Array
+			for _, id := range gjson.Get(tr.Params.String(), "category").Array() {
+				categoryID = append(categoryID, id.Int())
+			}
+			return categoryID
+		}(),
+		QuestData: []byte(questDataDetail),
 	}
 	if err = s.dao.UpdateQuest(&quest); err != nil {
 		log.Errorv("UpdateQuest error", zap.Error(err), zap.Any("quest", quest))

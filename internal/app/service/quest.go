@@ -179,3 +179,8 @@ func (s *Service) GetQuestUserScore(id, address string) (res response.GetQuestUs
 	res.UUID = quest.UUID
 	return
 }
+
+// LabelQuestList 获取分类标签列表
+func (s *Service) LabelQuestList() (category []model.QuestCategory, err error) {
+	return s.dao.LabelQuestList()
+}

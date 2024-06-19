@@ -1,6 +1,9 @@
 package model
 
-import "gorm.io/datatypes"
+import (
+	"github.com/lib/pq"
+	"gorm.io/datatypes"
+)
 
 // Collection 合辑
 type Collection struct {
@@ -31,7 +34,8 @@ type Collection struct {
 	Author           string         `gorm:"column:author;type:varchar(64);comment:合辑作者" json:"author"`
 	Sort             int            `gorm:"column:sort;default:0" json:"sort"` // 	排序
 	CollectionStatus uint8          `gorm:"column:collection_status;default:0" json:"-"`
-	ChainID          int64          `gorm:"column:chain_id;comment:链ID;default:0" json:"chain_id"` // 链ID
+	ChainID          int64          `gorm:"column:chain_id;comment:链ID;default:0" json:"chain_id"`              // 链ID
+	Category         pq.Int64Array  `gorm:"column:category;type:int8[];comment:分类标签" json:"category,omitempty"` // 分类标签
 }
 
 func (Collection) TableName() string {
