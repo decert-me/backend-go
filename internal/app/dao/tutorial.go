@@ -188,8 +188,8 @@ func (d *Dao) GetTutorialList(info request.GetTutorialListStatusRequest) (list i
 	db := d.db.Model(&model.Tutorial{}).Distinct()
 	// 搜索词
 	if info.SearchKey != "" {
-		db.Joins("INNER JOIN admin_category ON admin_category.id = ANY(admin_tutorial.category)")
-		db.Or("catalogue_name ILIKE ? OR (admin_category.id = ANY(admin_tutorial.category) AND (admin_category.chinese ILIKE ? OR admin_category.english ILIKE ?))", "%"+info.SearchKey+"%", "%"+info.SearchKey+"%", "%"+info.SearchKey+"%")
+		db.Joins("LEFT JOIN admin_category ON admin_category.id = ANY(admin_tutorial.category)")
+		db.Where("catalogue_name ILIKE ? OR (admin_category.id = ANY(admin_tutorial.category) AND (admin_category.chinese ILIKE ? OR admin_category.english ILIKE ?))", "%"+info.SearchKey+"%", "%"+info.SearchKey+"%", "%"+info.SearchKey+"%")
 	}
 	// 语言
 	if info.Language != 0 {

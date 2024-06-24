@@ -93,8 +93,6 @@ func GetLabelList(c *gin.Context) {
 		data, err = srv.LabelCategoryList()
 	} else if label.Type == "theme" {
 		data, err = srv.LabelThemeList()
-	} else if label.Type == "challenge" {
-		data, err = srv.LabelQuestList()
 	} else {
 		FailWithMessage("参数错误", c)
 		return
