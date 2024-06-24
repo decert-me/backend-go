@@ -185,7 +185,12 @@ func (d *Dao) GetProgressList(userID uint, catalogueNameList []string) (res []re
 func (d *Dao) GetTutorialList(info request.GetTutorialListStatusRequest) (list interface{}, total int64, err error) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
-	db := d.db.Model(&model.Tutorial{})
+	db := d.db.Model(&model.Tutorial{}).Distinct()
+	// 搜索词
+	if info.SearchKey != "" {
+		db.Joins("LEFT JOIN admin_category ON admin_category.id = ANY(admin_tutorial.category)")
+		db.Where("catalogue_name ILIKE ? OR (admin_category.id = ANY(admin_tutorial.category) AND (admin_category.chinese ILIKE ? OR admin_category.english ILIKE ?))", "%"+info.SearchKey+"%", "%"+info.SearchKey+"%", "%"+info.SearchKey+"%")
+	}
 	// 语言
 	if info.Language != 0 {
 		db.Where("language = ?", info.Language)
@@ -205,8 +210,13 @@ func (d *Dao) GetTutorialList(info request.GetTutorialListStatusRequest) (list i
 		} else {
 			db = db.Where("doc_type != 'video'")
 		}
-
 	}
+	// 获取总数
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	// 获取列表
 	var tutorialList []model.Tutorial
 	err = db.Count(&total).Error
 	if err != nil {

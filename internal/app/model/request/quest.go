@@ -10,6 +10,7 @@ type GetQuestListRequest struct {
 	Desc      bool   `json:"desc" form:"desc,default=true"`               // 排序方式:升序false(默认)|降序true
 	SearchKey string `json:"search_key" form:"search_key"`                // 搜索关键字
 	Language  string `json:"-" form:"-"`                                  // 语言
+	Category  string `json:"category" form:"category"`
 }
 
 type AddQuestRequest struct {
