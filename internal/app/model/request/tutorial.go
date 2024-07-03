@@ -27,5 +27,6 @@ type GetTutorialListStatusRequest struct {
 }
 
 type GetLabelRequest struct {
-	Type string `json:"type" binding:"required"`
+	Type  string `json:"type" binding:"required"`
+	Class string `json:"class"`
 }

@@ -54,8 +54,32 @@ func (s *Service) LabelLangList() (language []model.Language, err error) {
 }
 
 // LabelCategoryList 获取分类标签列表
-func (s *Service) LabelCategoryList() (category []model.Category, err error) {
-	return s.dao.LabelCategoryList()
+func (s *Service) LabelCategoryList(class string) (res []model.Category, err error) {
+	category, err := s.dao.LabelCategoryList()
+	if err != nil {
+		return nil, err
+	}
+	// 查询 category 数量
+	var categoryList []model.Category
+	for i, v := range category {
+		exist, err := s.IsExistLabelCategory(v.ID, class)
+		if err != nil {
+			return nil, err
+		}
+		if exist {
+			categoryList = append(categoryList, category[i])
+		}
+	}
+
+	return categoryList, nil
+}
+
+// IsExistLabelCategory 按照分类判断分类标签是否存在
+func (s *Service) IsExistLabelCategory(categoryID uint, class string) (exist bool, err error) {
+	if class == "quest" {
+		return s.dao.IsExistQuestByCatalogueID(categoryID)
+	}
+	return s.dao.IsExistTutorialByCatalogueID(categoryID)
 }
 
 // LabelThemeList 获取分类标签列表
