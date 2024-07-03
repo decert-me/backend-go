@@ -8,8 +8,10 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"math"
 )
 
@@ -242,4 +244,34 @@ func (d *Dao) LabelThemeList() (theme []model.Theme, err error) {
 	db := d.db.Model(&model.Theme{})
 	err = db.Order("weight desc,created_at desc").Find(&theme).Error
 	return
+}
+
+func (d *Dao) IsExistTutorialByCatalogueID(catalogueID uint) (bool, error) {
+	var count int
+	err := d.db.Model(&model.Tutorial{}).
+		Select("1").
+		Where("? = ANY(category)", catalogueID).
+		First(&count).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+func (d *Dao) IsExistQuestByCatalogueID(catalogueID uint) (bool, error) {
+	var count int
+	err := d.db.Model(&model.Quest{}).
+		Select("1").
+		Where("? = ANY(category)", catalogueID).
+		First(&count).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }

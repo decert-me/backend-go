@@ -90,7 +90,7 @@ func GetLabelList(c *gin.Context) {
 	if label.Type == "language" {
 		data, err = srv.LabelLangList()
 	} else if label.Type == "category" {
-		data, err = srv.LabelCategoryList()
+		data, err = srv.LabelCategoryList(label.Class)
 	} else if label.Type == "theme" {
 		data, err = srv.LabelThemeList()
 	} else {
