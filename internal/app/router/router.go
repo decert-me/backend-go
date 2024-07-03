@@ -92,6 +92,7 @@ func Routers(c *config.Config) *gin.Engine {
 		InitSocialRouter(v1Group)
 		InitOpenQuestRouter(v1Group)
 		InitZcloakRouter(v1Group)
+		InitStatisticsRouter(v1Group)
 	}
 	V2Group := Router.Group("v2")
 	V2Group.Use(middleware.I18n())
