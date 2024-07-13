@@ -2,7 +2,6 @@ package v1
 
 import (
 	"backend-go/internal/app/model/request"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -56,14 +55,15 @@ func DiscordBindAddress(c *gin.Context) {
 	type DiscordCallback struct {
 		Code     string `json:"code" form:"code"`
 		Callback string `json:"callback" form:"callback"`
+		Replace  bool   `json:"replace" form:"replace"`
 	}
 	var discordCallback DiscordCallback
 	_ = c.ShouldBindJSON(&discordCallback)
 	address := c.GetString("address")
-	if err := srv.DiscordCallback(address, discordCallback); err != nil {
+	if data, err := srv.DiscordCallback(address, discordCallback, discordCallback.Replace); err != nil {
 		OkWithMessage(GetMessage(c, err.Error()), c)
 	} else {
-		OkWithMessage("", c)
+		OkWithData(data, c)
 	}
 }
 
@@ -91,7 +91,6 @@ func GetEmailBindCode(c *gin.Context) {
 func EmailBindAddress(c *gin.Context) {
 	var r request.EmailBindAddressRequest
 	if err := c.ShouldBindJSON(&r); err != nil {
-		fmt.Println(err)
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
@@ -100,10 +99,14 @@ func EmailBindAddress(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "SignatureExpired"), c)
 		return
 	}
-	if err := srv.EmailBindAddress(address, r.Email, r.Code); err != nil {
+	if data, err := srv.EmailBindAddress(address, r.Email, r.Code, r.Replace); err != nil {
 		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
-		Ok(c)
+		message := "操作成功"
+		if data.Success == false {
+			message = "绑定失败"
+		}
+		OkWithDetailed(data, message, c)
 	}
 }
 
@@ -122,13 +125,33 @@ func GithubBindAddress(c *gin.Context) {
 	type GithubCallback struct {
 		Code     string `json:"code" form:"code"`
 		Callback string `json:"callback" form:"callback"`
+		Replace  bool   `json:"replace" form:"replace"`
 	}
 	var githubCallback GithubCallback
 	_ = c.ShouldBindJSON(&githubCallback)
 	address := c.GetString("address")
-	if err := srv.GithubCallback(address, githubCallback); err != nil {
+	if data, err := srv.GithubCallback(address, githubCallback, githubCallback.Replace); err != nil {
 		OkWithMessage(GetMessage(c, err.Error()), c)
 	} else {
-		OkWithMessage("", c)
+		OkWithData(data, c)
+	}
+}
+
+// UnbindSocial 解绑
+func UnbindSocial(c *gin.Context) {
+	var r request.UnbindRequest
+	if err := c.ShouldBindJSON(&r); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	address := c.GetString("address")
+	if address == "" {
+		Fail(c)
+		return
+	}
+	if err := srv.UnbindSocial(address, r.Type); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		Ok(c)
 	}
 }

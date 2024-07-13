@@ -18,16 +18,13 @@ func (d *Dao) WechatQueryByAddress(address string) (wechatData string, err error
 }
 
 // WechatIsBinding 判断是否已经绑定过
-func (d *Dao) WechatIsBinding(fromUserName string) (bool, error) {
-	var count int
-	err := d.db.Raw("SELECT count(1) FROM users WHERE socials->'wechat'->>'openid' = ?", fromUserName).Scan(&count).Error
+func (d *Dao) WechatIsBinding(fromUserName string) (string, bool, error) {
+	var address string
+	err := d.db.Raw("SELECT address FROM users WHERE socials->'wechat'->>'openid' = ?", fromUserName).Scan(&address).Error
 	if err != nil {
-		return false, err
+		return "", false, err
 	}
-	if count == 0 {
-		return false, nil
-	}
-	return true, nil
+	return address, true, nil
 }
 
 // WechatBindAddress 处理地址绑定
@@ -103,29 +100,23 @@ func (d *Dao) DiscordQueryByAddress(address string) (discordData string, err err
 }
 
 // DiscordIsBinding 判断Discord是否已经绑定过
-func (d *Dao) DiscordIsBinding(discordID string) (bool, error) {
-	var count int
-	err := d.db.Raw("SELECT count(1) FROM users WHERE socials->'discord'->>'id' = ?", discordID).Scan(&count).Error
+func (d *Dao) DiscordIsBinding(discordID string) (string, bool, error) {
+	var address string
+	err := d.db.Raw("SELECT address FROM users WHERE socials->'discord'->>'id' = ? LIMIT 1", discordID).Scan(&address).Error
 	if err != nil {
-		return false, err
+		return "", false, err
 	}
-	if count == 0 {
-		return false, nil
-	}
-	return true, nil
+	return address, true, nil
 }
 
 // EmailIsBinding 判断邮箱是否已经绑定过
-func (d *Dao) EmailIsBinding(email string) (bool, error) {
-	var count int
-	err := d.db.Raw("SELECT count(1) FROM users WHERE socials->>'email' = ?", email).Scan(&count).Error
+func (d *Dao) EmailIsBinding(email string) (string, bool, error) {
+	var address string
+	err := d.db.Raw("SELECT address FROM users WHERE socials->>'email' = ?", email).Scan(&address).Error
 	if err != nil {
-		return false, err
+		return "", false, err
 	}
-	if count == 0 {
-		return false, nil
-	}
-	return true, nil
+	return address, true, nil
 }
 
 // EmailQueryByAddress 查询地址绑定的邮箱信息
@@ -192,16 +183,13 @@ func (d *Dao) GithubQueryByAddress(address string) (githubData string, err error
 }
 
 // GithubIsBinding 判断Github是否已经绑定过
-func (d *Dao) GithubIsBinding(githubID string) (bool, error) {
-	var count int
-	err := d.db.Raw("SELECT count(1) FROM users WHERE socials->'github'->>'id' = ?", githubID).Scan(&count).Error
+func (d *Dao) GithubIsBinding(githubID string) (string, bool, error) {
+	var address string
+	err := d.db.Raw("SELECT address FROM users WHERE socials->'github'->>'id' = ?", githubID).Scan(&address).Error
 	if err != nil {
-		return false, err
+		return "", false, err
 	}
-	if count == 0 {
-		return false, nil
-	}
-	return true, nil
+	return address, true, nil
 }
 
 // GithubBindAddress 处理地址绑定
@@ -233,4 +221,19 @@ func (d *Dao) GithubBindAddress(githubID, username, address string) (err error) 
 		).Error
 		return err
 	}
+}
+
+// UnbindSocial 解绑
+func (d *Dao) UnbindSocial(address, social string) error {
+	return d.db.Exec("UPDATE users SET socials = socials - ? WHERE address = ?", social, address).Error
+}
+
+func (d *Dao) SaveRebindingInfo(token, info interface{}) (err error) {
+	key := fmt.Sprintf("%s_rebinding_%s", d.c.Redis.Prefix, token)
+	return d.redis.Set(context.Background(), key, info, time.Minute*30).Err()
+}
+
+func (d *Dao) GetRebindingInfo(token string) (info string, err error) {
+	key := fmt.Sprintf("%s_rebinding_%s", d.c.Redis.Prefix, token)
+	return d.redis.Get(context.Background(), key).Result()
 }

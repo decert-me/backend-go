@@ -2,6 +2,7 @@ package service
 
 import (
 	"backend-go/internal/app/assets"
+	"backend-go/internal/app/model/response"
 	"backend-go/pkg/log"
 	"bytes"
 	"crypto/tls"
@@ -50,7 +51,7 @@ func (s *Service) WechatBindAddress(c *gin.Context, address, fromUserName string
 		return errors.New("钱包地址已绑定，请勿重复操作")
 	}
 	// 判断微信是否被别的地址绑定过
-	isBinding, err := s.dao.WechatIsBinding(fromUserName)
+	_, isBinding, err := s.dao.WechatIsBinding(fromUserName)
 	if err != nil {
 		return errors.New("服务器内部错误")
 	}
@@ -83,37 +84,50 @@ func (s *Service) DiscordAuthorizationURL(callback string) (data string, err err
 }
 
 // DiscordCallback Discord 回调绑定
-func (s *Service) DiscordCallback(address string, discordCallback interface{}) (err error) {
+func (s *Service) DiscordCallback(address string, discordCallback interface{}, replace bool) (res response.BindingResponse, err error) {
 	// 跳过已绑定地址
 	discordData, _ := s.dao.DiscordQueryByAddress(address)
 	if string(discordData) != "{}" {
-		return errors.New("AddressAlreadyLinkedDiscord")
+		return res, errors.New("AddressAlreadyLinkedDiscord")
 	}
 	// 发送请求获取 Discord 用户信息
 	client := req.C().SetCommonHeader("x-api-key", s.c.Social.Wechat.APIKey)
 	r, err := client.R().SetBodyJsonMarshal(discordCallback).Post(s.c.Social.Discord.CallURL + "/v1/callback/discord")
 	if err != nil {
-		return errors.New("FailedObtainDiscordInfo")
+		return res, errors.New("FailedObtainDiscordInfo")
 	}
 	fmt.Println(r.String())
 	if gjson.Get(r.String(), "status").Int() != 0 {
-		return errors.New("FailedObtainDiscordInfo")
+		return res, errors.New("FailedObtainDiscordInfo")
 	}
 	discordID := gjson.Get(r.String(), "data.id").String()
 	username := gjson.Get(r.String(), "data.username").String()
 	if discordID == "" || username == "" {
-		return errors.New("FailedObtainDiscordInfo")
+		return res, errors.New("FailedObtainDiscordInfo")
 	}
 	// 跳过已绑定 Discord
-	Binding, err := s.dao.DiscordIsBinding(discordID)
+	bindingAddress, Binding, err := s.dao.DiscordIsBinding(discordID)
 	if err != nil {
-		return errors.New("UnexpectedError")
+		return res, errors.New("UnexpectedError")
 	}
 	if Binding {
-		return errors.New("DiscordAlreadyLinked")
+		// 替换绑定
+		if replace {
+			err := s.dao.UnbindSocial(address, "email")
+			if err != nil {
+				return res, errors.New("UnexpectedError")
+			}
+		} else {
+			res.CurrentBindingAddress = bindingAddress
+			return res, nil
+		}
 	}
-
-	return s.dao.DiscordBindAddress(discordID, username, address)
+	err = s.dao.DiscordBindAddress(discordID, username, address)
+	if err != nil {
+		return res, errors.New("UnexpectedError")
+	}
+	res.Success = true
+	return
 }
 
 // GetEmailBindCode 获取邮箱绑定验证码
@@ -174,33 +188,47 @@ func (s *Service) GetEmailBindCode(address, emailAddress, language string) (err 
 }
 
 // EmailBindAddress 处理邮箱绑定
-func (s *Service) EmailBindAddress(address, emailAddress, code string) (err error) {
+func (s *Service) EmailBindAddress(address, emailAddress, code string, replace bool) (res response.BindingResponse, err error) {
 	// 校验验证码
 	emailCode, err := s.dao.EmailQueryCode(address)
 	if err != nil {
-		return errors.New("UnexpectedError")
+		return res, errors.New("UnexpectedError")
 	}
 	if emailCode != code {
-		return errors.New("EmailCaptchaError")
+		return res, errors.New("EmailCaptchaError")
 	}
 	// 判断是否已经绑定过
 	emailData, err := s.dao.EmailQueryByAddress(address)
 	if err != nil {
-		return errors.New("EmailCaptchaError")
+		return res, errors.New("EmailCaptchaError")
 	}
 	if emailData != "{}" {
-		return errors.New("AddressAlreadyLinkedEmail")
+		return res, errors.New("AddressAlreadyLinkedEmail")
 	}
 	// 判断邮箱是否被别的地址绑定过
-	isBinding, err := s.dao.EmailIsBinding(emailAddress)
+	bindingAddress, isBinding, err := s.dao.EmailIsBinding(emailAddress)
 	if err != nil {
-		return errors.New("UnexpectedError")
+		return res, errors.New("UnexpectedError")
 	}
 	if isBinding {
-		return errors.New("EmailAlreadyLinked")
+		// 替换绑定
+		if replace {
+			err := s.dao.UnbindSocial(address, "email")
+			if err != nil {
+				return res, errors.New("UnexpectedError")
+			}
+		} else {
+			res.CurrentBindingAddress = bindingAddress
+			return res, nil
+		}
 	}
 	// 绑定
-	return s.dao.EmailBindAddress(address, emailAddress)
+	err = s.dao.EmailBindAddress(address, emailAddress)
+	if err != nil {
+		return res, errors.New("UnexpectedError")
+	}
+	res.Success = true
+	return res, nil
 }
 
 // GithubAuthorizationURL 获取 Github 授权链接
@@ -225,34 +253,63 @@ func (s *Service) GithubAuthorizationURL(callback string) (data string, err erro
 }
 
 // GithubCallback Github 回调绑定
-func (s *Service) GithubCallback(address string, githubCallback interface{}) (err error) {
+func (s *Service) GithubCallback(address string, githubCallback interface{}, replace bool) (res response.BindingResponse, err error) {
 	// 跳过已绑定地址
 	githubData, _ := s.dao.GithubQueryByAddress(address)
 	if string(githubData) != "{}" {
-		return errors.New("AddressAlreadyLinkedGithub")
+		return res, errors.New("AddressAlreadyLinkedGithub")
 	}
 	// 发送请求获取 Github 用户信息
 	client := req.C().SetCommonHeader("x-api-key", s.c.Social.Wechat.APIKey)
 	r, err := client.R().SetBodyJsonMarshal(githubCallback).Post(s.c.Social.Github.CallURL + "/v1/callback/github")
 	if err != nil {
-		return errors.New("FailedObtainGithubInfo")
+		return res, errors.New("FailedObtainGithubInfo")
 	}
 	if gjson.Get(r.String(), "status").Int() != 0 {
-		return errors.New("FailedObtainGithubInfo")
+		return res, errors.New("FailedObtainGithubInfo")
 	}
 	githubID := gjson.Get(r.String(), "data.id").String()
 	username := gjson.Get(r.String(), "data.username").String()
 	if githubID == "" || username == "" {
-		return errors.New("FailedObtainGithubInfo")
+		return res, errors.New("FailedObtainGithubInfo")
 	}
 	// 跳过已绑定 Github
-	Binding, err := s.dao.GithubIsBinding(githubID)
+	bindingAddress, binding, err := s.dao.GithubIsBinding(githubID)
 	if err != nil {
+		return res, errors.New("UnexpectedError")
+	}
+	if binding {
+		// 替换绑定
+		if replace {
+			err := s.dao.UnbindSocial(address, "email")
+			if err != nil {
+				return res, errors.New("UnexpectedError")
+			}
+		} else {
+			res.CurrentBindingAddress = bindingAddress
+			return res, nil
+		}
+	}
+	err = s.dao.GithubBindAddress(githubID, username, address)
+	if err != nil {
+		return res, errors.New("UnexpectedError")
+	}
+	res.Success = true
+	return res, nil
+}
+
+// UnbindSocial 解绑
+func (s *Service) UnbindSocial(address, unbindType string) (err error) {
+	switch unbindType {
+	case "wechat":
+		return s.dao.UnbindSocial(address, "wechat")
+	case "discord":
+		return s.dao.UnbindSocial(address, "discord")
+	case "email":
+		return s.dao.UnbindSocial(address, "email")
+	case "github":
+		return s.dao.UnbindSocial(address, "github")
+	default:
 		return errors.New("UnexpectedError")
 	}
-	if Binding {
-		return errors.New("GithubAlreadyLinked")
-	}
-
-	return s.dao.GithubBindAddress(githubID, username, address)
 }

@@ -25,4 +25,7 @@ func InitSocialRouter(Router *gin.RouterGroup) {
 		routerAuth.GET("/getGithubAuthorizationURL", v1.GithubAuthorizationURL) // 获取 Github 授权链接
 		routerAuth.POST("/githubBindAddress", v1.GithubBindAddress)             // Github 回调绑定
 	}
+	{
+		routerAuth.POST("/unbindSocial", v1.UnbindSocial) // 解绑
+	}
 }
