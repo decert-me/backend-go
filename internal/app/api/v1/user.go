@@ -4,7 +4,6 @@ import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
 	"backend-go/internal/app/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"path"
 	"strings"
@@ -156,7 +155,6 @@ func AuthLoginSign(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
-	fmt.Println(request)
 	var token string
 	var err error
 	if utils.IsValidAddress(request.Address) {

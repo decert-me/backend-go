@@ -3,7 +3,6 @@ package v1
 import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +13,6 @@ func GetProgressList(c *gin.Context) {
 		return
 	}
 	userID := c.GetUint("userID")
-	fmt.Println("userID", userID)
 	if data, err := srv.GetProgressList(userID, req); err != nil {
 		FailWithMessage(GetMessage(c, "FetchFailed"), c)
 	} else {

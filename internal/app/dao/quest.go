@@ -125,10 +125,7 @@ func (d *Dao) GetQuestList(req *request.GetQuestListRequest) (questList []respon
 			var estimateTimeTotal int64
 			for _, quest := range collectionQuestList {
 				estimateTimeTotal += gjson.Get(string(quest.QuestData), "estimateTime").Int()
-				fmt.Println("estimateTimeTotal", estimateTimeTotal)
 			}
-
-			fmt.Println("estimateTimeTotal", estimateTimeTotal)
 			if estimateTimeTotal != 0 {
 				questList[i].EstimateTime = estimateTimeTotal
 			}
@@ -603,7 +600,6 @@ func (d *Dao) GetQuestHolderRankByTokenID(address string, tokenId string, page, 
 		Order("user_challenges.add_ts ASC,user_challenges.id ASC").
 		Limit(limit).Offset(offset).
 		Find(&res).Error
-	fmt.Println(res)
 	return res, total, err
 }
 

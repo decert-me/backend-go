@@ -244,7 +244,6 @@ func (s *Service) AuthLoginSignRequestSolana(req request.AuthLoginSignRequest) (
 	if !utils.VerifySignatureSolana(req.Address, req.Signature, []byte(req.Message)) {
 		return token, errors.New("SignatureVerificationFailed")
 	}
-	fmt.Println("AuthLoginSignRequestSolana run ")
 	// 获取Nonce
 	indexNonce := strings.LastIndex(req.Message, "Nonce:")
 	if indexNonce == -1 {

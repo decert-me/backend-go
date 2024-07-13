@@ -36,7 +36,6 @@ func (s *Service) HandleMetaRequest(_id, q string) []byte {
 	} else {
 		ipfs = q
 	}
-	fmt.Println("q", q)
 	replaceList := map[string]string{
 		"https://decert.me/": fmt.Sprintf("https://decert.me/quests/%s", _id),
 		"DeCert.Me":          quest.Title,

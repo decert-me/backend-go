@@ -107,7 +107,6 @@ func (s *Service) DiscordCallback(address string, discordCallback interface{}, r
 	if err != nil {
 		return res, errors.New("FailedObtainDiscordInfo")
 	}
-	fmt.Println(r.String())
 	if gjson.Get(r.String(), "status").Int() != 0 {
 		return res, errors.New("FailedObtainDiscordInfo")
 	}

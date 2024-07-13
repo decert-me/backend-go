@@ -85,7 +85,6 @@ func (s *Service) GetUserOpenQuestListV2(address string, r request.GetUserOpenQu
 		if err != nil {
 			continue
 		}
-		fmt.Println("add_ts", list[i].Addts)
 	}
 	sort.SliceStable(list, func(i, j int) bool {
 		return list[i].Addts > list[j].Addts

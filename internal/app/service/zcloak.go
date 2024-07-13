@@ -196,9 +196,7 @@ func (s *Service) SaveToNFTCollection(saveCardInfo SaveCardInfoRequest) (err err
 	}
 	// 发送请求
 	client := reqV3.C().SetCommonHeader("x-api-key", s.c.NFT.APIKey)
-	fmt.Println(s.c.NFT.API + "/zcloak/saveCardInfo")
 	data, _ := json.Marshal(saveCardInfo)
-	fmt.Println(string(data))
 	r, err := client.R().SetBodyJsonMarshal(saveCardInfo).Post(s.c.NFT.API + "/zcloak/saveCardInfo")
 	if err != nil {
 		log.Errorv("SaveToNFT error", zap.Error(err), zap.String("res", r.String()))
@@ -249,7 +247,6 @@ func (s *Service) GenerateCard(address string, tokenID string, lang string) (err
 		}
 		userScore = userScore / 100
 	}
-	fmt.Println("answer", answer)
 	s.GenerateCardInfo(address, userScore, request.GenerateCardInfoRequest{
 		TokenId: tokenID,
 		Answer:  answer,
