@@ -36,7 +36,7 @@ func (s *Service) GetWechatQrcode(address string) (data string, err error) {
 }
 
 // WechatBindAddress 处理地址绑定
-func (s *Service) WechatBindAddress(c *gin.Context, address, fromUserName string) (err error) {
+func (s *Service) WechatBindAddress(c *gin.Context, address, fromUserName string, replace bool) (err error) {
 	// 校验key
 	if c.GetHeader("x-api-key") != s.c.Social.Wechat.APIKey {
 		log.Errorv("非法请求", zap.String("x-api-key", c.GetHeader("x-api-key")))
@@ -51,12 +51,23 @@ func (s *Service) WechatBindAddress(c *gin.Context, address, fromUserName string
 		return errors.New("钱包地址已绑定，请勿重复操作")
 	}
 	// 判断微信是否被别的地址绑定过
-	_, isBinding, err := s.dao.WechatIsBinding(fromUserName)
+	bindingAddress, isBinding, err := s.dao.WechatIsBinding(fromUserName)
 	if err != nil {
 		return errors.New("服务器内部错误")
 	}
 	if isBinding {
-		return errors.New("微信已经绑定过地址")
+		// 替换绑定
+		if replace {
+			err = s.dao.UnbindSocial(address, "wechat")
+			if err != nil {
+				return errors.New("UnexpectedError")
+			}
+		} else {
+			bindingAddStr := fmt.Sprintf("%s...%s", bindingAddress[:6], bindingAddress[len(bindingAddress)-4:])
+			thisAddStr := fmt.Sprintf("%s...%s", address[:6], address[len(address)-4:])
+			errMsg := fmt.Sprintf("微信已经绑定到另一个用户 %s，回复 确认 解绑并绑定当前账户 %s", bindingAddStr, thisAddStr)
+			return errors.New(errMsg)
+		}
 	}
 	// 绑定
 	return s.dao.WechatBindAddress(address, fromUserName)
@@ -113,7 +124,7 @@ func (s *Service) DiscordCallback(address string, discordCallback interface{}, r
 	if Binding {
 		// 替换绑定
 		if replace {
-			err := s.dao.UnbindSocial(address, "email")
+			err = s.dao.UnbindSocial(address, "email")
 			if err != nil {
 				return res, errors.New("UnexpectedError")
 			}

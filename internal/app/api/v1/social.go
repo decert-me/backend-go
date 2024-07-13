@@ -26,6 +26,7 @@ func WechatBindAddress(c *gin.Context) {
 	type WechatBind struct {
 		Address string `json:"address" form:"address" binding:"required"`
 		Code    string `json:"code" form:"code" binding:"required"`
+		Replace bool   `json:"replace" form:"replace"`
 	}
 	var wechatBind WechatBind
 	err := c.ShouldBindJSON(&wechatBind)
@@ -33,7 +34,7 @@ func WechatBindAddress(c *gin.Context) {
 		FailWithMessage(GetMessage(c, "ParameterError"), c)
 		return
 	}
-	if err := srv.WechatBindAddress(c, wechatBind.Address, wechatBind.Code); err != nil {
+	if err := srv.WechatBindAddress(c, wechatBind.Address, wechatBind.Code, wechatBind.Replace); err != nil {
 		FailWithMessage(err.Error(), c)
 	} else {
 		Ok(c)

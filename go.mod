@@ -43,6 +43,7 @@ require (
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/StackExchange/wmi v1.2.1 // indirect
+	github.com/allegro/bigcache/v3 v3.1.0 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/bits-and-blooms/bitset v1.5.0 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
