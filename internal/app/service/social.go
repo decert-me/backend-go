@@ -121,16 +121,12 @@ func (s *Service) DiscordCallback(address string, discordCallback interface{}, r
 		return res, errors.New("UnexpectedError")
 	}
 	if Binding {
-		// 替换绑定
-		if replace {
-			err = s.dao.UnbindSocial(address, "email")
-			if err != nil {
-				return res, errors.New("UnexpectedError")
-			}
-		} else {
-			res.CurrentBindingAddress = bindingAddress
-			return res, nil
+		err = s.dao.SaveRebindInfo(address, "discord", bindingAddress)
+		if err != nil {
+			return response.BindingResponse{}, err
 		}
+		res.CurrentBindingAddress = bindingAddress
+		return res, nil
 	}
 	err = s.dao.DiscordBindAddress(discordID, username, address)
 	if err != nil {
@@ -221,16 +217,12 @@ func (s *Service) EmailBindAddress(address, emailAddress, code string, replace b
 		return res, errors.New("UnexpectedError")
 	}
 	if isBinding {
-		// 替换绑定
-		if replace {
-			err := s.dao.UnbindSocial(address, "email")
-			if err != nil {
-				return res, errors.New("UnexpectedError")
-			}
-		} else {
-			res.CurrentBindingAddress = bindingAddress
-			return res, nil
+		err = s.dao.SaveRebindInfo(address, "email", bindingAddress)
+		if err != nil {
+			return response.BindingResponse{}, err
 		}
+		res.CurrentBindingAddress = bindingAddress
+		return res, nil
 	}
 	// 绑定
 	err = s.dao.EmailBindAddress(address, emailAddress)
@@ -289,16 +281,12 @@ func (s *Service) GithubCallback(address string, githubCallback interface{}, rep
 		return res, errors.New("UnexpectedError")
 	}
 	if binding {
-		// 替换绑定
-		if replace {
-			err := s.dao.UnbindSocial(address, "email")
-			if err != nil {
-				return res, errors.New("UnexpectedError")
-			}
-		} else {
-			res.CurrentBindingAddress = bindingAddress
-			return res, nil
+		err = s.dao.SaveRebindInfo(address, "github", bindingAddress)
+		if err != nil {
+			return response.BindingResponse{}, err
 		}
+		res.CurrentBindingAddress = bindingAddress
+		return res, nil
 	}
 	err = s.dao.GithubBindAddress(githubID, username, address)
 	if err != nil {
@@ -322,4 +310,26 @@ func (s *Service) UnbindSocial(address, unbindType string) (err error) {
 	default:
 		return errors.New("UnexpectedError")
 	}
+}
+
+// BindSocialResult 查询绑定结果
+func (s *Service) BindSocialResult(address string, bindType string) (res response.BindingResultResponse, err error) {
+	accountBind, err := s.dao.HasBindSocialAccount(address)
+	if err != nil {
+		return response.BindingResultResponse{}, err
+	}
+	res.Bound = accountBind[bindType]
+	currentBindingAddress, err := s.dao.GetNeedRebindInfo(address, bindType)
+	if err != nil {
+		return response.BindingResultResponse{}, err
+	}
+	if currentBindingAddress != "" {
+		res.CurrentBindingAddress = fmt.Sprintf("%s...%s", currentBindingAddress[:6], currentBindingAddress[len(currentBindingAddress)-4:])
+	}
+	return res, nil
+}
+
+// ConfirmBindChange 确认绑定变更
+func (s *Service) ConfirmBindChange(address, bindType string) (err error) {
+	return s.dao.ConfirmBindChange(address, bindType)
 }

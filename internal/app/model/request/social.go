@@ -13,3 +13,11 @@ type EmailBindAddressRequest struct {
 type UnbindRequest struct {
 	Type string `json:"type" binding:"required"`
 }
+
+type BindSocialResultRequest struct {
+	Type string `json:"type" binding:"required"`
+}
+
+type ConfirmBindChangeRequest struct {
+	Type string `json:"type" binding:"required"`
+}

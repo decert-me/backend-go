@@ -21,7 +21,7 @@ func (d *Dao) WechatQueryByAddress(address string) (wechatData string, err error
 // WechatIsBinding 判断是否已经绑定过
 func (d *Dao) WechatIsBinding(fromUserName string) (string, bool, error) {
 	var address string
-	err := d.db.Raw("SELECT address FROM users WHERE socials->'wechat'->>'openid' = ?", fromUserName).First(&address).Error
+	err := d.db.Raw("SELECT address FROM users WHERE socials->'wechat'->>'openid' = ? LIMIT 1", fromUserName).Scan(&address).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", false, nil
@@ -106,7 +106,7 @@ func (d *Dao) DiscordQueryByAddress(address string) (discordData string, err err
 // DiscordIsBinding 判断Discord是否已经绑定过
 func (d *Dao) DiscordIsBinding(discordID string) (string, bool, error) {
 	var address string
-	err := d.db.Raw("SELECT address FROM users WHERE socials->'discord'->>'id' = ?", discordID).First(&address).Error
+	err := d.db.Raw("SELECT address FROM users WHERE socials->'discord'->>'id' = ? LIMIT 1", discordID).Scan(&address).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", false, nil
@@ -119,7 +119,7 @@ func (d *Dao) DiscordIsBinding(discordID string) (string, bool, error) {
 // EmailIsBinding 判断邮箱是否已经绑定过
 func (d *Dao) EmailIsBinding(email string) (string, bool, error) {
 	var address string
-	err := d.db.Raw("SELECT address FROM users WHERE socials->>'email' = ?", email).First(&address).Error
+	err := d.db.Raw("SELECT address FROM users WHERE socials->>'email' = ? LIMIT 1", email).Scan(&address).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", false, nil
@@ -195,7 +195,7 @@ func (d *Dao) GithubQueryByAddress(address string) (githubData string, err error
 // GithubIsBinding 判断Github是否已经绑定过
 func (d *Dao) GithubIsBinding(githubID string) (string, bool, error) {
 	var address string
-	err := d.db.Raw("SELECT address FROM users WHERE socials->'github'->>'id' = ?", githubID).First(&address).Error
+	err := d.db.Raw("SELECT address FROM users WHERE socials->'github'->>'id' = ? LIMIT 1", githubID).Scan(&address).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", false, nil

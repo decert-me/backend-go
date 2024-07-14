@@ -156,3 +156,41 @@ func UnbindSocial(c *gin.Context) {
 		Ok(c)
 	}
 }
+
+// BindSocialResult 查询绑定结果
+func BindSocialResult(c *gin.Context) {
+	var r request.BindSocialResultRequest
+	if err := c.ShouldBindJSON(&r); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	address := c.GetString("address")
+	if address == "" {
+		Fail(c)
+		return
+	}
+	if data, err := srv.BindSocialResult(address, r.Type); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		OkWithData(data, c)
+	}
+}
+
+// ConfirmBindChange 确认绑定变更
+func ConfirmBindChange(c *gin.Context) {
+	var r request.ConfirmBindChangeRequest
+	if err := c.ShouldBindJSON(&r); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	address := c.GetString("address")
+	if address == "" {
+		Fail(c)
+		return
+	}
+	if err := srv.ConfirmBindChange(address, r.Type); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		Ok(c)
+	}
+}

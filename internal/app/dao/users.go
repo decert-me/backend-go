@@ -14,6 +14,9 @@ import (
 func (d *Dao) nonceKeyRedis(key string) string {
 	return fmt.Sprintf("%snonce_%s", d.c.Redis.Prefix, key)
 }
+func getRebindKey(bindType string, address string) string {
+	return fmt.Sprintf("rebind_%s_%s", bindType, address)
+}
 func (d *Dao) HasNonce(c context.Context, nonce string) (has bool, err error) {
 	if err = d.redis.Get(c, d.nonceKeyRedis(nonce)).Err(); err != nil {
 		if err == redis.Nil {
@@ -95,6 +98,68 @@ func (d *Dao) HasBindSocialAccount(address string) (data map[string]bool, err er
 
 	data = map[string]bool{"wechat": wechat, "discord": discord, "github": github, "email": email}
 	return data, err
+}
+
+// GetNeedRebindInfo 获取需要换绑信息
+func (d *Dao) GetNeedRebindInfo(address string, bindType string) (currentBindingAddress string, err error) {
+	key := getRebindKey(bindType, address)
+	// 从 Redis 获取
+	currentBindingAddress, err = d.redis.Get(context.Background(), key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return "", nil
+		}
+		return currentBindingAddress, err
+	}
+	return currentBindingAddress, err
+}
+
+// SaveRebindInfo 保存换绑信息
+func (d *Dao) SaveRebindInfo(address string, bindType string, currentBindingAddress string) (err error) {
+	key := getRebindKey(bindType, address)
+	return d.redis.Set(context.Background(), key, currentBindingAddress, time.Duration(5)*time.Minute).Err()
+}
+
+// ConfirmBindChange 确认换绑
+func (d *Dao) ConfirmBindChange(address string, bindType string) (err error) {
+	key := getRebindKey(bindType, address)
+	// 从 Redis 获取
+	currentBindingAddress, err := d.redis.Get(context.Background(), key).Result()
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return errors.New("操作失败！请重新操作")
+		}
+		return err
+	}
+	tx := d.db.Begin()
+	selectSQL := fmt.Sprintf("SELECT COALESCE(socials->'%s', '{}') FROM users WHERE address = ? LIMIT 1", bindType)
+	var rawData string
+	err = tx.Raw(selectSQL, currentBindingAddress).Scan(&rawData).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	updateSQL := fmt.Sprintf("UPDATE users SET socials = jsonb_set(COALESCE(socials,'{}'), '{\"%s\"}', ?) WHERE address = ?", bindType)
+	err = tx.Exec(
+		updateSQL,
+		rawData,
+		address,
+	).Error
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+	err = tx.Exec("UPDATE users SET socials = socials - ? WHERE address = ?", bindType, currentBindingAddress).Error
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+	err = tx.Commit().Error
+	if err != nil {
+		return
+	}
+	// 从 Redis 删除
+	return d.redis.Del(context.Background(), key).Err()
 }
 
 // ParticleUpdateSocialsInfo 更新社交信息

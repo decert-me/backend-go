@@ -26,6 +26,8 @@ func InitSocialRouter(Router *gin.RouterGroup) {
 		routerAuth.POST("/githubBindAddress", v1.GithubBindAddress)             // Github 回调绑定
 	}
 	{
-		routerAuth.POST("/unbindSocial", v1.UnbindSocial) // 解绑
+		routerAuth.POST("/bindSocialResult", v1.BindSocialResult)   // 查询绑定结果
+		routerAuth.POST("/confirmBindChange", v1.ConfirmBindChange) // 确认绑定
+		routerAuth.POST("/unbindSocial", v1.UnbindSocial)           // 解绑
 	}
 }
