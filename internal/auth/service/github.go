@@ -41,6 +41,6 @@ func (s *Service) GithubCallback(code, callback string) (id, username string, er
 		return
 	}
 	id = gjson.Get(res.String(), "id").String()
-	username = gjson.Get(res.String(), "name").String()
+	username = gjson.Get(res.String(), "login").String()
 	return id, username, err
 }

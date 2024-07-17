@@ -28,6 +28,9 @@ func (d *Dao) WechatIsBinding(fromUserName string) (string, bool, error) {
 		}
 		return "", false, err
 	}
+	if address == "" {
+		return "", false, nil
+	}
 	return address, true, nil
 }
 
@@ -113,6 +116,9 @@ func (d *Dao) DiscordIsBinding(discordID string) (string, bool, error) {
 		}
 		return "", false, err
 	}
+	if address == "" {
+		return "", false, nil
+	}
 	return address, true, nil
 }
 
@@ -125,6 +131,9 @@ func (d *Dao) EmailIsBinding(email string) (string, bool, error) {
 			return "", false, nil
 		}
 		return "", false, err
+	}
+	if address == "" {
+		return "", false, nil
 	}
 	return address, true, nil
 }
@@ -201,6 +210,9 @@ func (d *Dao) GithubIsBinding(githubID string) (string, bool, error) {
 			return "", false, nil
 		}
 		return "", false, err
+	}
+	if address == "" {
+		return "", false, nil
 	}
 	return address, true, nil
 }
