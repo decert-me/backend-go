@@ -6,7 +6,6 @@ import (
 	"backend-go/internal/app/model/response"
 	"backend-go/internal/app/utils"
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -57,7 +56,6 @@ func (s *Service) AddQuest(address string, add request.AddQuestRequest) (res str
 		return
 	}
 	//supply, _ := new(big.Int).SetString(add.Supply, 10)
-	fmt.Println(add.Supply)
 	hash := solsha3.SoliditySHA3(
 		// types
 		[]string{"uint32", "uint32", "uint192", "string", "string", "address", "address"},

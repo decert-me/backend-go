@@ -59,7 +59,6 @@ func (s *Service) BalanceIPFS() {
 		indexList[i] = spent
 		time.Sleep(time.Second * 1)
 	}
-	fmt.Println(indexList)
 	ipfsPoint.index, _ = utils.SliceMin[int64](indexList)
 	log.Warnv("IPFS 切换: " + strconv.Itoa(ipfsPoint.index))
 }

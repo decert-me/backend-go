@@ -2,7 +2,6 @@ package service
 
 import (
 	"backend-go/pkg/log"
-	"fmt"
 	"github.com/imroc/req/v3"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
@@ -42,7 +41,6 @@ func (s *Service) GithubCallback(code, callback string) (id, username string, er
 		return
 	}
 	id = gjson.Get(res.String(), "id").String()
-	username = gjson.Get(res.String(), "name").String()
-	fmt.Println(res.String())
+	username = gjson.Get(res.String(), "login").String()
 	return id, username, err
 }

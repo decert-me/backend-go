@@ -5,7 +5,6 @@ import (
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
 	"errors"
-	"fmt"
 	"github.com/spf13/cast"
 	"gorm.io/gorm"
 )
@@ -356,6 +355,5 @@ func (d *Dao) GetCollectionHolderRank(address string, id int64, page, pageSize i
 		Order("user_challenges.add_ts ASC,user_challenges.id ASC").
 		Limit(limit).Offset(offset).
 		Find(&res).Error
-	fmt.Println(res)
 	return res, total, err
 }

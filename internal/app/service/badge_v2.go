@@ -7,7 +7,6 @@ import (
 	"backend-go/pkg/log"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	solsha3 "github.com/liangjies/go-solidity-sha3"
@@ -61,7 +60,6 @@ func (s *Service) SubmitClaimShareV2(address string, req request.SubmitClaimShar
 	if err != nil {
 		return res, errors.New("TokenIDInvalid")
 	}
-	fmt.Println("quest", quest)
 	// 校验题目
 	if req.Uri != "" && req.Uri != quest.Uri {
 		return res, errors.New("QuestUpdate")
