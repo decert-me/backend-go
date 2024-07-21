@@ -21,3 +21,7 @@ type BindSocialResultRequest struct {
 type ConfirmBindChangeRequest struct {
 	Type string `json:"type" binding:"required"`
 }
+
+type CancelBindChangeRequest struct {
+	Type string `json:"type" binding:"required"`
+}

@@ -194,3 +194,22 @@ func ConfirmBindChange(c *gin.Context) {
 		Ok(c)
 	}
 }
+
+// CancelBindChange 取消绑定变更
+func CancelBindChange(c *gin.Context) {
+	var r request.CancelBindChangeRequest
+	if err := c.ShouldBindJSON(&r); err != nil {
+		FailWithMessage(GetMessage(c, "ParameterError"), c)
+		return
+	}
+	address := c.GetString("address")
+	if address == "" {
+		Fail(c)
+		return
+	}
+	if err := srv.CancelBindChange(address, r.Type); err != nil {
+		FailWithMessage(GetMessage(c, err.Error()), c)
+	} else {
+		Ok(c)
+	}
+}
