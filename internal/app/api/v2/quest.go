@@ -13,7 +13,7 @@ func AddQuestV2(c *gin.Context) {
 	}
 	address := c.GetString("address")
 	if list, err := srv.AddQuestV2(address, add); err != nil {
-		FailWithMessage(GetMessage(c, "FetchFailed"), c)
+		FailWithMessage(GetMessage(c, err.Error()), c)
 	} else {
 		OkWithData(list, c)
 	}
