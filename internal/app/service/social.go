@@ -55,10 +55,11 @@ func (s *Service) WechatBindAddress(c *gin.Context, address, fromUserName string
 	if err != nil {
 		return errors.New("服务器内部错误")
 	}
+	s.dao.CancelBindChange(address, "wechat")
 	if isBinding {
 		// 替换绑定
 		if replace {
-			err = s.dao.UnbindSocial(address, "wechat")
+			err = s.dao.UnbindSocial(bindingAddress, "wechat")
 			if err != nil {
 				return errors.New("UnexpectedError")
 			}
@@ -120,6 +121,7 @@ func (s *Service) DiscordCallback(address string, discordCallback interface{}, r
 	if err != nil {
 		return res, errors.New("UnexpectedError")
 	}
+	s.dao.CancelBindChange(address, "discord")
 	if Binding {
 		err = s.dao.SaveRebindInfo(address, "discord", bindingAddress)
 		if err != nil {
@@ -216,6 +218,7 @@ func (s *Service) EmailBindAddress(address, emailAddress, code string, replace b
 	if err != nil {
 		return res, errors.New("UnexpectedError")
 	}
+	s.dao.CancelBindChange(address, "email")
 	if isBinding {
 		err = s.dao.SaveRebindInfo(address, "email", bindingAddress)
 		if err != nil {
@@ -280,6 +283,7 @@ func (s *Service) GithubCallback(address string, githubCallback interface{}, rep
 	if err != nil {
 		return res, errors.New("UnexpectedError")
 	}
+	s.dao.CancelBindChange(address, "github")
 	if binding {
 		err = s.dao.SaveRebindInfo(address, "github", bindingAddress)
 		if err != nil {
@@ -332,4 +336,9 @@ func (s *Service) BindSocialResult(address string, bindType string) (res respons
 // ConfirmBindChange 确认绑定变更
 func (s *Service) ConfirmBindChange(address, bindType string) (err error) {
 	return s.dao.ConfirmBindChange(address, bindType)
+}
+
+// CancelBindChange 取消绑定变更
+func (s *Service) CancelBindChange(address, bindType string) (err error) {
+	return s.dao.CancelBindChange(address, bindType)
 }

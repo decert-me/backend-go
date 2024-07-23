@@ -10,6 +10,14 @@ import (
 )
 
 func (s *Service) AddQuestV2(address string, add request.AddQuestV2Request) (res string, err error) {
+	// 是否管理员
+	isAdmin, err := s.dao.IsAdmin(address)
+	if err != nil {
+		return
+	}
+	if !isAdmin {
+		return "", errors.New("PermissionDenied")
+	}
 	privateKey, err := crypto.HexToECDSA(s.c.BlockChain.SignPrivateKey)
 	if err != nil {
 		return

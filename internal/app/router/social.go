@@ -27,7 +27,8 @@ func InitSocialRouter(Router *gin.RouterGroup) {
 	}
 	{
 		routerAuth.POST("/bindSocialResult", v1.BindSocialResult)   // 查询绑定结果
-		routerAuth.POST("/confirmBindChange", v1.ConfirmBindChange) // 确认绑定
+		routerAuth.POST("/confirmBindChange", v1.ConfirmBindChange) // 确认换绑
+		routerAuth.POST("/cancelBindChange", v1.CancelBindChange)   // 取消换绑
 		routerAuth.POST("/unbindSocial", v1.UnbindSocial)           // 解绑
 	}
 }

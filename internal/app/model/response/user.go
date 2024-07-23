@@ -14,3 +14,8 @@ type QuestWithClaimed struct {
 func (QuestWithClaimed) TableName() string {
 	return "quest"
 }
+
+type GetUserInfoRes struct {
+	model.Users
+	IsAdmin bool `json:"is_admin"`
+}

@@ -162,6 +162,17 @@ func (d *Dao) ConfirmBindChange(address string, bindType string) (err error) {
 	return d.redis.Del(context.Background(), key).Err()
 }
 
+// CancelBindChange 取消绑定变更
+func (d *Dao) CancelBindChange(address string, bindType string) (err error) {
+	key := getRebindKey(bindType, address)
+	// 从 Redis 删除
+	err = d.redis.Del(context.Background(), key).Err()
+	if err != nil {
+		return
+	}
+	return nil
+}
+
 // ParticleUpdateSocialsInfo 更新社交信息
 func (d *Dao) ParticleUpdateSocialsInfo(address string, particleUserinfo datatypes.JSON) (err error) {
 	provider := gjson.Get(particleUserinfo.String(), "thirdparty_user_info.provider").String()
