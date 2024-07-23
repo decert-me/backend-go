@@ -3,6 +3,7 @@ package service
 import (
 	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
+	"backend-go/internal/app/model/response"
 	"backend-go/internal/app/utils"
 	"backend-go/pkg/auth"
 	"backend-go/pkg/log"
@@ -20,7 +21,7 @@ import (
 	"strings"
 )
 
-func (s *Service) GetUserInfo(address string, loginAddress string) (res interface{}, err error) {
+func (s *Service) GetUserInfo(address string, loginAddress string) (res response.GetUserInfoRes, err error) {
 	var user model.Users
 	if user, err = s.dao.GetUser(address); err != nil {
 		return
@@ -48,7 +49,9 @@ func (s *Service) GetUserInfo(address string, loginAddress string) (res interfac
 			}
 		}
 		user.NickName = &showStr
-		return user, err
+		res.IsAdmin = true
+		res.Users = user
+		return res, err
 	}
 	// default nickname
 	if user.NickName == nil || *user.NickName == "" {
@@ -57,7 +60,8 @@ func (s *Service) GetUserInfo(address string, loginAddress string) (res interfac
 			user.NickName = &nickName
 		}
 	}
-	return user, err
+	res.Users = user
+	return res, err
 }
 
 func (s *Service) UpdateUserInfo(address string, user request.UpdateUserInfo) (err error) {

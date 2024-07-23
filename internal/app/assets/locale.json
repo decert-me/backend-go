@@ -38,7 +38,8 @@
     "EmailAlreadyLinked": "The email has already been linked to another address!",
     "GithubAlreadyLinked": "Github has been linked to another wallet address!",
     "AddressAlreadyLinkedGithub": "The wallet address has already been linked to Github. Please do not repeat the operation.",
-    "FailedObtainGithubInfo": "Failed to obtain Github information!"
+    "FailedObtainGithubInfo": "Failed to obtain Github information!",
+    "PermissionDenied": "Permission Denied!"
   },
   "zh-CN": {
     "OperationSuccess": "操作成功！",
@@ -79,6 +80,7 @@
     "EmailAlreadyLinked": "邮箱已绑定其他钱包地址",
     "GithubAlreadyLinked": "Github 已绑定其他钱包地址",
     "AddressAlreadyLinkedGithub": "钱包地址已绑定Github，请勿重复操作",
-    "FailedObtainGithubInfo": "绑定 Github 信息失败！"
+    "FailedObtainGithubInfo": "绑定 Github 信息失败！",
+    "PermissionDenied": "权限不足！"
   }
 }
