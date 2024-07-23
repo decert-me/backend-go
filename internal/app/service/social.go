@@ -59,7 +59,7 @@ func (s *Service) WechatBindAddress(c *gin.Context, address, fromUserName string
 	if isBinding {
 		// 替换绑定
 		if replace {
-			err = s.dao.UnbindSocial(address, "wechat")
+			err = s.dao.UnbindSocial(bindingAddress, "wechat")
 			if err != nil {
 				return errors.New("UnexpectedError")
 			}
