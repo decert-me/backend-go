@@ -88,8 +88,9 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 		Joins("left join quest_translated as tr ON quest.token_id = tr.token_id AND tr.language = ?", r.Language).
 		Where("collection_relate.collection_id = ? AND quest.status=1", collection.ID)
 	if r.Address != "" {
-		db.Select("quest.*,c.claimed,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
+		db.Select("quest.*,NOT (c.claimed = false AND zc.quest_id IS NULL) as claimed,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
+		db.Joins("LEFT JOIN zcloak_card zc ON zc.address = ? AND zc.quest_id=quest.id AND zc.deleted_at IS NULL", r.Address)
 	} else {
 		db.Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 	}
