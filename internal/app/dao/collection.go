@@ -90,7 +90,7 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 	if r.Address != "" {
 		db.Select("quest.*,NOT (c.claimed = false AND zc.quest_id IS NULL) as claimed,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 		db.Joins("LEFT JOIN user_challenges c ON quest.token_id = c.token_id AND c.address = ?", r.Address)
-		db.Joins("LEFT JOIN zcloak_card zc ON zc.address = ? AND zc.quest_id=quest.id AND zc.deleted_at IS NULL", r.Address)
+		db.Joins("LEFT JOIN (WITH zcloak_status AS (SELECT quest_id,ROW_NUMBER() OVER (PARTITION BY quest_id ORDER BY id DESC) as rn FROM zcloak_card WHERE address=? AND deleted_at IS NULL) SELECT quest_id FROM zcloak_status WHERE rn = 1) zc ON quest.id = zc.quest_id", r.Address)
 	} else {
 		db.Select("quest.*,COALESCE(tr.title,quest.title) as title,COALESCE(tr.description,quest.description) as description")
 	}
