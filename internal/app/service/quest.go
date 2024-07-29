@@ -1,7 +1,6 @@
 package service
 
 import (
-	"backend-go/internal/app/model"
 	"backend-go/internal/app/model/request"
 	"backend-go/internal/app/model/response"
 	"backend-go/internal/app/utils"
@@ -111,11 +110,15 @@ func (s *Service) UpdateRecommend(address string, modify request.UpdateRecommend
 	if quest.Creator != common.HexToAddress(address).String() {
 		return errors.New("UnauthorizedAccess")
 	}
+	data := map[string]interface{}{}
+	if modify.Category != nil {
+		data["category"] = *modify.Category
+	}
+	if modify.Recommend != nil {
+		data["recommend"] = *modify.Recommend
+	}
 	// 修改Quest
-	err = s.dao.UpdateQuest(&model.Quest{
-		TokenId:   modify.TokenId,
-		Recommend: modify.Recommend,
-	})
+	err = s.dao.UpdateQuestRaw(modify.TokenId, data)
 	if err != nil {
 		return errors.New("OperationFailed")
 	}
