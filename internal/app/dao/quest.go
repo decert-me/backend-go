@@ -326,6 +326,10 @@ func (d *Dao) UpdateQuest(req *model.Quest) (err error) {
 	return d.db.Where("token_id", req.TokenId).Updates(&req).Error
 }
 
+func (d *Dao) UpdateQuestRaw(tokenId string, data map[string]interface{}) (err error) {
+	return d.db.Model(&model.Quest{}).Where("token_id", tokenId).Updates(data).Error
+}
+
 // GetQuestFlashRankByTokenID 获取闪电榜
 func (d *Dao) GetQuestFlashRankByTokenID(address string, tokenId string) (res response.GetQuestFlashListRes, err error) {
 	// 查询挑战

@@ -1,6 +1,9 @@
 package request
 
-import "backend-go/internal/app/model"
+import (
+	"backend-go/internal/app/model"
+	"github.com/lib/pq"
+)
 
 type GetQuestListRequest struct {
 	model.Quest
@@ -33,8 +36,9 @@ type UpdateQuestRequest struct {
 }
 
 type UpdateRecommendRequest struct {
-	TokenId   string `json:"token_id" binding:"required"`
-	Recommend string `json:"recommend"` // 推荐
+	TokenId   string         `json:"token_id" binding:"required"`
+	Recommend *string        `json:"recommend"` // 推荐
+	Category  *pq.Int64Array `json:"category"`  // 分类
 }
 
 type GetCollectionQuestRequest struct {
