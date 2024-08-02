@@ -52,7 +52,8 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 	collectionID, idErr := cast.ToUintE(r.ID)
 	if idErr == nil {
 		// 查询合辑信息
-		err = d.db.Model(&model.Collection{}).Select("collection.*,COALESCE(tr.title,collection.title) as title,COALESCE(tr.description,collection.description) as description").
+		err = d.db.Model(&model.Collection{}).Select("collection.*,COALESCE(tr.title,collection.title) as title,COALESCE(tr.description,collection.description) as description,b.badge_token_id,b.chain_id as badge_chain_id").
+			Joins("left join user_challenges b ON collection.token_id=b.token_id AND b.address= ?", r.Address).
 			Joins("LEFT JOIN collection_translated as tr ON collection.id = tr.collection_id AND tr.language = ?", r.Language).
 			Where("collection.id", collectionID).First(&collection).Error
 		if err != nil {
@@ -60,7 +61,8 @@ func (d *Dao) GetCollectionQuest(r request.GetCollectionQuestRequest) (questList
 		}
 	} else {
 		// 查询合辑信息
-		err = d.db.Model(&model.Collection{}).Select("collection.*,COALESCE(tr.title,collection.title) as title,COALESCE(tr.description,collection.description) as description").
+		err = d.db.Model(&model.Collection{}).Select("collection.*,COALESCE(tr.title,collection.title) as title,COALESCE(tr.description,collection.description) as description,b.badge_token_id,b.chain_id as badge_chain_id").
+			Joins("left join user_challenges b ON collection.token_id=b.token_id AND b.address= ?", r.Address).
 			Joins("LEFT JOIN collection_translated as tr ON collection.id = tr.collection_id AND tr.language = ?", r.Language).
 			Where("collection.uuid", r.ID).First(&collection).Error
 		if err != nil {
