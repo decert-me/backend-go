@@ -27,7 +27,9 @@ type GetCollectionChallengeUserPageDataResult struct {
 
 type GetCollectionRes struct {
 	model.Collection
-	Claimed bool `gorm:"-" json:"claimed"`
+	Claimed      bool   `gorm:"-" json:"claimed"`
+	BadgeTokenID string `gorm:"column:badge_token_id" json:"badge_token_id"`
+	BadgeChainID int64  `gorm:"column:badge_chain_id" json:"badge_chain_id"`
 }
 
 type CheckQuestInCollectionRes struct {
