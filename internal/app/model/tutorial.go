@@ -26,7 +26,7 @@ type Tutorial struct {
 	Sort          pq.StringArray `gorm:"column:sort;type:text[];comment:视频排序" json:"sort,omitempty"` // 视频排序
 	Url           string         `json:"url,omitempty"`
 	EstimateTime  uint           `json:"estimateTime,omitempty"`                                    // 预估时间
-	Challenge     *uint          `json:"challenge,omitempty"`                                       // 挑战
+	Challenge     *string        `json:"challenge,omitempty"`                                       // 挑战
 	VisitNum      uint           `json:"visitNum,omitempty"`                                        // 教程浏览量
 	AddrNum       uint           `json:"addrNum,omitempty"`                                         // 参与人员数量
 	Order         int            `json:"order"`                                                     // 排序
