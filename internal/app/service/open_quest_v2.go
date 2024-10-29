@@ -199,6 +199,39 @@ func (s *Service) GetUserOpenQuestDetailListV2(address string, loginAddress stri
 	}
 	// 计算分数
 	for i := 0; i < len(list); i++ {
+		// 提交次数
+		submitCountSQL := `
+		SELECT 
+			count(1)
+		FROM
+			user_open_quest
+		WHERE
+			user_open_quest.deleted_at IS NULL AND user_open_quest.token_id = ? AND user_open_quest.address = ? AND user_open_quest.id <= ?
+		`
+		err = db.Raw(submitCountSQL, list[i].TokenId, list[i].Address, list[i].ID).Scan(&list[i].SubmitCount).Error
+		if err != nil {
+			log.Error("获取提交次数失败", "error", err)
+			continue
+		}
+		// 上次分数
+		lastAnswerSQL := `
+		SELECT
+			COALESCE(json_element->>'score', '0') AS score
+		FROM
+			user_open_quest
+		JOIN
+			jsonb_array_elements(user_open_quest.answer) WITH ORDINALITY AS t(json_element, idx) ON true
+		WHERE
+			user_open_quest.deleted_at IS NULL AND json_element->>'type' = 'open_quest' AND user_open_quest.token_id = ? AND idx = ? AND user_open_quest.address = ? AND open_quest_review_status=2  AND user_open_quest.id < ?
+		ORDER BY
+			updated_at DESC
+		LIMIT 1
+		`
+		err = db.Raw(lastAnswerSQL, list[i].TokenId, list[i].Index+1, list[i].Address, list[i].ID).Scan(&list[i].LastScore).Error
+		if err != nil {
+			log.Error("获取上次分数失败", "error", err)
+			continue
+		}
 		quest := model.Quest{
 			TokenId:   list[i].TokenId,
 			MetaData:  list[i].MetaData,
