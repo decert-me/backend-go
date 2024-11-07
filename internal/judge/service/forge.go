@@ -6,14 +6,15 @@ import (
 	"backend-go/pkg/log"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/tidwall/gjson"
-	"go.uber.org/zap"
 	"os"
 	"path"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/tidwall/gjson"
+	"go.uber.org/zap"
 )
 
 func (s *Service) TestSolidity(req request.TestReq, spjCode string) (res response.TestRes, err error) {
@@ -38,7 +39,7 @@ func (s *Service) TestSolidity(req request.TestReq, spjCode string) (res respons
 	contract := "--match-path=" + relativeFilePath
 	//args := []string{"test", contract, "--offline", "--json"}
 	//execRes, err := execCommand(foundryPath, "forge", args...)
-	command := fmt.Sprintf("cd /foundry && forge test %s --json", contract)
+	command := fmt.Sprintf("cd /foundry && forge test --evm-version cancun %s --json", contract)
 	args := []string{"exec", "-i", req.Address, "bash", "-c", command}
 	execRes, err := execCommand("", "docker", args...)
 	//if err := os.Rename(p, p+".bak"); err != nil {
