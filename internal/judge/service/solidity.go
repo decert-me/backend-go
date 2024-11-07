@@ -8,15 +8,16 @@ import (
 	"backend-go/pkg/log"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/tidwall/gjson"
-	"go.uber.org/zap"
 	"os"
 	"path"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/tidwall/gjson"
+	"go.uber.org/zap"
 )
 
 var dockerRunning map[string]*sync.Mutex
@@ -485,5 +486,5 @@ func (s *Service) DockerInit(address string) (l *sync.Mutex, err error) {
 	// Foundry 缓存目录
 	mapping = append(mapping, "-v", path.Join(s.c.Judge.SolidityCachePath, "foundry/svm")+":/root/.svm")
 
-	return lock, CreateDocker(address, "judge:1.0", mapping)
+	return lock, CreateDocker(address, "judge:1.1", mapping)
 }
