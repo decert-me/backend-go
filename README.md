@@ -66,7 +66,7 @@ vi ./bin/judge/config.yaml
 ## Docker 构建判题镜像
 
 ```shell
-sudo docker build -t judge:1.0 -f internal/judge/Dockerfile .
+sudo docker build -t judge:1.1 -f internal/judge/Dockerfile .
 ```
 
 ## 运行
