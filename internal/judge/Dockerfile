@@ -13,9 +13,9 @@ WORKDIR /foundry
 RUN forge init && \
     forge install OpenZeppelin/openzeppelin-contracts --no-commit && \
     echo "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/" > remappings.txt && \
+    forge config --evm-version cancun  && \
     forge test && \
     rm -r script src test
-
 # 安装nodejs和npm
 RUN apk add --no-cache nodejs npm
 
