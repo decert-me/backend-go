@@ -3,6 +3,7 @@ package service
 import (
 	ABIV2 "backend-go/abi/v2"
 	"backend-go/internal/app/model"
+	"backend-go/internal/app/service"
 	"backend-go/pkg/log"
 	"encoding/json"
 	"fmt"
@@ -154,10 +155,12 @@ func (s *Service) handleModifyQuestV2(hash string, vLog *types.Log) (err error) 
 		log.Errorv("UpdateQuest error", zap.Error(err), zap.Any("quest", quest))
 		return
 	}
-	// 清除挑战记录
-	if err = s.dao.DeleteUserChallengeLogByTokenId(quest.TokenId); err != nil {
-		log.Errorv("DeleteUserChallengeLogByTokenId error", zap.Error(err), zap.Any("quest", quest))
-		return
+	if service.IsOpenQuest(gjson.Get(string(quest.QuestData), "questions").String()) {
+		// 清除挑战记录
+		if err = s.dao.DeleteUserChallengeLogByTokenId(quest.TokenId); err != nil {
+			log.Errorv("DeleteUserChallengeLogByTokenId error", zap.Error(err), zap.Any("quest", quest))
+			return
+		}
 	}
 	// 清除翻译
 	err = s.dao.DeleteQuestTranslated(quest.TokenId)
