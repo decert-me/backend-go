@@ -36,6 +36,7 @@ type Tutorial struct {
 	PackLog       string         `gorm:"column:pack_log;type:text" json:"pack_log"`                 // 打包日志
 	Top           *bool          `gorm:"column:top;default:false" json:"top"`                       // 是否置顶
 	TutorialSort  *int           `gorm:"column:tutorial_sort;default:0" json:"tutorial_sort"`       // 教程排序
+	ExternalLink  string         `gorm:"column:external_link" json:"externalLink,omitempty"`        // 外部链接
 }
 
 func (Tutorial) TableName() string {
