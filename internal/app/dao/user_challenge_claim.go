@@ -52,3 +52,10 @@ func (d *Dao) HasClaimedFinish(address string, tokenID string) (status uint8, er
 	}
 	return userChallenges.Status, nil
 }
+
+// UpdateUserChallengeClaimStatus 更新用户 claim 状态为成功
+func (d *Dao) UpdateUserChallengeClaimStatus(address string, tokenID string, status uint8) error {
+	return d.db.Model(&model.UserChallengeClaim{}).
+		Where("address = ? AND token_id = ?", address, tokenID).
+		Update("status", status).Error
+}

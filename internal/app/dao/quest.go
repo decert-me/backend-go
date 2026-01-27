@@ -620,12 +620,15 @@ func (d *Dao) GetQuestHolderRankByUUID(address string, uuid string, page, pageSi
 
 // GetQuestAnswersByTokenId 获取挑战多语言答案
 func (d *Dao) GetQuestAnswersByTokenId(tokenId string) (answers []string, err error) {
-	err = d.db.Raw(`SELECT answer AS answers
-		FROM (
-		SELECT  quest_data->>'answers' AS answer FROM quest WHERE token_id = ?
-		UNION
-		SELECT answer FROM quest_translated WHERE token_id = ? AND answer IS NOT NULL) AS combined_data
-		`, tokenId, tokenId).Scan(&answers).Error
+	// 修复: 直接查询并只返回quest表的answer,不使用UNION避免重复
+	// 使用 ->> 操作符获取JSON字符串,然后手动包装成只有一个元素的结果
+	var answerStr string
+	err = d.db.Raw(`SELECT quest_data->>'answers' AS answers FROM quest WHERE token_id = ?`, tokenId).Scan(&answerStr).Error
+	if err != nil {
+		return nil, err
+	}
+	// 只返回一个答案字符串(原始quest表的答案)
+	answers = []string{answerStr}
 	return
 }
 

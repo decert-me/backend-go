@@ -17,7 +17,8 @@ func NewRedis(c *config.Redis) (client *redis.Client) {
 	})
 	pong, err := client.Ping(context.Background()).Result()
 	if err != nil {
-		log.Fatal("redis connect ping failed, err:", zap.Error(err))
+		log.Println("redis connect ping failed, err:", zap.Error(err))
+		log.Println("WARNING: Redis 未连接，部分功能（如防重放攻击）可能受影响")
 	} else {
 		log.Println("redis connect ping response:", zap.String("pong", pong))
 	}
